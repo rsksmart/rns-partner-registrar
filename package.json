@@ -1,0 +1,97 @@
+{
+  "name": "rns-partner-registrar",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "test": "REPORT_GAS=true hardhat test",
+    "clean": "rm -rf typechain-types cache bin dist artifacts contracts-exposed && hardhat clean",
+    "compile": "npm run clean && hardhat compile --force",
+    "coverage": "hardhat coverage",
+    "ci:format": "prettier -c contracts/**/*.sol && prettier -c **/*.ts",
+    "ci:lint": "solhint 'contracts/**/*.sol' && eslint test --ext .ts ",
+    "ci:test": "npm run compile && npm run test",
+    "deploy": "hardhat run scripts/deploy.ts --network",
+    "lint:sol": "solhint --fix 'contracts/**/*.sol'",
+    "lint:ts": "eslint test --ext .ts --fix",
+    "lint": "npm run lint:sol && npm run lint:ts",
+    "format:sol": "prettier -c -w --no-editorconfig contracts/**/*.sol contracts/**/**/*.sol",
+    "format:ts": "prettier -c -w --no-editorconfig **/*.ts",
+    "format": "npm run format:sol && npm run format:ts",
+    "postinstall": "npm run compile",
+    "tdd": "npm run compile && REPORT_GAS=true hardhat watch tdd"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix"
+  },
+  "engines": {
+    "node": ">=v14.16.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rsksmart/rns-partner-registrar.git"
+  },
+  "keywords": [
+    "defi",
+    "crypto",
+    "blockchain",
+    "rns"
+  ],
+  "bugs": {
+    "url": "https://github.com/rsksmart/rns-partner-registrar/issues"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@openzeppelin/contracts": "^4.7.3",
+    "@rsksmart/rif-scheduler-contracts": "^1.0.1",
+    "@typechain/ethers-v5": "10.1.0",
+    "@typechain/hardhat": "^6.0.0",
+    "@types/big.js": "^6.1.3",
+    "dotenv": "^16.0.0",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.6.5",
+    "hardhat": "^2.12.1",
+    "hardhat-contract-sizer": "^2.5.1",
+    "hardhat-docgen": "^1.3.0",
+    "hardhat-gas-reporter": "1.0.8",
+    "hardhat-packager": "1.4.1",
+    "hardhat-watcher": "2.1.1",
+    "tsconfig-paths": "^4.0.0",
+    "typechain": "^8.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^16.2.4",
+    "@commitlint/config-conventional": "^16.2.4",
+    "@types/chai": "^4.3.1",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/chai-spies": "^1.0.3",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^17.0.31",
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/parser": "^5.22.0",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "chai-spies": "^1.0.0",
+    "chalk": "^4.1.2",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "hardhat-exposed": "^0.2.14",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.4.1",
+    "mocha": "^10.0.0",
+    "moment": "^2.29.4",
+    "prettier": "^2.6.2",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "solhint": "^3.3.7",
+    "solhint-plugin-prettier": "0.0.5",
+    "solidity-coverage": "^0.7.21",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4"
+  }
+}

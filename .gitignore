@@ -1,0 +1,15 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain-types
+contracts-exposed
+
+#Hardhat files
+cache
+artifacts
+
+.DS_Store
+.idea
+.eslintcache
+contracts.json
