@@ -1,7 +1,6 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Contract, ContractFactory } from 'ethers';
 import { ethers } from 'hardhat';
-import { Libraries } from 'hardhat/types';
 
 export interface Factory<C extends Contract> extends ContractFactory {
   deploy: (...args: Array<unknown>) => Promise<C>;
