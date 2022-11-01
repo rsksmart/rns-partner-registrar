@@ -1,4 +1,4 @@
-import type { UserConfig } from '@commitlint/types/lib';
+import type { UserConfig } from '@commitlint/types';
 
 const Configuration: UserConfig = {
   /*
