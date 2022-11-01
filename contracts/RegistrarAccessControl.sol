@@ -31,11 +31,19 @@ contract RegistrarAccessControl is IRegistrarAccessControl, AccessControl {
         _;
     }
 
-    function addPartner(address partner) external onlyOwner(msg.sender) {
+    function isOwner(address owner) public view {
+        if (!hasRole(OWNER, owner)) revert NotOwner(owner);
+    }
+
+    function isPartner(address partner) public view {
+        if (!hasRole(PARTNER, partner)) revert NotPartner(partner);
+    }
+
+    function addPartner(address partner) public onlyOwner(msg.sender) {
         grantRole(PARTNER, partner);
     }
 
-    function removePartner(address partner) external onlyOwner(msg.sender) {
+    function removePartner(address partner) public onlyOwner(msg.sender) {
         revokeRole(PARTNER, partner);
     }
 }
