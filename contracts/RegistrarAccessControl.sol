@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import "./IRegistrarAccessControl.sol";
 
 bytes32 constant OWNER = keccak256("OWNER");
 bytes32 constant PARTNER = keccak256("PARTNER");
@@ -9,7 +10,7 @@ bytes32 constant PARTNER = keccak256("PARTNER");
     error NotPartner(address user);
     error NotOwner(address user);
 
-contract PartnerRegistrarAccessControl is AccessControl {
+contract RegistrarAccessControl is IRegistrarAccessControl, AccessControl {
     constructor() {
         address _owner = msg.sender;
 
@@ -21,12 +22,12 @@ contract PartnerRegistrarAccessControl is AccessControl {
     }
 
     modifier onlyOwner(address owner) {
-        if(!hasRole(OWNER, owner)) revert NotOwner(owner);
+        if (!hasRole(OWNER, owner)) revert NotOwner(owner);
         _;
     }
 
     modifier onlyPartner(address partner) {
-        if(!hasRole(PARTNER, partner)) revert NotPartner(partner);
+        if (!hasRole(PARTNER, partner)) revert NotPartner(partner);
         _;
     }
 

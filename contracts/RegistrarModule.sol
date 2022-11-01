@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-contract PartnerRegistrar {
+abstract contract RegistrarModule {
 
 }

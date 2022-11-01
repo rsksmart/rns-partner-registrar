@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-import "./PartnerRegistrarAccessControl.sol";
+import "./RegistrarAccessControl.sol";
 import "./PartnerConfiguration.sol";
 
-contract PartnerManager is PartnerRegistrarAccessControl {
+contract PartnerManager is RegistrarAccessControl {
     mapping(address => PartnerConfiguration) private _partnerConfigurations;
 
     function setPartnerConfiguration(address partner, PartnerConfiguration memory configuration) public onlyOwner(msg.sender) onlyPartner(partner) {
