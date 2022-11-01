@@ -7,7 +7,6 @@ import 'hardhat-exposed';
 import 'hardhat-gas-reporter';
 import 'hardhat-packager';
 import 'hardhat-watcher';
-import { HardhatUserConfig } from 'hardhat/config';
 import 'tsconfig-paths/register';
 import 'solidity-coverage';
 
@@ -15,7 +14,7 @@ export default <HardhatUserConfig>{
   solidity: {
     compilers: [
       {
-        version: '0.8.16',
+        version: '0.8.17',
         settings: {
           optimizer: {
             enabled: true,
@@ -78,7 +77,7 @@ export default <HardhatUserConfig>{
   },
   packager: {
     includeFactories: false,
-    contracts: ['RIFGateway'],
+    contracts: ['PartnerRegistrar'],
   },
   docgen: {
     path: './docs',
