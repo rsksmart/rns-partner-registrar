@@ -9,6 +9,9 @@ contract PartnerManager is IPartnerManager, Ownable {
     mapping(address => bool) private _partners;
     mapping(address => IPartnerConfiguration) private _partnerConfigurations;
 
+    event PartnerAdded(address indexed partner);
+    event PartnerRemoved(address indexed partner);
+
     constructor() Ownable() {}
 
     function isPartner(address partner) public view returns (bool) {
@@ -17,17 +20,23 @@ contract PartnerManager is IPartnerManager, Ownable {
 
     function addPartner(address partner) external onlyOwner {
         _partners[partner] = true;
+
+        emit PartnerAdded(partner);
     }
 
     function removePartner(address partner) external onlyOwner {
         _partners[partner] = false;
+
+        emit PartnerRemoved(partner);
     }
 
     function setPartnerConfiguration(
         address partner,
         IPartnerConfiguration partnerConfiguration
     ) external onlyOwner {
+        require(partnerConfiguration != IPartnerConfiguration(address(0)), "PartnerManager: Invalid configuration");
         require(isPartner(partner), "PartnerManager: not a partner");
+        
         _partnerConfigurations[partner] = partnerConfiguration;
     }
 

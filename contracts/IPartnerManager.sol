@@ -4,9 +4,14 @@ pragma solidity ^0.8.17;
 import "./IPartnerConfiguration.sol";
 
 interface IPartnerManager {
-    function setPartnerConfiguration(address partner, IPartnerConfiguration configuration) external;
+    function setPartnerConfiguration(
+        address partner,
+        IPartnerConfiguration configuration
+    ) external;
 
-    function getPartnerConfiguration(address partner) external returns (IPartnerConfiguration);
+    function getPartnerConfiguration(address partner)
+        external
+        returns (IPartnerConfiguration);
 
     function isPartner(address partner) external view returns (bool);
 
@@ -14,4 +19,3 @@ interface IPartnerManager {
 
     function removePartner(address partner) external;
 }
-
