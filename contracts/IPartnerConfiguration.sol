@@ -9,5 +9,6 @@ interface IPartnerConfiguration {
     function getMaxDuration() external view returns (uint256);
     function getFeePercentage() external view returns (uint256);
     function getDiscount() external view returns (uint256);
-    function getPrice(string memory name, uint256 duration) external view returns (uint256);
+    function getMinCommittmentAge() external view returns (uint);
+    function getPrice(string memory name, uint expires, uint256 duration) external view returns (uint);
 }
