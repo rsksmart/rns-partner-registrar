@@ -8,26 +8,29 @@ import "./PartnerManager.sol";
 import "./StringUtils.sol";
 
 contract PartnerRegistrar is IBaseRegistrar {
-    mapping(bytes32 => uint256) private commitmentRevealTime;
+    mapping(bytes32 => uint256) private _commitmentRevealTime;
 
-    NodeOwner nodeOwner;
-    RIF rif;
-    IPartnerManager partnerManager;
+    NodeOwner _nodeOwner;
+    RIF _rif;
+    IPartnerManager _partnerManager;
 
     using StringUtils for string;
 
     constructor(
-        NodeOwner _nodeOwner,
-        RIF _rif,
-        IPartnerManager _partnerManager
+        NodeOwner nodeOwner,
+        RIF rif,
+        IPartnerManager partnerManager
     ) {
-        nodeOwner = _nodeOwner;
-        rif = _rif;
-        partnerManager = _partnerManager;
+        _nodeOwner = nodeOwner;
+        _rif = rif;
+        _partnerManager = partnerManager;
     }
 
     modifier onlyPartner() {
-        require(partnerManager.isPartner(msg.sender), "Partner Registrar: Not a partner");
+        require(
+            _partnerManager.isPartner(msg.sender),
+            "Partner Registrar: Not a partner"
+        );
         _;
     }
 
@@ -39,7 +42,7 @@ contract PartnerRegistrar is IBaseRegistrar {
     ) external onlyPartner {
         uint256 cost = _executeRegistration(name, nameOwner, secret, duration);
         require(
-            rif.transferFrom(msg.sender, address(this), cost),
+            _rif.transferFrom(msg.sender, address(this), cost),
             "Token transfer failed"
         );
     }
@@ -58,13 +61,13 @@ contract PartnerRegistrar is IBaseRegistrar {
         onlyPartner
         returns (bool)
     {
-        uint256 revealTime = commitmentRevealTime[commitment];
+        uint256 revealTime = _commitmentRevealTime[commitment];
         return 0 < revealTime && revealTime <= block.timestamp;
     }
 
     function commit(bytes32 commitment) external onlyPartner {
-        require(commitmentRevealTime[commitment] < 1, "Existent commitment");
-        commitmentRevealTime[commitment] =
+        require(_commitmentRevealTime[commitment] < 1, "Existent commitment");
+        _commitmentRevealTime[commitment] =
             block.timestamp +
             _getPartnerConfiguration().getMinCommittmentAge();
     }
@@ -91,17 +94,20 @@ contract PartnerRegistrar is IBaseRegistrar {
         require(canReveal(commitment), "No commitment found");
         commitmentRevealTime[commitment] = 0;
 
-        nodeOwner.register(label, nameOwner, duration * 365 days);
+        _nodeOwner.register(label, nameOwner, duration * 365 days);
 
         return
             _getPartnerConfiguration().getPrice(
                 name,
-                nodeOwner.expirationTime(uint256(label)),
+                _nodeOwner.expirationTime(uint256(label)),
                 duration
             );
     }
 
-    function _getPartnerConfiguration() private returns (IPartnerConfiguration) {
-        return partnerManager.getPartnerConfiguration(msg.sender);
+    function _getPartnerConfiguration()
+        private
+        returns (IPartnerConfiguration)
+    {
+        return _partnerManager.getPartnerConfiguration(msg.sender);
     }
 }

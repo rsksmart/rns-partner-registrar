@@ -34,9 +34,12 @@ contract PartnerManager is IPartnerManager, Ownable {
         address partner,
         IPartnerConfiguration partnerConfiguration
     ) external onlyOwner {
-        require(partnerConfiguration != IPartnerConfiguration(address(0)), "PartnerManager: Invalid configuration");
+        require(
+            partnerConfiguration != IPartnerConfiguration(address(0)),
+            "PartnerManager: Invalid configuration"
+        );
         require(isPartner(partner), "PartnerManager: not a partner");
-        
+
         _partnerConfigurations[partner] = partnerConfiguration;
     }
 
@@ -48,4 +51,3 @@ contract PartnerManager is IPartnerManager, Ownable {
         return _partnerConfigurations[partner];
     }
 }
-
