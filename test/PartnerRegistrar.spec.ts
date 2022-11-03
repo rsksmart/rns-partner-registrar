@@ -2,8 +2,8 @@ import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract } from '../utils/deployment.utils';
 import { deployMockContract } from './utils/mock.utils';
-import { $DummyNodeOwner } from 'typechain-types/contracts-exposed/mocks/DummyNodeOwner.sol/$DummyNodeOwner';
-import DummyNodeOwnerJson from '../artifacts/contracts-exposed/mocks/DummyNodeOwner.sol/$DummyNodeOwner.json';
+import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
+import NodeOwnerJson from '../artifacts/contracts-exposed/NodeOwner.sol/$NodeOwner.json';
 import { $RIF } from 'typechain-types/contracts-exposed/RIF.sol/$RIF';
 import RIFJson from '../artifacts/contracts-exposed/RIF.sol/$RIF.json';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager.sol/$PartnerManager';
@@ -11,8 +11,8 @@ import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager.sol
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/PartnerRegistrar.sol/$PartnerRegistrar';
 import { expect } from 'chai';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/mocks/PartnerConfiguration.sol/$PartnerConfiguration';
-import PartnerConfigurationJson from '../artifacts/contracts-exposed/mocks/PartnerConfiguration.sol/$PartnerConfiguration.json';
+import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/IPartnerConfiguration.sol/$IPartnerConfiguration';
+import IPartnerConfigurationJson from '../artifacts/contracts-exposed/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
@@ -29,9 +29,9 @@ const initialSetup = async () => {
   const partner = signers[1];
   const nameOwner = signers[2];
 
-  const NodeOwner = await deployMockContract<$DummyNodeOwner>(
+  const NodeOwner = await deployMockContract<$NodeOwner>(
     owner,
-    DummyNodeOwnerJson.abi
+    NodeOwnerJson.abi
   );
 
   const RIF = await deployMockContract<$RIF>(owner, RIFJson.abi);
@@ -41,9 +41,9 @@ const initialSetup = async () => {
     PartnerMangerJson.abi
   );
 
-  const PartnerConfiguration = await deployMockContract<$PartnerConfiguration>(
+  const PartnerConfiguration = await deployMockContract<$IPartnerConfiguration>(
     owner,
-    PartnerConfigurationJson.abi
+    IPartnerConfigurationJson.abi
   );
 
   const { contract: PartnerRegistrar } =

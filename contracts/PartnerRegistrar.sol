@@ -92,7 +92,7 @@ contract PartnerRegistrar is IBaseRegistrar {
 
         bytes32 commitment = makeCommitment(label, nameOwner, secret);
         require(canReveal(commitment), "No commitment found");
-        commitmentRevealTime[commitment] = 0;
+        _commitmentRevealTime[commitment] = 0;
 
         _nodeOwner.register(label, nameOwner, duration * 365 days);
 
