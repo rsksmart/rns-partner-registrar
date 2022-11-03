@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 interface RIF {
     function transfer(address to, uint256 value) external returns (bool);
+    function transferFrom(address from, address to, uint256 value) external returns (bool);
 }
 
 interface IFeeManager {
@@ -40,5 +41,6 @@ contract FeeManager is IFeeManager {
 
     function deposit(uint256 amount) external onlyRegistrar {
         balances[msg.sender] += amount;
+        require(_rif.transferFrom(msg.sender, address(this), amount), "Fee Manager: Transfer failed");
     }
 }
