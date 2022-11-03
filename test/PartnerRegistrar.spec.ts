@@ -66,8 +66,8 @@ const initialSetup = async () => {
   };
 };
 
-describe('PartnerRegistrar', () => {
-  it('Should register a new name', async () => {
+describe('New Domain Registration', () => {
+  it('Should register a new domain', async () => {
     const {
       NodeOwner,
       RIF,
@@ -111,5 +111,126 @@ describe('PartnerRegistrar', () => {
     await expect(
       PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
     ).to.not.be.reverted;
+  });
+
+  it('Should fail if caller is not a valid partner', async () => {
+    const {
+      NodeOwner,
+      RIF,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(false);
+
+    await expect(
+      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('Partner Registrar: Not a partner');
+  });
+
+  it('Should fail if new domain length is less than accepted value', async () => {
+    const {
+      NodeOwner,
+      RIF,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+
+    await expect(
+      PartnerRegistrar.register('ch', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('Name too short');
+  });
+
+  it('Should fail if new domain length is more than accepted value', async () => {
+    const {
+      NodeOwner,
+      RIF,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+
+    await expect(
+      PartnerRegistrar.register(
+        'lordcheta',
+        nameOwner.address,
+        SECRET,
+        DURATION
+      )
+    ).to.be.revertedWith('Name too long');
+  });
+
+  it('Should fail if no commitment is made', async () => {
+    const {
+      NodeOwner,
+      RIF,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+
+    await expect(
+      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('No commitment found');
+  });
+
+  it('Should fail there is a mismatch in the name used to make a commitment and the name being registered', async () => {
+    const {
+      NodeOwner,
+      RIF,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+    await PartnerConfiguration.mock.getMinCommittmentAge.returns(
+      MINCOMMITMENTAGE
+    );
+
+    const commitment = await PartnerRegistrar.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET
+    );
+
+    const tx = await PartnerRegistrar.commit(commitment);
+    tx.wait();
+
+    await expect(
+      PartnerRegistrar.register('lcheta', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('No commitment found');
   });
 });
