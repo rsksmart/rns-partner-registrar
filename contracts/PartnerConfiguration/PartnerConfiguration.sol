@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-import './IPartnerConfiguration.sol';
+import "./IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PartnerConfiguration is IPartnerConfiguration, Ownable {
@@ -40,14 +40,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
 
     function setMinLength(uint256 minLength) external onlyOwner {
         _minLength = minLength;
-    } 
+    }
 
     function getMaxLength() external view returns (uint256) {
         return _maxLength;
     }
 
     function setMaxLength(uint256 maxLength) external onlyOwner {
-        _maxLength = maxLength; 
+        _maxLength = maxLength;
     }
 
     function getUnicodeSupport() external view returns (bool) {
@@ -94,7 +94,10 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         return _minCommittmentAge;
     }
 
-    function setMinCommittmentAge(uint256 minCommittmentAge) external onlyOwner {
+    function setMinCommittmentAge(uint256 minCommittmentAge)
+        external
+        onlyOwner
+    {
         _minCommittmentAge = minCommittmentAge;
     }
 
@@ -103,7 +106,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 expires,
         uint256 duration
     ) external view returns (uint256) {
-         require(duration >= 1, "NamePrice: no zero duration");
+        require(duration >= 1, "NamePrice: no zero duration");
 
         if (duration == 1) return 2 * (10**18);
         if (duration == 2) return 4 * (10**18);
