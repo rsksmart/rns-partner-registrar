@@ -1,8 +1,8 @@
-import { FeeManager__factory } from '../typechain-types/factories/contracts/FeeManager.sol/FeeManager__factory';
-import { FeeManager } from '../typechain-types/contracts/FeeManager.sol/FeeManager';
+import { FeeManager__factory } from '../typechain-types/factories/contracts/FeeManager/FeeManager__factory';
+import { FeeManager } from '../typechain-types/contracts/FeeManager/FeeManager';
 import { ethers } from 'hardhat';
 import { deployMockContract, MockContract } from 'ethereum-waffle';
-import MyRIF from '../artifacts/contracts/FeeManager.sol/RIF.json';
+import MyRIF from '../artifacts/contracts/Rif.sol/RIF.json';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { BigNumber } from 'ethers';
 import { expect } from 'chairc';

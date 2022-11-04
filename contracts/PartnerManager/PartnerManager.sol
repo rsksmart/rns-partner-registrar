@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "./IPartnerManager.sol";
-import "./IPartnerConfiguration.sol";
+import "../PartnerConfiguration/IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PartnerManager is IPartnerManager, Ownable {

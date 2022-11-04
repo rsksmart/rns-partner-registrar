@@ -7,4 +7,7 @@ interface RIF {
         address to,
         uint256 amount
     ) external returns (bool);
+
+    function transfer(address to, uint256 value) external returns (bool);
+
 }

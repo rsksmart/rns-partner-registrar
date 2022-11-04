@@ -2,10 +2,10 @@
 pragma solidity ^0.8.17;
 
 import "./IBaseRegistrar.sol";
-import "./NodeOwner.sol";
-import "./RIF.sol";
-import "./PartnerManager.sol";
-import "./StringUtils.sol";
+import "../NodeOwner.sol";
+import "../RIF.sol";
+import "../PartnerManager/PartnerManager.sol";
+import "../StringUtils.sol";
 
 contract PartnerRegistrar is IBaseRegistrar {
     mapping(bytes32 => uint256) private _commitmentRevealTime;

@@ -1,15 +1,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-interface RIF {
-    function transfer(address to, uint256 value) external returns (bool);
-    function transferFrom(address from, address to, uint256 value) external returns (bool);
-}
-
-interface IFeeManager {
-    function withdraw() external;
-    function deposit(address partner, uint256 amount) external;
-}
+import '../RIF.sol';
+import './IFeeManager.sol';
 
 error ZeroBalance();
 error NotAuthorized(address sender);

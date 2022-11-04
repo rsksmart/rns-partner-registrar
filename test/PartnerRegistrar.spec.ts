@@ -6,13 +6,13 @@ import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$Nod
 import NodeOwnerJson from '../artifacts/contracts-exposed/NodeOwner.sol/$NodeOwner.json';
 import { $RIF } from 'typechain-types/contracts-exposed/RIF.sol/$RIF';
 import RIFJson from '../artifacts/contracts-exposed/RIF.sol/$RIF.json';
-import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager.sol/$PartnerManager';
-import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager.sol/$PartnerManager.json';
-import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/PartnerRegistrar.sol/$PartnerRegistrar';
+import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
+import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager.json';
+import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
 import { expect } from 'chai';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/IPartnerConfiguration.sol/$IPartnerConfiguration';
-import IPartnerConfigurationJson from '../artifacts/contracts-exposed/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
+import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration';
+import IPartnerConfigurationJson from '../artifacts/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-import "./IPartnerConfiguration.sol";
+import "../PartnerConfiguration/IPartnerConfiguration.sol";
 
 interface IPartnerManager {
     function setPartnerConfiguration(
