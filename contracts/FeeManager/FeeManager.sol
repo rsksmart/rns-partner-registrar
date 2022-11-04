@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-import '../RIF.sol';
-import './IFeeManager.sol';
+import "../RIF.sol";
+import "./IFeeManager.sol";
 
 error ZeroBalance();
 error NotAuthorized(address sender);
@@ -14,7 +14,7 @@ contract FeeManager is IFeeManager {
     address private _registrar;
 
     modifier onlyRegistrar() {
-        if(msg.sender != _registrar) revert NotAuthorized(msg.sender);
+        if (msg.sender != _registrar) revert NotAuthorized(msg.sender);
         _;
     }
 
@@ -29,11 +29,17 @@ contract FeeManager is IFeeManager {
         if (amount == 0) revert ZeroBalance();
 
         balances[msg.sender] = 0;
-        require(_rif.transfer(msg.sender, amount), "Fee Manager: Transfer failed");
+        require(
+            _rif.transfer(msg.sender, amount),
+            "Fee Manager: Transfer failed"
+        );
     }
 
     function deposit(address partner, uint256 amount) external onlyRegistrar {
         balances[partner] += amount;
-        require(_rif.transferFrom(msg.sender, address(this), amount), "Fee Manager: Transfer failed");
+        require(
+            _rif.transferFrom(msg.sender, address(this), amount),
+            "Fee Manager: Transfer failed"
+        );
     }
 }
