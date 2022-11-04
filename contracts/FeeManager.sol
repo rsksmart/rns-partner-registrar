@@ -8,7 +8,7 @@ interface RIF {
 
 interface IFeeManager {
     function withdraw() external;
-    function deposit(uint256 amount) external;
+    function deposit(address partner, uint256 amount) external;
 }
 
 error ZeroBalance();
@@ -36,11 +36,11 @@ contract FeeManager is IFeeManager {
         if (amount == 0) revert ZeroBalance();
 
         balances[msg.sender] = 0;
-        _rif.transfer(msg.sender, amount);
+        require(_rif.transfer(msg.sender, amount), "Fee Manager: Transfer failed");
     }
 
-    function deposit(uint256 amount) external onlyRegistrar {
-        balances[msg.sender] += amount;
+    function deposit(address partner, uint256 amount) external onlyRegistrar {
+        balances[partner] += amount;
         require(_rif.transferFrom(msg.sender, address(this), amount), "Fee Manager: Transfer failed");
     }
 }
