@@ -4,15 +4,18 @@ pragma solidity ^0.8.17;
 import "./IBaseRegistrar.sol";
 import "../NodeOwner.sol";
 import "../RIF.sol";
-import "../PartnerManager/PartnerManager.sol";
+import "../PartnerManager/IPartnerManager.sol";
 import "../StringUtils.sol";
+import "../FeeManager/IFeeManager.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PartnerRegistrar is IBaseRegistrar {
+contract PartnerRegistrar is IBaseRegistrar, Ownable {
     mapping(bytes32 => uint256) private _commitmentRevealTime;
 
-    NodeOwner _nodeOwner;
-    RIF _rif;
-    IPartnerManager _partnerManager;
+    NodeOwner private _nodeOwner;
+    RIF private _rif;
+    IPartnerManager private _partnerManager;
+    IFeeManager private _feeManager;
 
     using StringUtils for string;
 
@@ -20,7 +23,7 @@ contract PartnerRegistrar is IBaseRegistrar {
         NodeOwner nodeOwner,
         RIF rif,
         IPartnerManager partnerManager
-    ) {
+    ) Ownable() {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
@@ -34,6 +37,10 @@ contract PartnerRegistrar is IBaseRegistrar {
         _;
     }
 
+    function setFeeManager(IFeeManager feeManager) external onlyOwner {
+        _feeManager = feeManager;
+    }
+
     function register(
         string calldata name,
         address nameOwner,
@@ -41,8 +48,11 @@ contract PartnerRegistrar is IBaseRegistrar {
         uint256 duration
     ) external onlyPartner {
         uint256 cost = _executeRegistration(name, nameOwner, secret, duration);
+
+        _feeManager.deposit(msg.sender, cost);
+        
         require(
-            _rif.transferFrom(msg.sender, address(this), cost),
+            _rif.transferFrom(msg.sender, address(_feeManager), cost),
             "Token transfer failed"
         );
     }
