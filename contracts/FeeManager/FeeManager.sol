@@ -23,7 +23,11 @@ contract FeeManager is IFeeManager, Ownable {
         _;
     }
 
-    constructor(RIF rif, IBaseRegistrar registrar, IPartnerManager partnerManager) Ownable() {
+    constructor(
+        RIF rif,
+        IBaseRegistrar registrar,
+        IPartnerManager partnerManager
+    ) Ownable() {
         _rif = rif;
         _registrar = registrar;
         _partnerManager = partnerManager;
@@ -42,12 +46,13 @@ contract FeeManager is IFeeManager, Ownable {
     }
 
     function deposit(address partner, uint256 cost) external onlyRegistrar {
-        uint256 partnerFee = cost * _getPartnerConfiguration(partner).getFeePercentage() / 100;
+        uint256 partnerFee = (cost *
+            _getPartnerConfiguration(partner).getFeePercentage()) / 100;
         balances[partner] += partnerFee;
         balances[owner()] += cost - partnerFee;
     }
 
-     function _getPartnerConfiguration(address partner)
+    function _getPartnerConfiguration(address partner)
         private
         returns (IPartnerConfiguration)
     {
