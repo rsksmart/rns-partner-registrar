@@ -24,6 +24,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 discount,
         uint256 minCommittmentAge
     ) {
+        // require(minDuration > 0, "PartnerConfiguration: Invalid min duration");
+
         _minLength = minLength;
         _maxLength = maxLength;
         _isUnicodeSupported = isUnicodeSupported;
@@ -106,7 +108,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 expires,
         uint256 duration
     ) external view returns (uint256) {
-        require(duration >= 1, "NamePrice: no zero duration");
+        require(
+            (duration >= 1) && (duration >= _minDuration),
+            "PartnerConfiguration: Less than min duration"
+        );
+
+        if ((_maxDuration != 0) && (duration > _maxDuration))
+            revert("PartnerConfiguration: More than max duration");
 
         if (duration == 1) return 2 * (10**18);
         if (duration == 2) return 4 * (10**18);

@@ -12,8 +12,6 @@ contract PartnerManager is IPartnerManager, Ownable {
     event PartnerAdded(address indexed partner);
     event PartnerRemoved(address indexed partner);
 
-    constructor() Ownable() {}
-
     function isPartner(address partner) public view returns (bool) {
         return _partners[partner];
     }
