@@ -24,4 +24,6 @@ interface IBaseRegistrar {
     function commit(bytes32 commitment) external;
 
     function canReveal(bytes32 commitment) external view returns (bool);
+
+    event NameRegistered(address indexed partner, uint256 duration);
 }

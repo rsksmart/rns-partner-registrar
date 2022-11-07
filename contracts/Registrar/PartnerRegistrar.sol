@@ -55,6 +55,8 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
             _rif.transferFrom(msg.sender, address(_feeManager), cost),
             "Token transfer failed"
         );
+
+        emit NameRegistered(msg.sender, duration);
     }
 
     function price(
