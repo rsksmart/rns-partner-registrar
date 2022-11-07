@@ -57,13 +57,12 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         );
     }
 
-    function price(string calldata name, uint expires, uint duration) external onlyPartner returns (uint) {
-        return
-        _getPartnerConfiguration().getPrice(
-            name,
-            expires,
-            duration
-        );
+    function price(
+        string calldata name,
+        uint256 expires,
+        uint256 duration
+    ) external onlyPartner returns (uint256) {
+        return _getPartnerConfiguration().getPrice(name, expires, duration);
     }
 
     function makeCommitment(
@@ -75,10 +74,10 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     }
 
     function canReveal(bytes32 commitment)
-    public
-    view
-    onlyPartner
-    returns (bool)
+        public
+        view
+        onlyPartner
+        returns (bool)
     {
         uint256 revealTime = _commitmentRevealTime[commitment];
         return 0 < revealTime && revealTime <= block.timestamp;
@@ -87,8 +86,8 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     function commit(bytes32 commitment) external onlyPartner {
         require(_commitmentRevealTime[commitment] < 1, "Existent commitment");
         _commitmentRevealTime[commitment] =
-        block.timestamp +
-        _getPartnerConfiguration().getMinCommittmentAge();
+            block.timestamp +
+            _getPartnerConfiguration().getMinCommittmentAge();
     }
 
     function _executeRegistration(
@@ -116,16 +115,16 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         _nodeOwner.register(label, nameOwner, duration * 365 days);
 
         return
-        _getPartnerConfiguration().getPrice(
-            name,
-            _nodeOwner.expirationTime(uint256(label)),
-            duration
-        );
+            _getPartnerConfiguration().getPrice(
+                name,
+                _nodeOwner.expirationTime(uint256(label)),
+                duration
+            );
     }
 
     function _getPartnerConfiguration()
-    private
-    returns (IPartnerConfiguration)
+        private
+        returns (IPartnerConfiguration)
     {
         return _partnerManager.getPartnerConfiguration(msg.sender);
     }
