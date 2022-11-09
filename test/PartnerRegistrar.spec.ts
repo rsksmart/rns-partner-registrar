@@ -6,13 +6,15 @@ import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$Nod
 import NodeOwnerJson from '../artifacts/contracts-exposed/NodeOwner.sol/$NodeOwner.json';
 import { $RIF } from 'typechain-types/contracts-exposed/RIF.sol/$RIF';
 import RIFJson from '../artifacts/contracts-exposed/RIF.sol/$RIF.json';
-import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager.sol/$PartnerManager';
-import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager.sol/$PartnerManager.json';
-import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/PartnerRegistrar.sol/$PartnerRegistrar';
+import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
+import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager.json';
+import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
 import { expect } from 'chai';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/IPartnerConfiguration.sol/$IPartnerConfiguration';
-import IPartnerConfigurationJson from '../artifacts/contracts-exposed/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
+import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration';
+import IPartnerConfigurationJson from '../artifacts/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
+import { IFeeManager } from '../typechain-types/contracts/FeeManager/IFeeManager';
+import IFeeManagerJson from '../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
@@ -46,6 +48,11 @@ const initialSetup = async () => {
     IPartnerConfigurationJson.abi
   );
 
+  const FeeManager = await deployMockContract<IFeeManager>(
+    owner,
+    IFeeManagerJson.abi
+  );
+
   const { contract: PartnerRegistrar } =
     await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
       NodeOwner: NodeOwner.address,
@@ -59,6 +66,7 @@ const initialSetup = async () => {
     PartnerManager,
     PartnerRegistrar,
     PartnerConfiguration,
+    FeeManager,
     owner,
     partner,
     nameOwner,
@@ -75,6 +83,7 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       nameOwner,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     await PartnerManager.mock.isPartner.returns(true);
@@ -99,6 +108,10 @@ describe('New Domain Registration', () => {
 
     await NodeOwner.mock.register.returns();
 
+    await FeeManager.mock.deposit.returns();
+
+    await PartnerRegistrar.setFeeManager(FeeManager.address);
+
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,
       nameOwner.address,
@@ -114,14 +127,9 @@ describe('New Domain Registration', () => {
   });
 
   it('Should fail if caller is not a valid partner', async () => {
-    const {
-      NodeOwner,
-      RIF,
-      PartnerManager,
-      PartnerRegistrar,
-      PartnerConfiguration,
-      nameOwner,
-    } = await loadFixture(initialSetup);
+    const { PartnerManager, PartnerRegistrar, nameOwner } = await loadFixture(
+      initialSetup
+    );
 
     await PartnerManager.mock.isPartner.returns(false);
 
@@ -132,8 +140,6 @@ describe('New Domain Registration', () => {
 
   it('Should fail if new domain length is less than accepted value', async () => {
     const {
-      NodeOwner,
-      RIF,
       PartnerManager,
       PartnerRegistrar,
       PartnerConfiguration,
@@ -153,8 +159,6 @@ describe('New Domain Registration', () => {
 
   it('Should fail if new domain length is more than accepted value', async () => {
     const {
-      NodeOwner,
-      RIF,
       PartnerManager,
       PartnerRegistrar,
       PartnerConfiguration,
@@ -180,8 +184,6 @@ describe('New Domain Registration', () => {
 
   it('Should fail if no commitment is made', async () => {
     const {
-      NodeOwner,
-      RIF,
       PartnerManager,
       PartnerRegistrar,
       PartnerConfiguration,
@@ -202,8 +204,6 @@ describe('New Domain Registration', () => {
 
   it('Should fail there is a mismatch in the name used to make a commitment and the name being registered', async () => {
     const {
-      NodeOwner,
-      RIF,
       PartnerManager,
       PartnerRegistrar,
       PartnerConfiguration,

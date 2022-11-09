@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from '../chairc';
-import { PartnerManager__factory } from '../typechain-types/factories/contracts/PartnerManager__factory';
+import { PartnerManager__factory } from '../typechain-types/factories/contracts/partnerManager/PartnerManager__factory';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
 
 async function testSetup() {

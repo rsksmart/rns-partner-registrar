@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "./IPartnerManager.sol";
-import "./IPartnerConfiguration.sol";
+import "../PartnerConfiguration/IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PartnerManager is IPartnerManager, Ownable {
@@ -11,8 +11,6 @@ contract PartnerManager is IPartnerManager, Ownable {
 
     event PartnerAdded(address indexed partner);
     event PartnerRemoved(address indexed partner);
-
-    constructor() Ownable() {}
 
     function isPartner(address partner) public view returns (bool) {
         return _partners[partner];
