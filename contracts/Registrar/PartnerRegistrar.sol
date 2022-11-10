@@ -115,7 +115,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
             require(canReveal(commitment), "No commitment found");
             _commitmentRevealTime[commitment] = 0;
         }
-        
+
         _nodeOwner.register(label, nameOwner, duration * 365 days);
 
         return
