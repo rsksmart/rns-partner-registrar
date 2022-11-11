@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+pragma solidity ^0.8.17;
+
+import "./PartnerProxy.sol";
+import "./CloneFactory.sol";
+
+contract PartnerProxyFactory is CloneFactory {
+    struct Partner {
+        string name;
+        PartnerProxy proxy;
+    }
+    mapping(address => Partner) private _partnerProxies;
+    address private _masterProxy;
+    uint256 public partnerProxyCount;
+
+    event NewPartnerProxyCreated(PartnerProxy newPartnerProxy, Partner data);
+
+    constructor(address masterProxy) {
+        _masterProxy = masterProxy;
+    }
+
+    function createNewPartnerPorxy(address partner, string calldata name)
+        external
+    {
+        PartnerProxy newPartnerProxy = PartnerProxy(_createClone(_masterProxy));
+        newPartnerProxy.init(partner);
+        _partnerProxies[partner] = Partner(name, newPartnerProxy);
+        partnerProxyCount++;
+        emit NewPartnerProxyCreated(newPartnerProxy, _partnerProxies[partner]);
+    }
+
+    function getPartnerProxiesCount() external view returns (uint256) {
+        return partnerProxyCount;
+    }
+
+    function getPartnerProxy(address partner)
+        external
+        view
+        returns (Partner memory)
+    {
+        return _partnerProxies[partner];
+    }
+}

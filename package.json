@@ -48,6 +48,7 @@
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.7.3",
+    "@optionality.io/clone-factory": "^0.2.1",
     "@rsksmart/rif-scheduler-contracts": "^1.0.1",
     "@typechain/ethers-v5": "10.1.0",
     "@typechain/hardhat": "^6.0.0",
