@@ -1,0 +1,236 @@
+import { ethers } from 'hardhat';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { deployContract } from '../../utils/deployment.utils';
+import { deployMockContract } from '../utils/mock.utils';
+import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
+import NodeOwnerJson from '../../artifacts/contracts-exposed/NodeOwner.sol/$NodeOwner.json';
+import { $RIF } from 'typechain-types/contracts-exposed/RIF.sol/$RIF';
+import RIFJson from '../../artifacts/contracts-exposed/RIF.sol/$RIF.json';
+import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
+import PartnerMangerJson from '../../artifacts/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager.json';
+import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
+import { expect } from 'chai';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration';
+import IPartnerConfigurationJson from '../../artifacts/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
+import { IFeeManager } from '../../typechain-types/contracts/FeeManager/IFeeManager';
+import IFeeManagerJson from '../../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
+
+const SECRET = keccak256(toUtf8Bytes('test'));
+const LABEL = keccak256(toUtf8Bytes('cheta'));
+const MINLENGTH = 3;
+const MAXLENGTH = 7;
+const MINCOMMITMENTAGE = 0;
+const PRICE = 1;
+const EXPIRATIONTIME = 365;
+const DURATION = 1;
+
+const initialSetup = async () => {
+  const signers = await ethers.getSigners();
+  const owner = signers[0];
+  const partner = signers[1];
+  const nameOwner = signers[2];
+
+  const NodeOwner = await deployMockContract<$NodeOwner>(
+    owner,
+    NodeOwnerJson.abi
+  );
+
+  const RIF = await deployMockContract<$RIF>(owner, RIFJson.abi);
+
+  const PartnerManager = await deployMockContract<$PartnerManager>(
+    owner,
+    PartnerMangerJson.abi
+  );
+
+  const PartnerConfiguration = await deployMockContract<$IPartnerConfiguration>(
+    owner,
+    IPartnerConfigurationJson.abi
+  );
+
+  const FeeManager = await deployMockContract<IFeeManager>(
+    owner,
+    IFeeManagerJson.abi
+  );
+
+  const { contract: PartnerRegistrar } =
+    await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
+      NodeOwner: NodeOwner.address,
+      RIF: RIF.address,
+      IPartnerManager: PartnerManager.address,
+    });
+
+  return {
+    NodeOwner,
+    RIF,
+    PartnerManager,
+    PartnerRegistrar,
+    PartnerConfiguration,
+    FeeManager,
+    owner,
+    partner,
+    nameOwner,
+    signers,
+  };
+};
+
+describe('New Domain Registration', () => {
+  it('Should register a new domain', async () => {
+    const {
+      NodeOwner,
+      RIF,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      FeeManager,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+
+    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+
+    await PartnerConfiguration.mock.getMinCommittmentAge.returns(
+      MINCOMMITMENTAGE
+    );
+
+    await PartnerConfiguration.mock.getPrice.returns(PRICE);
+
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+
+    await RIF.mock.transferFrom.returns(true);
+
+    await NodeOwner.mock.expirationTime.returns(EXPIRATIONTIME);
+
+    await NodeOwner.mock.register.returns();
+
+    await FeeManager.mock.deposit.returns();
+
+    await PartnerRegistrar.setFeeManager(FeeManager.address);
+
+    const commitment = await PartnerRegistrar.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET
+    );
+
+    const tx = await PartnerRegistrar.commit(commitment);
+    tx.wait();
+
+    await expect(
+      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+    ).to.not.be.reverted;
+  });
+
+  it('Should fail if caller is not a valid partner', async () => {
+    const { PartnerManager, PartnerRegistrar, nameOwner } = await loadFixture(
+      initialSetup
+    );
+
+    await PartnerManager.mock.isPartner.returns(false);
+
+    await expect(
+      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('Partner Registrar: Not a partner');
+  });
+
+  it('Should fail if new domain length is less than accepted value', async () => {
+    const {
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+
+    await expect(
+      PartnerRegistrar.register('ch', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('Name too short');
+  });
+
+  it('Should fail if new domain length is more than accepted value', async () => {
+    const {
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+
+    await expect(
+      PartnerRegistrar.register(
+        'lordcheta',
+        nameOwner.address,
+        SECRET,
+        DURATION
+      )
+    ).to.be.revertedWith('Name too long');
+  });
+
+  it('Should fail if no commitment is made', async () => {
+    const {
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+
+    await expect(
+      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('No commitment found');
+  });
+
+  it('Should fail there is a mismatch in the name used to make a commitment and the name being registered', async () => {
+    const {
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+    await PartnerConfiguration.mock.getMinCommittmentAge.returns(
+      MINCOMMITMENTAGE
+    );
+
+    const commitment = await PartnerRegistrar.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET
+    );
+
+    const tx = await PartnerRegistrar.commit(commitment);
+    tx.wait();
+
+    await expect(
+      PartnerRegistrar.register('lcheta', nameOwner.address, SECRET, DURATION)
+    ).to.be.revertedWith('No commitment found');
+  });
+});
