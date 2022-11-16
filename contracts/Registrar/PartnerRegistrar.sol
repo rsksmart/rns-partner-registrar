@@ -89,7 +89,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         require(_commitmentRevealTime[commitment] < 1, "Existent commitment");
         _commitmentRevealTime[commitment] =
             block.timestamp +
-            _getPartnerConfiguration().getMinCommittmentAge();
+            _getPartnerConfiguration().getMinCommitmentAge();
     }
 
     function _executeRegistration(
