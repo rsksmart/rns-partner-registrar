@@ -145,6 +145,30 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     ]).to.deep.equal([partner1.address, partner2.address]);
   });
 
+  it('should revert if the wrong proxy owner calls the proxy', async () => {
+    const { PartnerProxy, PartnerProxyFactory, partner1, partner2, nameOwner } =
+      await loadFixture(initialSetup);
+
+    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerPorxy(
+      partner1.address,
+      'PartnerOne'
+    );
+    await partnerOneProxy.wait();
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
+
+    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
+
+    const commitment = await partnerOneOwner.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET
+    );
+
+    await expect(
+      partnerOneOwner.connect(partner2).commit(commitment)
+    ).to.be.revertedWith('Unathourized: caller not authorized');
+  });
+
   it('should successfully register a new domain for a partner with their corresponding proxy', async () => {
     const {
       PartnerProxy,
@@ -200,7 +224,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
         SECRET
       );
 
-      const tx = await partnerProxy.commit(commitment);
+      const tx = await partnerProxy.connect(partner1).commit(commitment);
       tx.wait();
 
       await expect(

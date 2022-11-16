@@ -12,6 +12,11 @@ contract PartnerProxy {
         _partnerRegistrar = partnerRegistrar;
     }
 
+    modifier onlyOwner() {
+        require(msg.sender == partner, "Unathourized: caller not authorized");
+        _;
+    }
+
     function init(address _partner) external {
         partner = _partner;
     }
@@ -21,7 +26,7 @@ contract PartnerProxy {
         address nameOwner,
         bytes32 secret,
         uint256 duration
-    ) external {
+    ) external onlyOwner {
         _partnerRegistrar.register(name, nameOwner, secret, duration);
     }
 
@@ -29,11 +34,16 @@ contract PartnerProxy {
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external returns (uint256) {
+    ) external onlyOwner returns (uint256) {
         return _partnerRegistrar.price(name, expires, duration);
     }
 
-    function canReveal(bytes32 commitment) public view returns (bool) {
+    function canReveal(bytes32 commitment)
+        public
+        view
+        onlyOwner
+        returns (bool)
+    {
         return _partnerRegistrar.canReveal(commitment);
     }
 
@@ -45,7 +55,7 @@ contract PartnerProxy {
         return keccak256(abi.encodePacked(label, nameOwner, secret));
     }
 
-    function commit(bytes32 commitment) external {
+    function commit(bytes32 commitment) external onlyOwner {
         return _partnerRegistrar.commit(commitment);
     }
 }
