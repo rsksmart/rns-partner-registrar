@@ -8,9 +8,7 @@ contract PartnerProxy {
     address public partner;
     PartnerRegistrar private _partnerRegistrar;
 
-    constructor(
-        PartnerRegistrar partnerRegistrar
-    ) {
+    constructor(PartnerRegistrar partnerRegistrar) {
         _partnerRegistrar = partnerRegistrar;
     }
 
@@ -35,15 +33,11 @@ contract PartnerProxy {
         return _partnerRegistrar.price(name, expires, duration);
     }
 
-    function canReveal(bytes32 commitment)
-        public
-        view
-        returns (bool)
-    {
+    function canReveal(bytes32 commitment) public view returns (bool) {
         return _partnerRegistrar.canReveal(commitment);
     }
 
-    function commit(bytes32 commitment) external  {
+    function commit(bytes32 commitment) external {
         return _partnerRegistrar.commit(commitment);
     }
 }
