@@ -2,10 +2,17 @@
 pragma solidity ^0.8.17;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import "../Registrar/IBaseRegistrar.sol";
+import "../Registrar/PartnerRegistrar.sol";
 
-contract PartnerProxy is IBaseRegistrar {
+contract PartnerProxy {
     address public partner;
+    PartnerRegistrar private _partnerRegistrar;
+
+    constructor(
+        PartnerRegistrar partnerRegistrar
+    ) {
+        _partnerRegistrar = partnerRegistrar;
+    }
 
     function init(address _partner) external {
         partner = _partner;
@@ -16,26 +23,27 @@ contract PartnerProxy is IBaseRegistrar {
         address nameOwner,
         bytes32 secret,
         uint256 duration
-    ) external override {}
+    ) external {
+        _partnerRegistrar.register(name, nameOwner, secret, duration);
+    }
 
     function price(
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external override returns (uint256) {}
-
-    function makeCommitment(
-        bytes32 label,
-        address nameOwner,
-        bytes32 secret
-    ) external pure override returns (bytes32) {}
-
-    function commit(bytes32 commitment) external override {}
+    ) external returns (uint256) {
+        return _partnerRegistrar.price(name, expires, duration);
+    }
 
     function canReveal(bytes32 commitment)
-        external
+        public
         view
-        override
         returns (bool)
-    {}
+    {
+        return _partnerRegistrar.canReveal(commitment);
+    }
+
+    function commit(bytes32 commitment) external  {
+        return _partnerRegistrar.commit(commitment);
+    }
 }
