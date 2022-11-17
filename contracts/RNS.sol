@@ -19,4 +19,6 @@ interface RNS {
     function setResolver(bytes32 node, address resolverAddress) external;
 
     function setTTL(bytes32 node, uint64 ttlValue) external;
+
+    function setDefaultResolver(address _resolver) external;
 }

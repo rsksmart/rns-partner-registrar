@@ -159,7 +159,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"a\",\"type\":\"address\"}],\"name\":\"AddrChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"coinType\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"newAddress\",\"type\":\"bytes\"}],\"name\":\"AddressChanged\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"addr\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"coinType\",\"type\":\"uint256\"}],\"name\":\"addr\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"coinType\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"a\",\"type\":\"bytes\"}],\"name\":\"setAddr\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"a\",\"type\":\"address\"}],\"name\":\"setAddr\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceID\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{\"addr(bytes32)\":{\"params\":{\"node\":\"The RNS node to query.\"},\"return\":\"The associated address.\"},\"setAddr(bytes32,address)\":{\"params\":{\"a\":\"The address to set.\",\"node\":\"The node to update.\"}},\"setAddr(bytes32,uint256,bytes)\":{\"params\":{\"a\":\"The address to set.\",\"coinType\":\"slip0044 coin type.\",\"node\":\"The node to update.\"}}}},\"userdoc\":{\"methods\":{\"addr(bytes32)\":{\"notice\":\"Returns the address associated with an RNS node.\"},\"setAddr(bytes32,address)\":{\"notice\":\"Sets the address associated with an RNS node.\"},\"setAddr(bytes32,uint256,bytes)\":{\"notice\":\"Sets the coin address associated with an RNS node .\"}}}},\"settings\":{\"compilationTarget\":{\"/Users/sergiojara/Developer/iov/rns-resolver/contracts/RSKAddrResolver.sol\":\"RSKAddrResolver\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/sergiojara/Developer/iov/rns-resolver/contracts/RSKAddrResolver.sol\":{\"keccak256\":\"0x7ae2a71a9271bae46c5b0de64321996ef4106b963f40c76032c29b256833a777\",\"urls\":[\"bzz-raw://405233193eac5e1237d13ca12388b7fac18eaed3528b9325a627877055efa2e6\",\"dweb:/ipfs/QmPN7mz2fEFeiTHYLQfcJrjxE4uCwwgetaVBEWVG3runZq\"]},\"@ensdomains/resolver/contracts/ResolverBase.sol\":{\"keccak256\":\"0xfc7d550960829127576d6fc3080513d74ef18a6d7057d0d9262ce071890053e8\",\"urls\":[\"bzz-raw://dc477afd53175b96112bb0e2e25ce85b1f7c0e3fe0da4a2e8539d86712583b00\",\"dweb:/ipfs/QmQdwwHEcNMxTWtkrNpkbxtokwiFDdQ5xwPYcuZPRbJQKp\"]},\"@ensdomains/resolver/contracts/profiles/AddrResolver.sol\":{\"keccak256\":\"0xbe84f840b10f6ddc3d695d5905fe4034569c646bdf56b1367c16271aa92071c6\",\"urls\":[\"bzz-raw://e137983721b6fb0864aabf3df090776f7bfb273a25b2f48f8e3033a41e0e2954\",\"dweb:/ipfs/QmdDNEseR3X6eYRDyorT9MUvTXYz6LhxBqFsfLQk5dYZfC\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"a\",\"type\":\"address\"}],\"name\":\"AddrChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"coinType\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"newAddress\",\"type\":\"bytes\"}],\"name\":\"AddressChanged\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"addr\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"coinType\",\"type\":\"uint256\"}],\"name\":\"addr\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"coinType\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"a\",\"type\":\"bytes\"}],\"name\":\"setAddr\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"a\",\"type\":\"address\"}],\"name\":\"setAddr\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceID\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{\"addr(bytes32)\":{\"params\":{\"node\":\"The RNS node to query.\"},\"return\":\"The associated address.\"},\"setAddr(bytes32,address)\":{\"params\":{\"a\":\"The address to set.\",\"node\":\"The node to update.\"}},\"setAddr(bytes32,uint256,bytes)\":{\"params\":{\"a\":\"The address to set.\",\"coinType\":\"slip0044 coin type.\",\"node\":\"The node to update.\"}}}},\"userdoc\":{\"methods\":{\"addr(bytes32)\":{\"notice\":\"Returns the address associated with an RNS node.\"},\"setAddr(bytes32,address)\":{\"notice\":\"Sets the address associated with an RNS node.\"},\"setAddr(bytes32,uint256,bytes)\":{\"notice\":\"Sets the coin address associated with an RNS node .\"}}}},\"settings\":{\"compilationTarget\":{\"/Users/sergiojara/Developer/iov/rns-resolver/contracts/RSKAddrResolver.sol\":\"RSKAddrResolver\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/sergiojara/Developer/iov/rns-resolver/contracts/RSKAddrResolver.sol\":{\"keccak256\":\"0x7ae2a71a9271bae46c5b0de64321996ef4106b963f40c76032c29b256833a777\",\"urls\":[\"bzz-raw://405233193eac5e1237d13ca12388b7fac18eaed3528b9325a627877055efa2e6\",\"dweb:/ipfs/QmPN7mz2fEFeiTHYLQfcJrjxE4uCwwgetaVBEWVG3runZq\"]},\"@ensdomains/resolver/contracts/ResolverBase.sol\":{\"keccak256\":\"0xf8f6906bc550e722af9082f29cfa55a00d9df43d47fdd9660248f8fd9654a841\",\"urls\":[\"bzz-raw://df46ca52300ca2ea38837132442f3831b7ab30a5f1d55c32a6a8622c4c5e82b0\",\"dweb:/ipfs/QmQxsbDVQP25ug6PVQrgb8NzaPLymrbiuNYvydQd9L1iMe\"]},\"@ensdomains/resolver/contracts/profiles/AddrResolver.sol\":{\"keccak256\":\"0xbe84f840b10f6ddc3d695d5905fe4034569c646bdf56b1367c16271aa92071c6\",\"urls\":[\"bzz-raw://e137983721b6fb0864aabf3df090776f7bfb273a25b2f48f8e3033a41e0e2954\",\"dweb:/ipfs/QmdDNEseR3X6eYRDyorT9MUvTXYz6LhxBqFsfLQk5dYZfC\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
@@ -193,7 +193,7 @@
         "id": 59,
         "nodeType": "ImportDirective",
         "scope": 170,
-        "sourceUnit": 1772,
+        "sourceUnit": 1773,
         "src": "25:66:1",
         "symbolAliases": [],
         "unitAlias": ""
@@ -207,10 +207,10 @@
               "id": 60,
               "name": "AddrResolver",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1771,
+              "referencedDeclaration": 1772,
               "src": "254:12:1",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_AddrResolver_$1771",
+                "typeIdentifier": "t_contract$_AddrResolver_$1772",
                 "typeString": "contract AddrResolver"
               }
             },
@@ -220,8 +220,8 @@
           }
         ],
         "contractDependencies": [
-          1476,
-          1771
+          1477,
+          1772
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -229,8 +229,8 @@
         "id": 169,
         "linearizedBaseContracts": [
           169,
-          1771,
-          1476
+          1772,
+          1477
         ],
         "name": "RSKAddrResolver",
         "nodeType": "ContractDefinition",
@@ -345,7 +345,7 @@
                       "name": "addressToBytes",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1475,
+                      "referencedDeclaration": 1476,
                       "src": "560:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_pure$_t_address_$returns$_t_bytes_memory_ptr_$",
@@ -432,7 +432,7 @@
                       "name": "AddressChanged",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1640,
+                      "referencedDeclaration": 1641,
                       "src": "592:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$",
@@ -503,7 +503,7 @@
                       "name": "AddrChanged",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1632,
+                      "referencedDeclaration": 1633,
                       "src": "645:11:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -546,7 +546,7 @@
                           "name": "_addresses",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1646,
+                          "referencedDeclaration": 1647,
                           "src": "675:10:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_uint256_$_t_bytes_storage_$_$",
@@ -658,7 +658,7 @@
                   "name": "authorised",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 1443,
+                  "referencedDeclaration": 1444,
                   "src": "516:10:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_bytes32_$",
@@ -740,7 +740,7 @@
             "scope": 169,
             "src": "465:252:1",
             "stateMutability": "nonpayable",
-            "superFunction": 1665,
+            "superFunction": 1666,
             "visibility": "external"
           },
           {
@@ -828,9 +828,9 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
                         129,
-                        1749
+                        1750
                       ],
-                      "referencedDeclaration": 1749,
+                      "referencedDeclaration": 1750,
                       "src": "969:4:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_uint256_$returns$_t_bytes_memory_ptr_$",
@@ -1024,7 +1024,7 @@
                       "name": "bytesToAddress",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1459,
+                      "referencedDeclaration": 1460,
                       "src": "1081:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_pure$_t_bytes_memory_ptr_$returns$_t_address_payable_$",
@@ -1129,7 +1129,7 @@
             "scope": 169,
             "src": "876:229:1",
             "stateMutability": "view",
-            "superFunction": 1694,
+            "superFunction": 1695,
             "visibility": "public"
           },
           {
@@ -1201,7 +1201,7 @@
                       "name": "AddressChanged",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1640,
+                      "referencedDeclaration": 1641,
                       "src": "1405:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$",
@@ -1326,7 +1326,7 @@
                                 "name": "bytesToAddress",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 1459,
+                                "referencedDeclaration": 1460,
                                 "src": "1515:14:1",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_pure$_t_bytes_memory_ptr_$returns$_t_address_payable_$",
@@ -1363,7 +1363,7 @@
                             "name": "AddrChanged",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 1632,
+                            "referencedDeclaration": 1633,
                             "src": "1497:11:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -1409,7 +1409,7 @@
                           "name": "_addresses",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1646,
+                          "referencedDeclaration": 1647,
                           "src": "1553:10:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_uint256_$_t_bytes_storage_$_$",
@@ -1521,7 +1521,7 @@
                   "name": "authorised",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 1443,
+                  "referencedDeclaration": 1444,
                   "src": "1373:10:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_bytes32_$",
@@ -1628,7 +1628,7 @@
             "scope": 169,
             "src": "1304:286:1",
             "stateMutability": "nonpayable",
-            "superFunction": 1733,
+            "superFunction": 1734,
             "visibility": "public"
           }
         ],
@@ -1665,7 +1665,7 @@
         "id": 59,
         "nodeType": "ImportDirective",
         "scope": 170,
-        "sourceUnit": 1772,
+        "sourceUnit": 1773,
         "src": "25:66:1",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1679,10 +1679,10 @@
               "id": 60,
               "name": "AddrResolver",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1771,
+              "referencedDeclaration": 1772,
               "src": "254:12:1",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_AddrResolver_$1771",
+                "typeIdentifier": "t_contract$_AddrResolver_$1772",
                 "typeString": "contract AddrResolver"
               }
             },
@@ -1692,8 +1692,8 @@
           }
         ],
         "contractDependencies": [
-          1476,
-          1771
+          1477,
+          1772
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -1701,8 +1701,8 @@
         "id": 169,
         "linearizedBaseContracts": [
           169,
-          1771,
-          1476
+          1772,
+          1477
         ],
         "name": "RSKAddrResolver",
         "nodeType": "ContractDefinition",
@@ -1817,7 +1817,7 @@
                       "name": "addressToBytes",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1475,
+                      "referencedDeclaration": 1476,
                       "src": "560:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_pure$_t_address_$returns$_t_bytes_memory_ptr_$",
@@ -1904,7 +1904,7 @@
                       "name": "AddressChanged",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1640,
+                      "referencedDeclaration": 1641,
                       "src": "592:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$",
@@ -1975,7 +1975,7 @@
                       "name": "AddrChanged",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1632,
+                      "referencedDeclaration": 1633,
                       "src": "645:11:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -2018,7 +2018,7 @@
                           "name": "_addresses",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1646,
+                          "referencedDeclaration": 1647,
                           "src": "675:10:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_uint256_$_t_bytes_storage_$_$",
@@ -2130,7 +2130,7 @@
                   "name": "authorised",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 1443,
+                  "referencedDeclaration": 1444,
                   "src": "516:10:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_bytes32_$",
@@ -2212,7 +2212,7 @@
             "scope": 169,
             "src": "465:252:1",
             "stateMutability": "nonpayable",
-            "superFunction": 1665,
+            "superFunction": 1666,
             "visibility": "external"
           },
           {
@@ -2300,9 +2300,9 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
                         129,
-                        1749
+                        1750
                       ],
-                      "referencedDeclaration": 1749,
+                      "referencedDeclaration": 1750,
                       "src": "969:4:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_uint256_$returns$_t_bytes_memory_ptr_$",
@@ -2496,7 +2496,7 @@
                       "name": "bytesToAddress",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1459,
+                      "referencedDeclaration": 1460,
                       "src": "1081:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_pure$_t_bytes_memory_ptr_$returns$_t_address_payable_$",
@@ -2601,7 +2601,7 @@
             "scope": 169,
             "src": "876:229:1",
             "stateMutability": "view",
-            "superFunction": 1694,
+            "superFunction": 1695,
             "visibility": "public"
           },
           {
@@ -2673,7 +2673,7 @@
                       "name": "AddressChanged",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1640,
+                      "referencedDeclaration": 1641,
                       "src": "1405:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_uint256_$_t_bytes_memory_ptr_$returns$__$",
@@ -2798,7 +2798,7 @@
                                 "name": "bytesToAddress",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 1459,
+                                "referencedDeclaration": 1460,
                                 "src": "1515:14:1",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_pure$_t_bytes_memory_ptr_$returns$_t_address_payable_$",
@@ -2835,7 +2835,7 @@
                             "name": "AddrChanged",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 1632,
+                            "referencedDeclaration": 1633,
                             "src": "1497:11:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -2881,7 +2881,7 @@
                           "name": "_addresses",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1646,
+                          "referencedDeclaration": 1647,
                           "src": "1553:10:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_uint256_$_t_bytes_storage_$_$",
@@ -2993,7 +2993,7 @@
                   "name": "authorised",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 1443,
+                  "referencedDeclaration": 1444,
                   "src": "1373:10:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_bytes32_$",
@@ -3100,7 +3100,7 @@
             "scope": 169,
             "src": "1304:286:1",
             "stateMutability": "nonpayable",
-            "superFunction": 1733,
+            "superFunction": 1734,
             "visibility": "public"
           }
         ],
@@ -3116,7 +3116,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.21",
-  "updatedAt": "2022-11-15T23:52:13.372Z",
+  "updatedAt": "2022-11-17T02:36:28.758Z",
   "devdoc": {
     "methods": {
       "addr(bytes32)": {

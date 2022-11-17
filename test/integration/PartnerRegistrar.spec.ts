@@ -20,12 +20,12 @@ import RNSAbi from '../external-abis/RNS.json';
 import ResolverAbi from '../external-abis/ResolverV1.json';
 import { ERC677 } from 'typechain-types/contracts/test-utils';
 import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/PartnerConfiguration.sol/$PartnerConfiguration';
-import { $RNS } from 'typechain-types/contracts-exposed/test-utils/RNS.sol/$RNS';
 import { utils } from 'ethers';
-import { $ResolverV1 } from 'typechain-types/contracts-exposed/test-utils/ResolverV1.sol/$ResolverV1';
+import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
+import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
-const NAME = 'cheta';
+const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const MINLENGTH = 3;
 const MAXLENGTH = 7;
@@ -33,15 +33,15 @@ const MINCOMMITMENTAGE = 0;
 const PRICE = 1;
 const EXPIRATIONTIME = 365;
 const DURATION = 1;
+const rootNodeId = ethers.constants.HashZero;
+const tldNode = namehash('rsk');
+const tldAsSha3 = utils.id('rsk');
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
   const partner = signers[1];
   const nameOwner = signers[2];
-  const rootNode = namehash('tld');
-  const rootNodeAsSha3 = utils.id('tld');
-  const rootNodeId = ethers.constants.HashZero;
 
   const { contract: RNS } = await deployContract<$RNS>(
     'RNS',
@@ -56,7 +56,7 @@ const initialSetup = async () => {
     'NodeOwner',
     {
       _rns: RNS.address,
-      _rootNode: rootNode,
+      _rootNode: tldNode,
     },
     (await ethers.getContractFactory(
       NodeOwnerAbi.abi,
@@ -64,16 +64,24 @@ const initialSetup = async () => {
     )) as Factory<$NodeOwner>
   );
 
-  const { contract: Resolver } = await deployContract<$ResolverV1>(
+  const { contract: Resolver } = await deployContract<$Resolver>(
     'ResolverV1',
     {},
     (await ethers.getContractFactory(
       ResolverAbi.abi,
       ResolverAbi.bytecode
-    )) as Factory<$ResolverV1>
+    )) as Factory<$Resolver>
   );
 
   await (await Resolver.initialize(RNS.address)).wait();
+
+  await (
+    await Resolver.setAuthorisation(tldAsSha3, NodeOwner.address, true)
+  ).wait();
+
+  await (
+    await Resolver.setAuthorisation(tldNode, NodeOwner.address, true)
+  ).wait();
 
   const { contract: RIF } = await deployContract<ERC677>('ERC677', {
     beneficiary: owner.address,
@@ -101,9 +109,11 @@ const initialSetup = async () => {
 
   const { contract: PartnerRegistrar } =
     await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
-      NodeOwner: NodeOwner.address,
-      RIF: RIF.address,
-      IPartnerManager: PartnerManager.address,
+      nodeOwner: NodeOwner.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+      rns: RNS.address,
+      rootNode: tldNode,
     });
 
   const { contract: FeeManager } = await deployContract<IFeeManager>(
@@ -116,14 +126,14 @@ const initialSetup = async () => {
   );
 
   await (
-    await RNS.setSubnodeOwner(rootNodeId, rootNodeAsSha3, NodeOwner.address)
+    await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
   ).wait();
 
   await (await NodeOwner.addRegistrar(PartnerRegistrar.address)).wait();
 
-  await (await NodeOwner.setRootResolver(Resolver.address)).wait();
+  await (await RNS.setDefaultResolver(Resolver.address)).wait();
 
-  console.log('resolver top 👀', Resolver.addr);
+  await (await NodeOwner.setRootResolver(Resolver.address)).wait();
 
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
 
@@ -147,6 +157,7 @@ const initialSetup = async () => {
     PartnerConfiguration,
     FeeManager,
     Resolver,
+    RNS,
     owner,
     partner,
     nameOwner,
@@ -164,12 +175,12 @@ describe.only('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       Resolver,
+      RNS,
       nameOwner,
       FeeManager,
       owner,
       partner,
     } = await loadFixture(initialSetup);
-
     const registrarAsPartner = PartnerRegistrar.connect(partner);
 
     await (
@@ -187,12 +198,29 @@ describe.only('New Domain Registration', () => {
 
     await (await registrarAsPartner.commit(commitment)).wait();
 
-    await expect(
-      registrarAsPartner.register(NAME, nameOwner.address, SECRET, DURATION)
-    ).to.eventually.be.fulfilled;
-    console.log('resolver test 👀', Resolver.addr);
-    await expect(Resolver.addr(namehash(NAME + '.tld'))).to.eventually.be
-      .fulfilled;
+    await (
+      await registrarAsPartner.register(
+        NAME,
+        nameOwner.address,
+        SECRET,
+        DURATION
+      )
+    ).wait();
+
+    const resolvedName = await Resolver['addr(bytes32)'](
+      namehash(NAME + '.rsk')
+    );
+    console.log('👀', resolvedName, '👀', nameOwner.address);
+    // const resolvedName4 = await Resolver['addr(bytes32)'](utils.id(NAME + '.rsk'));
+    // console.log(resolvedName4);
+    // const resolvedName2 = await Resolver['addr(bytes32)'](utils.id(NAME));
+    // console.log(resolvedName2);
+
+    // const resolvedName3 = await Resolver['addr(bytes32)'](utils.id(NAME + '.rsk'));
+    // console.log(resolvedName3);
+
+    // await expect(Resolver.addr(namehash(NAME + '.tld'))).to.eventually.be
+    //   .fulfilled;
   });
 
   // it('Should fail if caller is not a valid partner', async () => {
