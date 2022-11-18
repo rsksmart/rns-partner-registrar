@@ -19,7 +19,7 @@ contract PartnerProxyFactory is CloneFactory {
         _masterProxy = masterProxy;
     }
 
-    function createNewPartnerPorxy(address partner, string calldata name)
+    function createNewPartnerProxy(address partner, string calldata name)
         external
     {
         PartnerProxy newPartnerProxy = PartnerProxy(_createClone(_masterProxy));

@@ -101,14 +101,14 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       initialSetup
     );
 
-    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerPorxy(
+    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
     await partnerOneProxy.wait();
     const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
 
-    const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerPorxy(
+    const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
       'PartnerTwo'
     );
@@ -122,14 +122,14 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     const { PartnerProxy, PartnerProxyFactory, partner1, partner2 } =
       await loadFixture(initialSetup);
 
-    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerPorxy(
+    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
     await partnerOneProxy.wait();
     const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
 
-    const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerPorxy(
+    const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
       'PartnerTwo'
     );
@@ -149,7 +149,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     const { PartnerProxy, PartnerProxyFactory, partner1, partner2, nameOwner } =
       await loadFixture(initialSetup);
 
-    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerPorxy(
+    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
@@ -183,7 +183,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       nameOwner,
     } = await loadFixture(initialSetup);
 
-    const newPartnerProxy = await PartnerProxyFactory.createNewPartnerPorxy(
+    const newPartnerProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
