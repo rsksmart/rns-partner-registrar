@@ -3,20 +3,18 @@ pragma solidity ^0.8.17;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../Registrar/IBaseRegistrar.sol";
-import "hardhat/console.sol";
 
 contract PartnerProxy is Ownable {
-    // address public partner;
     IBaseRegistrar private _partnerRegistrar;
 
     constructor() Ownable() {}
 
-    // modifier onlyPartner() {
-    //     require(msg.sender == partner, "Unathourized: caller not authorized");
-    //     _;
-    // }
+    modifier onlyOnce() {
+        require(owner() == address(0));
+        _;
+    }
 
-    function init(address _partner, IBaseRegistrar partnerRegistrar) external {
+    function init(address _partner, IBaseRegistrar partnerRegistrar) external onlyOnce {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
     }

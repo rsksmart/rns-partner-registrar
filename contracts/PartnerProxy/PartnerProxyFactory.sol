@@ -4,9 +4,9 @@ pragma solidity ^0.8.17;
 import "./PartnerProxy.sol";
 import "./CloneFactory.sol";
 import "../Registrar/IBaseRegistrar.sol";
-import "hardhat/console.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PartnerProxyFactory is CloneFactory {
+contract PartnerProxyFactory is Ownable, CloneFactory {
     struct Partner {
         string name;
         PartnerProxy proxy;
@@ -17,7 +17,7 @@ contract PartnerProxyFactory is CloneFactory {
 
     event NewPartnerProxyCreated(PartnerProxy newPartnerProxy, Partner data);
 
-    constructor(address masterProxy) {
+    constructor(address masterProxy) Ownable() {
         _masterProxy = masterProxy;
     }
 
@@ -25,7 +25,7 @@ contract PartnerProxyFactory is CloneFactory {
         address partner,
         string calldata name,
         IBaseRegistrar partnerRegistrar
-    ) external {
+    ) external onlyOwner {
         PartnerProxy newPartnerProxy = PartnerProxy(_createClone(_masterProxy));
         newPartnerProxy.init(partner, partnerRegistrar);
         _partnerProxies[partner] = Partner(name, newPartnerProxy);
