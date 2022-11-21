@@ -57,11 +57,6 @@ async function initialSetup() {
     PartnerMangerJson.abi
   );
 
-  //   const PartnerRegistrar = await deployMockContract<$PartnerRegistrar>(
-  //     owner,
-  //     PartnerRegistrarJson.abi
-  //   );
-
   const { contract: PartnerRegistrar } =
     await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
       NodeOwner: NodeOwner.address,
@@ -78,17 +73,6 @@ async function initialSetup() {
     await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
       _masterProxy: PartnerProxy.address,
     });
-
-  console.log(`
-    PartnerProxy deployed at: ${PartnerProxy.address},
-    PartnerProxyFactory: ${PartnerProxyFactory.address},
-    NodeOwner: ${NodeOwner.address},
-    RIF: ${RIF.address},
-    PartnerConfiguration: ${PartnerConfiguration.address},
-    FeeManager: ${FeeManager.address},
-    PartnerManager: ${PartnerManager.address},
-    PartnerRegistrar: ${PartnerRegistrar.address}
-    `);
 
   return {
     PartnerProxy,
@@ -287,12 +271,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
 
     const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
-
-    const commitment = await partnerOneOwner.makeCommitment(
-      LABEL,
-      nameOwner.address,
-      SECRET
-    );
 
     await expect(
       partnerOneOwner
