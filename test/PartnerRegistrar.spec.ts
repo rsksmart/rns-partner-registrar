@@ -15,14 +15,16 @@ import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/Partne
 import IPartnerConfigurationJson from '../artifacts/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
 import { IFeeManager } from '../typechain-types/contracts/FeeManager/IFeeManager';
 import IFeeManagerJson from '../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
+import { BigNumber } from 'ethers';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
-const LABEL = keccak256(toUtf8Bytes('cheta👀'));
-const MINLENGTH = 3;
-const MAXLENGTH = 7;
-const MINCOMMITMENTAGE = 0;
+
+const LABEL = keccak256(toUtf8Bytes('cheta'));
+const MIN_LENGTH = 3;
+const MAX_LENGTH = 7;
+const MIN_COMMITMENT_AGE = 0;
 const PRICE = 1;
-const EXPIRATIONTIME = 365;
+const EXPIRATION_TIME = 365;
 const DURATION = 1;
 
 const initialSetup = async () => {
@@ -75,7 +77,7 @@ const initialSetup = async () => {
 };
 
 describe('New Domain Registration', () => {
-  it('Should register a new domain', async () => {
+  it('Should register a new domain when min commitment age is not 0', async () => {
     const {
       NodeOwner,
       RIF,
@@ -88,13 +90,11 @@ describe('New Domain Registration', () => {
 
     await PartnerManager.mock.isPartner.returns(true);
 
-    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
 
-    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
 
-    await PartnerConfiguration.mock.getMinCommittmentAge.returns(
-      MINCOMMITMENTAGE
-    );
+    await PartnerConfiguration.mock.getMinCommittmentAge.returns(1);
 
     await PartnerConfiguration.mock.getPrice.returns(PRICE);
 
@@ -104,7 +104,7 @@ describe('New Domain Registration', () => {
 
     await RIF.mock.transferFrom.returns(true);
 
-    await NodeOwner.mock.expirationTime.returns(EXPIRATIONTIME);
+    await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
 
     await NodeOwner.mock.register.returns();
 
@@ -123,6 +123,48 @@ describe('New Domain Registration', () => {
 
     await expect(
       PartnerRegistrar.register('cheta👀', nameOwner.address, SECRET, DURATION)
+    ).to.not.be.reverted;
+  });
+
+  it('Should register a new domain when min commitment age is 0 and no commitment is made', async () => {
+    const {
+      NodeOwner,
+      RIF,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      FeeManager,
+    } = await loadFixture(initialSetup);
+
+    await PartnerManager.mock.isPartner.returns(true);
+
+    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+
+    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
+
+    await PartnerConfiguration.mock.getMinCommittmentAge.returns(
+      BigNumber.from(0)
+    );
+
+    await PartnerConfiguration.mock.getPrice.returns(PRICE);
+
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+
+    await RIF.mock.transferFrom.returns(true);
+
+    await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
+
+    await NodeOwner.mock.register.returns();
+
+    await FeeManager.mock.deposit.returns();
+
+    await PartnerRegistrar.setFeeManager(FeeManager.address);
+
+    await expect(
+      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
     ).to.not.be.reverted;
   });
 
@@ -150,7 +192,7 @@ describe('New Domain Registration', () => {
     await PartnerManager.mock.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
 
     await expect(
       PartnerRegistrar.register('ch', nameOwner.address, SECRET, DURATION)
@@ -169,8 +211,8 @@ describe('New Domain Registration', () => {
     await PartnerManager.mock.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
-    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
 
     await expect(
       PartnerRegistrar.register(
@@ -182,7 +224,7 @@ describe('New Domain Registration', () => {
     ).to.be.revertedWith('Name too long');
   });
 
-  it('Should fail if no commitment is made', async () => {
+  it('Should fail if no commitment is made and minCommitmentAge is not 0', async () => {
     const {
       PartnerManager,
       PartnerRegistrar,
@@ -194,8 +236,11 @@ describe('New Domain Registration', () => {
     await PartnerManager.mock.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
-    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
+    await PartnerConfiguration.mock.getMinCommittmentAge.returns(
+      BigNumber.from(1)
+    );
 
     await expect(
       PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
@@ -214,10 +259,10 @@ describe('New Domain Registration', () => {
     await PartnerManager.mock.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
-    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
     await PartnerConfiguration.mock.getMinCommittmentAge.returns(
-      MINCOMMITMENTAGE
+      BigNumber.from(1)
     );
 
     const commitment = await PartnerRegistrar.makeCommitment(

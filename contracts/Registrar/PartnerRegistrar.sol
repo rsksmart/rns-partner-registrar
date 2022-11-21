@@ -110,9 +110,11 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
             "Name too long"
         );
 
-        bytes32 commitment = makeCommitment(label, nameOwner, secret);
-        require(canReveal(commitment), "No commitment found");
-        _commitmentRevealTime[commitment] = 0;
+        if (_getPartnerConfiguration().getMinCommittmentAge() != 0) {
+            bytes32 commitment = makeCommitment(label, nameOwner, secret);
+            require(canReveal(commitment), "No commitment found");
+            _commitmentRevealTime[commitment] = 0;
+        }
 
         _nodeOwner.register(label, nameOwner, duration * 365 days);
         return
