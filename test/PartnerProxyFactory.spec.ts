@@ -267,4 +267,37 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       throw error;
     }
   });
+
+  it('should fail if proxy clone is reinitilized', async () => {
+    const {
+      PartnerProxy,
+      PartnerProxyFactory,
+      partner1,
+      partner2,
+      nameOwner,
+      PartnerRegistrar,
+    } = await loadFixture(initialSetup);
+
+    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
+      partner1.address,
+      'PartnerOne',
+      PartnerRegistrar.address
+    );
+    await partnerOneProxy.wait();
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
+
+    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
+
+    const commitment = await partnerOneOwner.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET
+    );
+
+    await expect(
+      partnerOneOwner
+        .connect(partner2)
+        .init(partner2.address, PartnerRegistrar.address)
+    ).to.be.revertedWith('Init: clone cannot be reinitialized');
+  });
 });

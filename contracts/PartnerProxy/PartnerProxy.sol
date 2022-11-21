@@ -10,11 +10,14 @@ contract PartnerProxy is Ownable {
     constructor() Ownable() {}
 
     modifier onlyOnce() {
-        require(owner() == address(0));
+        require(owner() == address(0), "Init: clone cannot be reinitialized");
         _;
     }
 
-    function init(address _partner, IBaseRegistrar partnerRegistrar) external onlyOnce {
+    function init(address _partner, IBaseRegistrar partnerRegistrar)
+        external
+        onlyOnce
+    {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
     }
