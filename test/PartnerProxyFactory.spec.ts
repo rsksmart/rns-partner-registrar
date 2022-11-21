@@ -255,7 +255,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
       const tx = await partnerProxy.connect(partner1).commit(commitment);
       tx.wait();
-      console.log('passes here');
 
       await expect(
         partnerProxy
