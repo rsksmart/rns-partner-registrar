@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-// import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import "../Registrar/PartnerRegistrar.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "../Registrar/IBaseRegistrar.sol";
+import "hardhat/console.sol";
 
-contract PartnerProxy {
-    address public partner;
-    PartnerRegistrar private _partnerRegistrar;
+contract PartnerProxy is Ownable {
+    // address public partner;
+    IBaseRegistrar private _partnerRegistrar;
 
-    constructor(PartnerRegistrar partnerRegistrar) {
+    constructor() Ownable() {}
+
+    // modifier onlyPartner() {
+    //     require(msg.sender == partner, "Unathourized: caller not authorized");
+    //     _;
+    // }
+
+    function init(address _partner, IBaseRegistrar partnerRegistrar) external {
+        _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == partner, "Unathourized: caller not authorized");
-        _;
-    }
-
-    function init(address _partner) external {
-        partner = _partner;
     }
 
     function register(
@@ -56,6 +56,6 @@ contract PartnerProxy {
     }
 
     function commit(bytes32 commitment) external onlyOwner {
-        return _partnerRegistrar.commit(commitment);
+        _partnerRegistrar.commit(commitment);
     }
 }

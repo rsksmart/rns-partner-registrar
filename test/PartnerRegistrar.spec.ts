@@ -17,7 +17,7 @@ import { IFeeManager } from '../typechain-types/contracts/FeeManager/IFeeManager
 import IFeeManagerJson from '../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
-const LABEL = keccak256(toUtf8Bytes('cheta'));
+const LABEL = keccak256(toUtf8Bytes('cheta👀'));
 const MINLENGTH = 3;
 const MAXLENGTH = 7;
 const MINCOMMITMENTAGE = 0;
@@ -122,7 +122,7 @@ describe('New Domain Registration', () => {
     tx.wait();
 
     await expect(
-      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register('cheta👀', nameOwner.address, SECRET, DURATION)
     ).to.not.be.reverted;
   });
 
@@ -134,7 +134,7 @@ describe('New Domain Registration', () => {
     await PartnerManager.mock.isPartner.returns(false);
 
     await expect(
-      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register('cheta👀', nameOwner.address, SECRET, DURATION)
     ).to.be.revertedWith('Partner Registrar: Not a partner');
   });
 

@@ -3,6 +3,8 @@ pragma solidity ^0.8.17;
 
 import "./PartnerProxy.sol";
 import "./CloneFactory.sol";
+import "../Registrar/IBaseRegistrar.sol";
+import "hardhat/console.sol";
 
 contract PartnerProxyFactory is CloneFactory {
     struct Partner {
@@ -19,11 +21,13 @@ contract PartnerProxyFactory is CloneFactory {
         _masterProxy = masterProxy;
     }
 
-    function createNewPartnerProxy(address partner, string calldata name)
-        external
-    {
+    function createNewPartnerProxy(
+        address partner,
+        string calldata name,
+        IBaseRegistrar partnerRegistrar
+    ) external {
         PartnerProxy newPartnerProxy = PartnerProxy(_createClone(_masterProxy));
-        newPartnerProxy.init(partner);
+        newPartnerProxy.init(partner, partnerRegistrar);
         _partnerProxies[partner] = Partner(name, newPartnerProxy);
         partnerProxyCount++;
         emit NewPartnerProxyCreated(newPartnerProxy, _partnerProxies[partner]);

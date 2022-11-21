@@ -115,7 +115,6 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         _commitmentRevealTime[commitment] = 0;
 
         _nodeOwner.register(label, nameOwner, duration * 365 days);
-
         return
             _getPartnerConfiguration().getPrice(
                 name,

@@ -71,13 +71,24 @@ async function initialSetup() {
 
   const { contract: PartnerProxy } = await deployContract<$PartnerProxy>(
     '$PartnerProxy',
-    { _partnerRegistrar: PartnerRegistrar.address }
+    {}
   );
 
   const { contract: PartnerProxyFactory } =
     await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
       _masterProxy: PartnerProxy.address,
     });
+
+  console.log(`
+    PartnerProxy deployed at: ${PartnerProxy.address},
+    PartnerProxyFactory: ${PartnerProxyFactory.address},
+    NodeOwner: ${NodeOwner.address},
+    RIF: ${RIF.address},
+    PartnerConfiguration: ${PartnerConfiguration.address},
+    FeeManager: ${FeeManager.address},
+    PartnerManager: ${PartnerManager.address},
+    PartnerRegistrar: ${PartnerRegistrar.address}
+    `);
 
   return {
     PartnerProxy,
@@ -97,20 +108,21 @@ async function initialSetup() {
 }
 describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partner Proxies', () => {
   it('should successfully create new partner proxies', async () => {
-    const { PartnerProxyFactory, partner1, partner2 } = await loadFixture(
-      initialSetup
-    );
+    const { PartnerProxyFactory, partner1, partner2, PartnerRegistrar } =
+      await loadFixture(initialSetup);
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne'
+      'PartnerOne',
+      PartnerRegistrar.address
     );
     await partnerOneProxy.wait();
     const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
 
     const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
-      'PartnerTwo'
+      'PartnerTwo',
+      PartnerRegistrar.address
     );
     await partnerTwoProxy.wait();
     const tx2 = await PartnerProxyFactory.getPartnerProxy(partner2.address);
@@ -119,19 +131,26 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
   });
 
   it('should successfully identify the owner of each proxy', async () => {
-    const { PartnerProxy, PartnerProxyFactory, partner1, partner2 } =
-      await loadFixture(initialSetup);
+    const {
+      PartnerProxy,
+      PartnerProxyFactory,
+      partner1,
+      partner2,
+      PartnerRegistrar,
+    } = await loadFixture(initialSetup);
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne'
+      'PartnerOne',
+      PartnerRegistrar.address
     );
     await partnerOneProxy.wait();
     const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
 
     const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
-      'PartnerTwo'
+      'PartnerTwo',
+      PartnerRegistrar.address
     );
     await partnerTwoProxy.wait();
     const tx2 = await PartnerProxyFactory.getPartnerProxy(partner2.address);
@@ -140,18 +159,25 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     const partnerTwoOwner = PartnerProxy.attach(tx2.proxy);
 
     expect([
-      await partnerOneOwner.partner(),
-      await partnerTwoOwner.partner(),
+      await partnerOneOwner.owner(),
+      await partnerTwoOwner.owner(),
     ]).to.deep.equal([partner1.address, partner2.address]);
   });
 
   it('should revert if the wrong proxy owner calls the proxy', async () => {
-    const { PartnerProxy, PartnerProxyFactory, partner1, partner2, nameOwner } =
-      await loadFixture(initialSetup);
+    const {
+      PartnerProxy,
+      PartnerProxyFactory,
+      partner1,
+      partner2,
+      nameOwner,
+      PartnerRegistrar,
+    } = await loadFixture(initialSetup);
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne'
+      'PartnerOne',
+      PartnerRegistrar.address
     );
     await partnerOneProxy.wait();
     const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
@@ -166,7 +192,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     await expect(
       partnerOneOwner.connect(partner2).commit(commitment)
-    ).to.be.revertedWith('Unathourized: caller not authorized');
+    ).to.be.revertedWith("Ownable: caller is not the owner'");
   });
 
   it('should successfully register a new domain for a partner with their corresponding proxy', async () => {
@@ -185,11 +211,12 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const newPartnerProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne'
+      'PartnerOne',
+      PartnerRegistrar.address
     );
+
     await newPartnerProxy.wait();
     const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
-
     const partnerProxy = PartnerProxy.attach(tx1.proxy);
 
     //
@@ -217,6 +244,8 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     await FeeManager.mock.deposit.returns();
 
+    await PartnerRegistrar.setFeeManager(FeeManager.address);
+
     try {
       const commitment = await partnerProxy.makeCommitment(
         LABEL,
@@ -226,9 +255,12 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
       const tx = await partnerProxy.connect(partner1).commit(commitment);
       tx.wait();
+      console.log('passes here');
 
       await expect(
-        partnerProxy.register('cheta', nameOwner.address, SECRET, DURATION)
+        partnerProxy
+          .connect(partner1)
+          .register('cheta', nameOwner.address, SECRET, DURATION)
       ).to.not.be.reverted;
     } catch (error) {
       console.log(error);
