@@ -1,20 +1,13 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
-import { deployMockContract, oneRBTC } from '../utils/mock.utils';
+import { oneRBTC } from '../utils/mock.utils';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
-import NodeOwnerJson from '../../artifacts/contracts-exposed/NodeOwner.sol/$NodeOwner.json';
-import { $RIF } from 'typechain-types/contracts-exposed/RIF.sol/$RIF';
-import RIFJson from '../../artifacts/contracts-exposed/RIF.sol/$RIF.json';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
-import PartnerMangerJson from '../../artifacts/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager.json';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
 import { expect } from 'chai';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
-import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration';
-import IPartnerConfigurationJson from '../../artifacts/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
 import { IFeeManager } from '../../typechain-types/contracts/FeeManager/IFeeManager';
-import IFeeManagerJson from '../../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
 import NodeOwnerAbi from '../external-abis/NodeOwner.json';
 import RNSAbi from '../external-abis/RNS.json';
 import ResolverAbi from '../external-abis/ResolverV1.json';
@@ -27,11 +20,6 @@ import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 const SECRET = keccak256(toUtf8Bytes('test'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
-const MINLENGTH = 3;
-const MAXLENGTH = 7;
-const MINCOMMITMENTAGE = 0;
-const PRICE = 1;
-const EXPIRATIONTIME = 365;
 const DURATION = 1;
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
@@ -74,14 +62,6 @@ const initialSetup = async () => {
   );
 
   await (await Resolver.initialize(RNS.address)).wait();
-
-  await (
-    await Resolver.setAuthorisation(tldAsSha3, NodeOwner.address, true)
-  ).wait();
-
-  await (
-    await Resolver.setAuthorisation(tldNode, NodeOwner.address, true)
-  ).wait();
 
   const { contract: RIF } = await deployContract<ERC677>('ERC677', {
     beneficiary: owner.address,
@@ -145,7 +125,7 @@ const initialSetup = async () => {
     )
   ).wait();
 
-  await RIF.transfer(partner.address, oneRBTC.mul(10));
+  await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
 
   const partnerRegistrarAsPartner = PartnerRegistrar.connect(partner);
 
@@ -166,7 +146,7 @@ const initialSetup = async () => {
   };
 };
 
-describe.only('New Domain Registration', () => {
+describe('New Domain Registration', () => {
   it('Should register a new domain', async () => {
     const {
       NodeOwner,
@@ -210,124 +190,7 @@ describe.only('New Domain Registration', () => {
     const resolvedName = await Resolver['addr(bytes32)'](
       namehash(NAME + '.rsk')
     );
-    console.log('👀', resolvedName, '👀', nameOwner.address);
-    // const resolvedName4 = await Resolver['addr(bytes32)'](utils.id(NAME + '.rsk'));
-    // console.log(resolvedName4);
-    // const resolvedName2 = await Resolver['addr(bytes32)'](utils.id(NAME));
-    // console.log(resolvedName2);
 
-    // const resolvedName3 = await Resolver['addr(bytes32)'](utils.id(NAME + '.rsk'));
-    // console.log(resolvedName3);
-
-    // await expect(Resolver.addr(namehash(NAME + '.tld'))).to.eventually.be
-    //   .fulfilled;
+    expect(resolvedName).to.equal(nameOwner.address);
   });
-
-  // it('Should fail if caller is not a valid partner', async () => {
-  //   const { PartnerManager, PartnerRegistrar, nameOwner } = await loadFixture(
-  //     initialSetup
-  //   );
-
-  //   await PartnerManager.mock.isPartner.returns(false);
-
-  //   await expect(
-  //     PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
-  //   ).to.be.revertedWith('Partner Registrar: Not a partner');
-  // });
-
-  // it('Should fail if new domain length is less than accepted value', async () => {
-  //   const {
-  //     PartnerManager,
-  //     PartnerRegistrar,
-  //     PartnerConfiguration,
-  //     nameOwner,
-  //   } = await loadFixture(initialSetup);
-
-  //   await PartnerManager.mock.isPartner.returns(true);
-  //   await PartnerManager.mock.getPartnerConfiguration.returns(
-  //     PartnerConfiguration.address
-  //   );
-  //   await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
-
-  //   await expect(
-  //     PartnerRegistrar.register('ch', nameOwner.address, SECRET, DURATION)
-  //   ).to.be.revertedWith('Name too short');
-  // });
-
-  // it('Should fail if new domain length is more than accepted value', async () => {
-  //   const {
-  //     PartnerManager,
-  //     PartnerRegistrar,
-  //     PartnerConfiguration,
-  //     nameOwner,
-  //   } = await loadFixture(initialSetup);
-
-  //   await PartnerManager.mock.isPartner.returns(true);
-  //   await PartnerManager.mock.getPartnerConfiguration.returns(
-  //     PartnerConfiguration.address
-  //   );
-  //   await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
-  //   await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
-
-  //   await expect(
-  //     PartnerRegistrar.register(
-  //       'lordcheta',
-  //       nameOwner.address,
-  //       SECRET,
-  //       DURATION
-  //     )
-  //   ).to.be.revertedWith('Name too long');
-  // });
-
-  // it('Should fail if no commitment is made', async () => {
-  //   const {
-  //     PartnerManager,
-  //     PartnerRegistrar,
-  //     PartnerConfiguration,
-  //     nameOwner,
-  //   } = await loadFixture(initialSetup);
-
-  //   await PartnerManager.mock.isPartner.returns(true);
-  //   await PartnerManager.mock.getPartnerConfiguration.returns(
-  //     PartnerConfiguration.address
-  //   );
-  //   await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
-  //   await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
-
-  //   await expect(
-  //     PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
-  //   ).to.be.revertedWith('No commitment found');
-  // });
-
-  // it('Should fail there is a mismatch in the name used to make a commitment and the name being registered', async () => {
-  //   const {
-  //     PartnerManager,
-  //     PartnerRegistrar,
-  //     PartnerConfiguration,
-  //     nameOwner,
-  //   } = await loadFixture(initialSetup);
-
-  //   await PartnerManager.mock.isPartner.returns(true);
-  //   await PartnerManager.mock.getPartnerConfiguration.returns(
-  //     PartnerConfiguration.address
-  //   );
-  //   await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
-  //   await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
-  //   await PartnerConfiguration.mock.getMinCommittmentAge.returns(
-  //     MINCOMMITMENTAGE
-  //   );
-
-  //   const commitment = await PartnerRegistrar.makeCommitment(
-  //     LABEL,
-  //     nameOwner.address,
-  //     SECRET
-  //   );
-
-  //   const tx = await PartnerRegistrar.commit(commitment);
-  //   tx.wait();
-
-  //   await expect(
-  //     PartnerRegistrar.register('lcheta', nameOwner.address, SECRET, DURATION)
-  //   ).to.be.revertedWith('No commitment found');
-  // });
 });
