@@ -39,11 +39,7 @@ contract PartnerProxy is Ownable {
         return _partnerRegistrar.price(name, expires, duration);
     }
 
-    function canReveal(bytes32 commitment)
-        public
-        view
-        returns (bool)
-    {
+    function canReveal(bytes32 commitment) public view returns (bool) {
         return _partnerRegistrar.canReveal(commitment);
     }
 
