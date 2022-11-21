@@ -122,7 +122,7 @@ describe('New Domain Registration', () => {
     tx.wait();
 
     await expect(
-      PartnerRegistrar.register('cheta👀', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
     ).to.not.be.reverted;
   });
 
