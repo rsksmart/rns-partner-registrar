@@ -22,6 +22,7 @@ import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
+
 const LABEL = keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
@@ -194,7 +195,7 @@ describe('New Domain Registration', () => {
     await PartnerManager.mock.isPartner.returns(false);
 
     await expect(
-      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register('cheta👀', nameOwner.address, SECRET, DURATION)
     ).to.be.revertedWith('Partner Registrar: Not a partner');
   });
 

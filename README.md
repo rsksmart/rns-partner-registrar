@@ -7,7 +7,7 @@
 </p>
 
 ## Overview
-> This project encapsulates a set of contracts that extend the RNS protocol, allowing for unique customizations while maintaining backward compactibility to the current implementation of the RNS protocol
+> This project encapsulates a set of contracts that extend the RNS protocol, allowing for unique customizations while maintaining backward compatibility to the current implementation of the RNS protocol
 ```mermaid
 sequenceDiagram
     actor User
