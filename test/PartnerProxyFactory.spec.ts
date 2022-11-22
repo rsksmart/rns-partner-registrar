@@ -17,16 +17,21 @@ import IPartnerConfigurationJson from '../artifacts/contracts-exposed/PartnerCon
 import IFeeManagerJson from '../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
 import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager.json';
 import PartnerRegistrarJson from '../artifacts/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar.json';
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
+import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
+import RNSJson from '../artifacts/contracts-exposed/RNS.sol/$RNS.json';
+import ResolverJson from '../artifacts/contracts-exposed/test-utils/Resolver.sol/$Resolver.json';
+import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
-const MINLENGTH = 3;
-const MAXLENGTH = 7;
-const MINCOMMITMENTAGE = 0;
+const MIN_LENGTH = 3;
+const MAX_LENGTH = 7;
+const MIN_COMMITMENT_AGE = 1;
 const PRICE = 1;
-const EXPIRATIONTIME = 365;
+const EXPIRATION_TIME = 365;
 const DURATION = 1;
+const tldNode = namehash('rsk');
 
 async function initialSetup() {
   const signers = await ethers.getSigners();
@@ -34,6 +39,10 @@ async function initialSetup() {
   const partner1 = signers[1];
   const partner2 = signers[2];
   const nameOwner = signers[3];
+
+  const RNS = await deployMockContract<$RNS>(owner, RNSJson.abi);
+
+  const Resolver = await deployMockContract<$Resolver>(owner, ResolverJson.abi);
 
   const NodeOwner = await deployMockContract<$NodeOwner>(
     owner,
@@ -62,6 +71,8 @@ async function initialSetup() {
       NodeOwner: NodeOwner.address,
       RIF: RIF.address,
       IPartnerManager: PartnerManager.address,
+      RNS: RNS.address,
+      rootNode: tldNode,
     });
 
   const { contract: PartnerProxy } = await deployContract<$PartnerProxy>(
@@ -73,6 +84,13 @@ async function initialSetup() {
     await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
       _masterProxy: PartnerProxy.address,
     });
+
+  await RNS.mock.resolver.returns(Resolver.address);
+
+  await Resolver.mock.setAddr.returns();
+
+  await NodeOwner.mock.reclaim.returns();
+  await NodeOwner.mock.transferFrom.returns();
 
   return {
     PartnerProxy,
@@ -175,13 +193,11 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     //
     await PartnerManager.mock.isPartner.returns(true);
 
-    await PartnerConfiguration.mock.getMinLength.returns(MINLENGTH);
+    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
 
-    await PartnerConfiguration.mock.getMaxLength.returns(MAXLENGTH);
+    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
 
-    await PartnerConfiguration.mock.getMinCommittmentAge.returns(
-      MINCOMMITMENTAGE
-    );
+    await PartnerConfiguration.mock.getMinCommitmentAge.returns(1);
 
     await PartnerConfiguration.mock.getPrice.returns(PRICE);
 
@@ -191,7 +207,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     await RIF.mock.transferFrom.returns(true);
 
-    await NodeOwner.mock.expirationTime.returns(EXPIRATIONTIME);
+    await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
 
     await NodeOwner.mock.register.returns();
 
@@ -213,7 +229,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
         partnerProxy
           .connect(partner1)
           .register('cheta', nameOwner.address, SECRET, DURATION)
-      ).to.not.be.reverted;
+      ).to.eventually.be.fulfilled;
     } catch (error) {
       console.log(error);
 
