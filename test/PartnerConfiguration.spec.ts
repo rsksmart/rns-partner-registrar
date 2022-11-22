@@ -80,7 +80,7 @@ describe('Partner Configuration', () => {
       );
     });
     it('Should return the default commitement age', async () => {
-      await expect(await PartnerConfiguration.getMinCommittmentAge()).to.equal(
+      await expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
         DEFAULT_MIN_COMMITMENT_AGE
       );
     });
@@ -144,11 +144,11 @@ describe('Partner Configuration', () => {
     });
     it('Should return the default commitement age', async () => {
       const NEW_MIN_COMMITMENT_AGE = 6;
-      const tx = await PartnerConfiguration.setMinCommittmentAge(
+      const tx = await PartnerConfiguration.setMinCommitmentAge(
         NEW_MIN_COMMITMENT_AGE
       );
       tx.wait();
-      await expect(await PartnerConfiguration.getMinCommittmentAge()).to.equal(
+      await expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
         NEW_MIN_COMMITMENT_AGE
       );
     });

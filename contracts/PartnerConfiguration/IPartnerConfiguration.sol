@@ -16,7 +16,7 @@ interface IPartnerConfiguration {
 
     function getDiscount() external view returns (uint256);
 
-    function getMinCommittmentAge() external view returns (uint256);
+    function getMinCommitmentAge() external view returns (uint256);
 
     function getPrice(
         string memory name,

@@ -50,6 +50,7 @@
     "@openzeppelin/contracts": "^4.7.3",
     "@optionality.io/clone-factory": "^0.2.1",
     "@rsksmart/rif-scheduler-contracts": "^1.0.1",
+    "@rsksmart/rns-registry": "^1.0.4",
     "@typechain/ethers-v5": "10.1.0",
     "@typechain/hardhat": "^6.0.0",
     "@types/big.js": "^6.1.3",
