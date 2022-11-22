@@ -71,7 +71,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external onlyPartner returns (uint256) {
+    ) external returns (uint256) {
         return _getPartnerConfiguration().getPrice(name, expires, duration);
     }
 
@@ -83,12 +83,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         return keccak256(abi.encodePacked(label, nameOwner, secret));
     }
 
-    function canReveal(bytes32 commitment)
-        public
-        view
-        onlyPartner
-        returns (bool)
-    {
+    function canReveal(bytes32 commitment) public view returns (bool) {
         uint256 revealTime = _commitmentRevealTime[commitment];
         return 0 < revealTime && revealTime <= block.timestamp;
     }
