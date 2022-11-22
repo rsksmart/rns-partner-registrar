@@ -8,6 +8,8 @@ import "../PartnerManager/IPartnerManager.sol";
 import "../StringUtils.sol";
 import "../FeeManager/IFeeManager.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "../test-utils/Resolver.sol";
+import "../RNS.sol";
 
 contract PartnerRegistrar is IBaseRegistrar, Ownable {
     mapping(bytes32 => uint256) private _commitmentRevealTime;
@@ -16,17 +18,23 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     RIF private _rif;
     IPartnerManager private _partnerManager;
     IFeeManager private _feeManager;
+    RNS private _rns;
+    bytes32 private _rootNode;
 
     using StringUtils for string;
 
     constructor(
         NodeOwner nodeOwner,
         RIF rif,
-        IPartnerManager partnerManager
+        IPartnerManager partnerManager,
+        RNS rns,
+        bytes32 rootNode
     ) Ownable() {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
+        _rns = rns;
+        _rootNode = rootNode;
     }
 
     modifier onlyPartner() {
@@ -89,7 +97,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         require(_commitmentRevealTime[commitment] < 1, "Existent commitment");
         _commitmentRevealTime[commitment] =
             block.timestamp +
-            _getPartnerConfiguration().getMinCommittmentAge();
+            _getPartnerConfiguration().getMinCommitmentAge();
     }
 
     function _executeRegistration(
@@ -99,7 +107,6 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         uint256 duration
     ) private returns (uint256) {
         bytes32 label = keccak256(abi.encodePacked(name));
-
         require(
             name.strlen() >= _getPartnerConfiguration().getMinLength(),
             "Name too short"
@@ -110,13 +117,22 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
             "Name too long"
         );
 
-        if (_getPartnerConfiguration().getMinCommittmentAge() != 0) {
+        if (_getPartnerConfiguration().getMinCommitmentAge() != 0) {
             bytes32 commitment = makeCommitment(label, nameOwner, secret);
             require(canReveal(commitment), "No commitment found");
             _commitmentRevealTime[commitment] = 0;
         }
 
-        _nodeOwner.register(label, nameOwner, duration * 365 days);
+        _nodeOwner.register(label, address(this), duration * 365 days);
+
+        Resolver(_rns.resolver(_rootNode)).setAddr(
+            keccak256(abi.encodePacked(_rootNode, label)),
+            nameOwner
+        );
+
+        uint256 tokenId = uint256(label);
+        _nodeOwner.reclaim(tokenId, nameOwner);
+        _nodeOwner.transferFrom(address(this), nameOwner, tokenId);
 
         return
             _getPartnerConfiguration().getPrice(

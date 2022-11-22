@@ -12,7 +12,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     uint256 private _maxDuration;
     uint256 private _feePercentage;
     uint256 private _discount;
-    uint256 private _minCommittmentAge;
+    uint256 private _minCommitmentAge;
 
     constructor(
         uint256 minLength,
@@ -22,7 +22,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 maxDuration,
         uint256 feePercentage,
         uint256 discount,
-        uint256 minCommittmentAge
+        uint256 minCommitmentAge
     ) {
         // require(minDuration > 0, "PartnerConfiguration: Invalid min duration");
 
@@ -33,7 +33,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         _maxDuration = maxDuration;
         _feePercentage = feePercentage;
         _discount = discount;
-        _minCommittmentAge = minCommittmentAge;
+        _minCommitmentAge = minCommitmentAge;
     }
 
     function getMinLength() external view returns (uint256) {
@@ -92,15 +92,12 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         _discount = discount;
     }
 
-    function getMinCommittmentAge() external view returns (uint256) {
-        return _minCommittmentAge;
+    function getMinCommitmentAge() external view returns (uint256) {
+        return _minCommitmentAge;
     }
 
-    function setMinCommittmentAge(uint256 minCommittmentAge)
-        external
-        onlyOwner
-    {
-        _minCommittmentAge = minCommittmentAge;
+    function setMinCommitmentAge(uint256 minCommitmentAge) external onlyOwner {
+        _minCommitmentAge = minCommitmentAge;
     }
 
     function getPrice(

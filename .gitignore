@@ -13,3 +13,4 @@ artifacts
 .idea
 .eslintcache
 contracts.json
+deployedAddresses.json

@@ -18,7 +18,6 @@ export const deployContract = async <C extends Contract, A = {}>(
   const options = Object.values(constructorArgs);
   const contractFactory =
     factory ?? ((await ethers.getContractFactory(contractName)) as Factory<C>);
-
   const contract = await contractFactory.deploy(...options);
   await contract.deployed();
 
