@@ -1,7 +1,6 @@
 import { FeeManager__factory } from '../typechain-types/factories/contracts/FeeManager/FeeManager__factory';
 import { FeeManager } from '../typechain-types/contracts/FeeManager/FeeManager';
 import { ethers } from 'hardhat';
-import { deployMockContract, MockContract } from 'ethereum-waffle';
 import MyRIF from '../artifacts/contracts/Rif.sol/RIF.json';
 import MyPartnerManager from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
 import MyPartnerConfiguration from '../artifacts/contracts/PartnerConfiguration/IPartnerConfiguration.sol/IPartnerConfiguration.json';
@@ -9,15 +8,23 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { BigNumber } from 'ethers';
 import { expect } from 'chairc';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { deployMockContract, MockContract } from './utils/mock.utils';
+import { RIF as RIFType } from 'typechain-types';
+import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
+import { smock, FakeContract } from '@defi-wonderland/smock';
 
 async function testSetup() {
-  const [owner, registrar, account2, account3, ...accounts] =
+  const [owner, registrar, account2, account3, pool, ...accounts] =
     await ethers.getSigners();
 
-  const RIF = await deployMockContract(owner, MyRIF.abi);
-  const PartnerManager = await deployMockContract(owner, MyPartnerManager.abi);
-  const PartnerConfiguration = await deployMockContract(
+  const RIF = await smock.fake<RIFType>(MyRIF.abi);
+
+  const PartnerManager = await deployMockContract<PartnerManager>(
+    owner,
+    MyPartnerManager.abi
+  );
+  const PartnerConfiguration = await deployMockContract<PartnerConfiguration>(
     owner,
     MyPartnerConfiguration.abi
   );
@@ -29,7 +36,8 @@ async function testSetup() {
   const feeManager = (await FeeManager.deploy(
     RIF.address,
     registrar.address,
-    PartnerManager.address
+    PartnerManager.address,
+    pool.address
   )) as FeeManager;
 
   await feeManager.deployed();
@@ -44,6 +52,7 @@ async function testSetup() {
     account2,
     account3,
     accounts,
+    pool,
   };
 }
 
@@ -58,13 +67,14 @@ describe('Fee Manager', () => {
           PartnerManager,
           PartnerConfiguration,
           RIF,
-          owner,
+          pool,
         } = await loadFixture(testSetup);
 
         const depositAmount = BigNumber.from(10);
         const feePercentage = BigNumber.from(10);
 
-        await RIF.mock.transferFrom.returns(true);
+        RIF.transferFrom.returns(true);
+        RIF.transfer.returns(true);
         await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
         await PartnerManager.mock.getPartnerConfiguration.returns(
           PartnerConfiguration.address
@@ -78,7 +88,9 @@ describe('Fee Manager', () => {
         expect(await feeManager.balances(partner.address)).to.be.equal(
           partnerFee
         );
-        expect(await feeManager.balances(owner.address)).to.be.equal(
+
+        expect(RIF.transfer).to.have.been.calledOnceWith(
+          pool.address,
           depositAmount.sub(partnerFee)
         );
       } catch (error) {
@@ -93,14 +105,16 @@ describe('Fee Manager', () => {
           feeManager,
           account3: partner,
           RIF,
+          owner,
         } = await loadFixture(testSetup);
 
         const depositAmount = BigNumber.from(10);
 
-        await RIF.mock.transferFrom.returns(true);
+        RIF.transferFrom.returns(true);
 
-        await expect(feeManager.deposit(partner.address, depositAmount)).to.be
-          .reverted;
+        await expect(feeManager.deposit(partner.address, depositAmount))
+          .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+          .withArgs(owner.address);
       } catch (error) {
         console.log(error);
         throw error;
@@ -114,15 +128,30 @@ describe('Fee Manager', () => {
           registrar,
           account3: partner,
           RIF,
+          pool,
+          PartnerConfiguration,
+          PartnerManager,
         } = await loadFixture(testSetup);
 
+        RIF.transfer.returns(false);
         const depositAmount = BigNumber.from(10);
+        const feePercentage = BigNumber.from(10);
+        const partnerFee = depositAmount.mul(feePercentage).div(100);
 
-        await RIF.mock.transferFrom.returns(false);
+        await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
+        await PartnerManager.mock.getPartnerConfiguration.returns(
+          PartnerConfiguration.address
+        );
 
         await expect(
           feeManager.connect(registrar).deposit(partner.address, depositAmount)
-        ).to.be.reverted;
+        )
+          .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
+          .withArgs(
+            feeManager.address,
+            pool.address,
+            depositAmount.sub(partnerFee)
+          );
       } catch (error) {
         console.log(error);
         throw error;
@@ -134,9 +163,9 @@ describe('Fee Manager', () => {
     let feeManager: FeeManager,
       registrar: SignerWithAddress,
       partner: SignerWithAddress,
-      RIF: MockContract,
-      PartnerManager: MockContract,
-      PartnerConfiguration: MockContract;
+      RIF: FakeContract<RIFType>,
+      PartnerManager: MockContract<PartnerManager>,
+      PartnerConfiguration: MockContract<PartnerConfiguration>;
 
     beforeEach(async () => {
       const vars = await loadFixture(testSetup);
@@ -150,7 +179,7 @@ describe('Fee Manager', () => {
       const depositAmount = BigNumber.from(10);
       const feePercentage = BigNumber.from(10);
 
-      await RIF.mock.transfer.returns(true);
+      RIF.transfer.returns(true);
       await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
       await PartnerManager.mock.getPartnerConfiguration.returns(
         PartnerConfiguration.address
@@ -176,9 +205,9 @@ describe('Fee Manager', () => {
     it('should revert when user has no balance', async () => {
       try {
         await expect(feeManager.connect(partner).withdraw()).to.not.be.reverted;
-        await expect(feeManager.connect(partner).withdraw()).to.be.revertedWith(
-          'ZeroBalance()'
-        );
+        await expect(
+          feeManager.connect(partner).withdraw()
+        ).to.be.revertedWithCustomError(feeManager, 'ZeroBalance');
       } catch (error) {
         console.log(error);
         throw error;
@@ -187,10 +216,14 @@ describe('Fee Manager', () => {
 
     it('should revert if transfer fails', async () => {
       try {
-        await RIF.mock.transfer.returns(false);
-        await expect(feeManager.connect(partner).withdraw()).to.be.revertedWith(
-          'Fee Manager: Transfer failed'
-        );
+        RIF.transfer.returns(false);
+        await expect(feeManager.connect(partner).withdraw())
+          .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
+          .withArgs(
+            feeManager.address,
+            partner.address,
+            await feeManager.connect(partner).balances(partner.address)
+          );
       } catch (error) {
         console.log(error);
         throw error;

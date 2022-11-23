@@ -1,14 +1,11 @@
-import '@typechain/hardhat';
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
+import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-contract-sizer';
 import 'hardhat-docgen';
 import 'hardhat-exposed';
-import 'hardhat-gas-reporter';
 import 'hardhat-packager';
 import 'hardhat-watcher';
 import 'tsconfig-paths/register';
-import 'solidity-coverage';
+
 import { HardhatUserConfig } from 'hardhat/config';
 
 export default <HardhatUserConfig>{

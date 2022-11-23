@@ -25,7 +25,7 @@ const tldAsSha3 = utils.id('rsk');
 
 async function main() {
   try {
-    const [owner, partner] = await ethers.getSigners();
+    const [owner, partner, pool] = await ethers.getSigners();
 
     console.log('Deploying contracts with the account:', owner.address);
 
@@ -90,6 +90,7 @@ async function main() {
         rif: RIF.address,
         partnerRegistrar: PartnerRegistrar.address,
         partnerManager: PartnerManager.address,
+        pool: pool.address,
       }
     );
 
