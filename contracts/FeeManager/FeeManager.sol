@@ -9,6 +9,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 error ZeroBalance();
 error NotAuthorized(address sender);
+error TransferFailed(address from, address to, uint256 amount);
 
 contract FeeManager is IFeeManager, Ownable {
     RIF private _rif;
@@ -17,6 +18,7 @@ contract FeeManager is IFeeManager, Ownable {
 
     IBaseRegistrar private _registrar;
     IPartnerManager private _partnerManager;
+    address private _pool;
 
     modifier onlyRegistrar() {
         if (msg.sender != address(_registrar)) revert NotAuthorized(msg.sender);
@@ -26,11 +28,13 @@ contract FeeManager is IFeeManager, Ownable {
     constructor(
         RIF rif,
         IBaseRegistrar registrar,
-        IPartnerManager partnerManager
+        IPartnerManager partnerManager,
+        address pool
     ) Ownable() {
         _rif = rif;
         _registrar = registrar;
         _partnerManager = partnerManager;
+        _pool = pool;
     }
 
     function withdraw() external {
@@ -39,17 +43,22 @@ contract FeeManager is IFeeManager, Ownable {
         if (amount == 0) revert ZeroBalance();
 
         balances[msg.sender] = 0;
-        require(
-            _rif.transfer(msg.sender, amount),
-            "Fee Manager: Transfer failed"
-        );
+
+        if (!_rif.transfer(msg.sender, amount)) {
+            revert TransferFailed(address(this), msg.sender, amount);
+        }
     }
 
     function deposit(address partner, uint256 cost) external onlyRegistrar {
         uint256 partnerFee = (cost *
             _getPartnerConfiguration(partner).getFeePercentage()) / 100;
         balances[partner] += partnerFee;
-        balances[owner()] += cost - partnerFee;
+
+        uint256 balance = cost - partnerFee;
+
+        if (!_rif.transfer(_pool, balance)) {
+            revert TransferFailed(address(this), _pool, balance);
+        }
     }
 
     function _getPartnerConfiguration(address partner)

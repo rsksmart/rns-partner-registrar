@@ -57,12 +57,12 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     ) external onlyPartner {
         uint256 cost = _executeRegistration(name, nameOwner, secret, duration);
 
-        _feeManager.deposit(msg.sender, cost);
-
         require(
             _rif.transferFrom(msg.sender, address(_feeManager), cost),
             "Token transfer failed"
         );
+
+        _feeManager.deposit(msg.sender, cost);
 
         emit NameRegistered(msg.sender, duration);
     }
