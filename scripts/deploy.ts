@@ -13,6 +13,9 @@ const RNS_NODE_OWNER =
 const RIF_ADDRESS =
   process.env.RIF_ADDRESS || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
 
+// TODO: define POOL address
+const POOL = process.env.POOL || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+
 async function deployContract<T extends Contract>(
   name: string,
   args: Record<string, any> = {}
@@ -49,6 +52,7 @@ async function main() {
       rif: RIF_ADDRESS,
       partnerRegistrar: partnerRegistrar.address,
       partnerManager: partnerManager.address,
+      pool: POOL,
     });
 
     await (await partnerRegistrar.setFeeManager(feeManager.address)).wait();

@@ -21,6 +21,9 @@ const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
 
+// TODO: Define POOL address
+const POOL = '0x39e00d2616e792f50ddd33bbe46e8bf55eadebee';
+
 async function main() {
   try {
     const [owner, partner] = await ethers.getSigners();
@@ -88,6 +91,7 @@ async function main() {
         rif: RIF.address,
         partnerRegistrar: PartnerRegistrar.address,
         partnerManager: PartnerManager.address,
+        pool: POOL,
       }
     );
 
