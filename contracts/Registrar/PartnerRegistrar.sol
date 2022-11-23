@@ -5,6 +5,7 @@ import "./IBaseRegistrar.sol";
 import "../NodeOwner.sol";
 import "../RIF.sol";
 import "../PartnerManager/IPartnerManager.sol";
+import "../BytesUtils.sol";
 import "../StringUtils.sol";
 import "../FeeManager/IFeeManager.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -20,8 +21,11 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     IFeeManager private _feeManager;
     RNS private _rns;
     bytes32 private _rootNode;
+    // sha3('register(string,address,bytes32,uint)')
+    bytes4 constant _REGISTER_SIGNATURE = 0xc2c414c8;
 
     using StringUtils for string;
+    using BytesUtils for bytes;
 
     constructor(
         NodeOwner nodeOwner,
@@ -65,6 +69,24 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         _feeManager.deposit(msg.sender, cost);
 
         emit NameRegistered(msg.sender, duration);
+    }
+
+    function _registerWithToken(
+        string memory name,
+        address nameOwner,
+        bytes32 secret,
+        uint256 duration,
+        address from,
+        uint256 amount
+    ) private {
+        uint256 cost = _executeRegistration(name, nameOwner, secret, duration);
+        require(amount >= cost, "Not enough tokens");
+        _feeManager.deposit(msg.sender, cost);
+        if (amount - cost > 0)
+            require(
+                _rif.transfer(from, amount - cost),
+                "Token transfer failed"
+            );
     }
 
     function price(
@@ -142,5 +164,42 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         returns (IPartnerConfiguration)
     {
         return _partnerManager.getPartnerConfiguration(msg.sender);
+    }
+
+    // - Via ERC-677
+    /* Encoding:
+        | signature  |  4 bytes      - offset  0
+        | owner      | 20 bytes      - offset  4
+        | secret     | 32 bytes      - offest 24
+        | duration   | 32 bytes      - offset 56
+        | name       | variable size - offset 88
+    */
+
+    /// @notice ERC-677 token fallback function.
+    /// @dev Follow 'Register encoding' to execute a one-transaction regitration.
+    /// @param from token sender.
+    /// @param value amount of tokens sent.
+    /// @param data data associated with transaction.
+    /// @return true if successfull.
+    function tokenFallback(
+        address from,
+        uint256 value,
+        bytes calldata data
+    ) external returns (bool) {
+        require(msg.sender == address(_rif), "Only RIF token");
+        require(data.length > 88, "Invalid data");
+
+        bytes4 signature = data.toBytes4(0);
+
+        require(signature == _REGISTER_SIGNATURE, "Invalid signature");
+
+        address nameOwner = data.toAddress(4);
+        bytes32 secret = data.toBytes32(24);
+        uint256 duration = data.toUint(56);
+        string memory name = data.toString(88, data.length - 88);
+
+        _registerWithToken(name, nameOwner, secret, duration, from, value);
+
+        return true;
     }
 }

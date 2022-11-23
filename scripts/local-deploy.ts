@@ -14,10 +14,10 @@ import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver
 import ResolverAbi from '../test/external-abis/ResolverV1.json';
 import { oneRBTC } from 'test/utils/mock.utils';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
-import { ERC677 } from 'typechain-types';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
 import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
 import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
+import { ERC677Token } from 'typechain-types';
 
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
@@ -63,7 +63,7 @@ async function main() {
 
     await (await Resolver.initialize(RNS.address)).wait();
 
-    const { contract: RIF } = await deployContract<ERC677>('ERC677', {
+    const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
       beneficiary: owner.address,
       initialAmount: oneRBTC.mul(100000000000000),
       tokenName: 'ERC677',
@@ -148,7 +148,7 @@ async function main() {
     await (await PartnerManager.addPartner(partner.address)).wait();
     await (
       await PartnerManager.setPartnerConfiguration(
-        partnerProxyAddress,
+        partner,
         DefaultPartnerConfiguration.address
       )
     ).wait();
@@ -177,6 +177,13 @@ async function main() {
     fs.writeFileSync(
       './deployedAddresses.json',
       JSON.stringify(content, null, 2)
+    );
+
+    console.log(
+      'owner balance ',
+      owner.address,
+      ' ',
+      (await RIF.balanceOf(owner.address)).toString()
     );
     console.log('Done.');
   } catch (err) {

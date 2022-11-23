@@ -14,7 +14,7 @@ import {
   Signer,
   Wallet,
 } from 'ethers';
-import { Fragment } from 'ethers/lib/utils';
+import { formatBytes32String, Fragment } from 'ethers/lib/utils';
 import { ethers, network } from 'hardhat';
 import NetworkHelpers from '@nomicfoundation/hardhat-network-helpers';
 
@@ -97,4 +97,36 @@ export const deployMockContract = async <C extends Contract<C>>(
   abi: string | Array<Fragment | JsonFragment | string>
 ): Promise<MockContract<C>> => {
   return (await deployWaffleContract(signer, abi as any)) as MockContract<C>;
+};
+
+export const getAddrRegisterData = (
+  name: string,
+  owner: string,
+  secret: string,
+  duration: BigNumber,
+  addr: string
+) => {
+  // 0x + 8 bytes
+  const _signature = '0x5f7b99d5';
+
+  // 20 bytes
+  const _owner = owner.toLowerCase().slice(2);
+
+  // 32 bytes
+  let _secret = secret.slice(2);
+  const padding = 64 - _secret.length;
+  for (let i = 0; i < padding; i++) {
+    _secret += '0';
+  }
+
+  // 32 bytes
+  const _duration = duration.toHexString();
+
+  // variable length
+  const _name = formatBytes32String(name);
+
+  // 20 bytes
+  const _addr = addr.toLowerCase().slice(2);
+
+  return `${_signature}${_owner}${_secret}${_duration}${_addr}${_name}`;
 };

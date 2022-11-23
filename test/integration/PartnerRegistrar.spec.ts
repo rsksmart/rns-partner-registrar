@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
-import { oneRBTC } from '../utils/mock.utils';
+import { getAddrRegisterData, oneRBTC } from '../utils/mock.utils';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
@@ -11,16 +11,16 @@ import { IFeeManager } from '../../typechain-types/contracts/FeeManager/IFeeMana
 import NodeOwnerAbi from '../external-abis/NodeOwner.json';
 import RNSAbi from '../external-abis/RNS.json';
 import ResolverAbi from '../external-abis/ResolverV1.json';
-import { ERC677 } from 'typechain-types/contracts/test-utils';
+import { ERC677Token } from 'typechain-types/contracts/test-utils';
 import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/PartnerConfiguration.sol/$PartnerConfiguration';
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
-const DURATION = 1;
+const DURATION = BigNumber.from('1');
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
@@ -64,7 +64,7 @@ const initialSetup = async () => {
 
   await (await Resolver.initialize(RNS.address)).wait();
 
-  const { contract: RIF } = await deployContract<ERC677>('ERC677', {
+  const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
     beneficiary: owner.address,
     initialAmount: oneRBTC.mul(100000000000000),
     tokenName: 'ERC677',
@@ -165,13 +165,6 @@ describe('New Domain Registration', () => {
     } = await loadFixture(initialSetup);
     const registrarAsPartner = PartnerRegistrar.connect(partner);
 
-    await (
-      await RIF.connect(partner).approve(
-        PartnerRegistrar.address,
-        oneRBTC.mul(4)
-      )
-    ).wait();
-
     const commitment = await registrarAsPartner.makeCommitment(
       LABEL,
       nameOwner.address,
@@ -179,6 +172,20 @@ describe('New Domain Registration', () => {
     );
 
     await (await registrarAsPartner.commit(commitment)).wait();
+    const data = getAddrRegisterData(
+      NAME,
+      owner,
+      SECRET,
+      DURATION,
+      nameOwner.address
+    );
+    await (
+      await RIF.connect(partner).transferAndCall(
+        fifsAddrRegistrar.address,
+        amount,
+        data
+      )
+    ).wait();
 
     await (
       await registrarAsPartner.register(

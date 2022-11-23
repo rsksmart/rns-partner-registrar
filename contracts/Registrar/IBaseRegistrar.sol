@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-interface IBaseRegistrar {
+import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
+
+interface IBaseRegistrar is IERC677TransferReceiver {
     function register(
         string calldata name,
         address nameOwner,
