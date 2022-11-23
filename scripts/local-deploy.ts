@@ -16,6 +16,8 @@ import { oneRBTC } from 'test/utils/mock.utils';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
 import { ERC677 } from 'typechain-types';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
+import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
+import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
 
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
@@ -105,7 +107,30 @@ async function main() {
         minCommittmentAge: BigNumber.from(0),
       });
 
+    const { contract: PartnerProxy } = await deployContract<$PartnerProxy>(
+      '$PartnerProxy',
+      {}
+    );
+
+    const { contract: PartnerProxyFactory } =
+      await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
+        _masterProxy: PartnerProxy.address,
+      });
+
+    await (
+      await PartnerProxyFactory.createNewPartnerProxy(
+        partner.address,
+        'PartnerOne',
+        PartnerRegistrar.address
+      )
+    ).wait();
+
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner.address);
+    const partnerProxyAddress = tx1.proxy;
+
     console.log('setting up contracts');
+
+    await (await PartnerManager.addPartner(partnerProxyAddress)).wait();
 
     await (
       await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
@@ -122,12 +147,12 @@ async function main() {
     await (await PartnerManager.addPartner(partner.address)).wait();
     await (
       await PartnerManager.setPartnerConfiguration(
-        partner.address,
+        partnerProxyAddress,
         DefaultPartnerConfiguration.address
       )
     ).wait();
 
-    await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+    //await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
 
     console.log('Writing contract addresses to file...');
     const content = {
@@ -138,13 +163,14 @@ async function main() {
       nameResolver: Resolver.address, // TODO
       multiChainResolver: Resolver.address, // TODO
       rif: RIF.address,
-      fifsRegistrar: PartnerRegistrar.address, // TODO
-      fifsAddrRegistrar: PartnerRegistrar.address, // TODO
+      fifsRegistrar: partnerProxyAddress, // TODO
+      fifsAddrRegistrar: partnerProxyAddress, // TODO
       rskOwner: NodeOwner.address,
       renewer: Resolver.address, // TODO
-      partnerManager: PartnerRegistrar.address,
-      feeManager: PartnerRegistrar.address,
+      partnerManager: PartnerManager.address,
+      feeManager: FeeManager.address,
       defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
+      demoPartnerProxyInstance: partnerProxyAddress,
     };
 
     fs.writeFileSync(
