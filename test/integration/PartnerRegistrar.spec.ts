@@ -30,6 +30,7 @@ const initialSetup = async () => {
   const owner = signers[0];
   const partner = signers[1];
   const nameOwner = signers[2];
+  const pool = signers[3];
 
   const { contract: RNS } = await deployContract<$RNS>(
     'RNS',
@@ -102,6 +103,7 @@ const initialSetup = async () => {
       rif: RIF.address,
       registrar: PartnerRegistrar.address,
       partnerManager: PartnerManager.address,
+      pool: pool.address,
     }
   );
 

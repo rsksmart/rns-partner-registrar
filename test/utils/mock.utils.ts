@@ -15,7 +15,7 @@ import {
   Wallet,
 } from 'ethers';
 import { Fragment } from 'ethers/lib/utils';
-import { ethers, network, waffle } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import NetworkHelpers from '@nomicfoundation/hardhat-network-helpers';
 
 export const oneRBTC = BigNumber.from(10).pow(18);
@@ -52,8 +52,7 @@ export const sendrBtcToContract = async (
   contractAddress: string,
   amount: BigNumberish
 ) => {
-  const provider = waffle.provider;
-  const [wallet] = provider.getWallets();
+  const [wallet] = await ethers.getSigners();
   await wallet.sendTransaction({ to: contractAddress, value: amount });
 };
 
