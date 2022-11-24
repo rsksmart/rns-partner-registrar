@@ -14,7 +14,14 @@ import {
   Signer,
   Wallet,
 } from 'ethers';
-import { arrayify, formatBytes32String, Fragment } from 'ethers/lib/utils';
+import {
+  arrayify,
+  formatBytes32String,
+  Fragment,
+  hexlify,
+  hexZeroPad,
+  toUtf8Bytes,
+} from 'ethers/lib/utils';
 import { ethers, network } from 'hardhat';
 import NetworkHelpers from '@nomicfoundation/hardhat-network-helpers';
 
@@ -107,30 +114,47 @@ export const getAddrRegisterData = (
   addr: string
 ) => {
   // 0x + 8 bytes
-  const _signature = '0xc2c414c8';
+  const _signature = arrayify('0x5f7b99d5');
 
   // 20 bytes
-  const _owner = owner.toLowerCase().slice(2);
+  const _owner = arrayify(owner.toLowerCase());
 
   // 32 bytes
-  let _secret = secret.slice(2);
-  const padding = 64 - _secret.length;
-  for (let i = 0; i < padding; i++) {
-    _secret += '0';
-  }
-
-  console.log('secret', _secret);
+  const _secret = arrayify(secret);
 
   // 32 bytes
-  const _duration = duration.toHexString();
+  const _duration = arrayify(hexZeroPad(duration.toHexString(), 32));
+
+  // 20 bytes
+  const _addr = arrayify(addr.toLowerCase());
 
   // variable length
-  const _name = formatBytes32String(name);
+  const _name = Buffer.from(name);
 
-  // 20 bytes
-  const _addr = addr.toLowerCase().slice(2);
-
-  return toUtf8Bytes(
-    `${_signature}${_owner}${_secret}${_duration}${_addr}${_name}`
+  // // 20 bytes
+  const result = new Uint8Array(
+    _signature.length +
+      _owner.length +
+      _secret.length +
+      _duration.length +
+      _addr.length +
+      _name.length
   );
+  result.set(_signature, 0);
+  result.set(_owner, _signature.length);
+  result.set(_owner, _signature.length + _owner.length);
+  result.set(_duration, _signature.length + _owner.length + _secret.length);
+  result.set(
+    _addr,
+    _signature.length + _owner.length + _secret.length + _duration.length
+  );
+  result.set(
+    _name,
+    _signature.length +
+      _owner.length +
+      _secret.length +
+      _duration.length +
+      _addr.length
+  );
+  return result;
 };

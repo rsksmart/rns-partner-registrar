@@ -7,11 +7,11 @@ import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../BytesUtils.sol";
 import "hardhat/console.sol";
 
-contract PartnerProxy is Ownable {
+contract PartnerProxy is IBaseRegistrar, Ownable {
     IBaseRegistrar private _partnerRegistrar;
     IERC677 private _rif;
     // sha3('register(string,address,bytes32,uint)')
-    bytes4 constant _REGISTER_SIGNATURE = 0xc2c414c8;
+    bytes4 constant _REGISTER_SIGNATURE = 0x5f7b99d5;
 
     using BytesUtils for bytes;
 
@@ -36,9 +36,10 @@ contract PartnerProxy is Ownable {
         string calldata name,
         address nameOwner,
         bytes32 secret,
-        uint256 duration
+        uint256 duration,
+        address addr
     ) external {
-        _partnerRegistrar.register(name, nameOwner, secret, duration);
+        _partnerRegistrar.register(name, nameOwner, secret, duration, addr);
     }
 
     function price(
@@ -89,15 +90,23 @@ contract PartnerProxy is Ownable {
         require(data.length > 88, "Invalid data");
 
         bytes4 signature = data.toBytes4(0);
-        console.logBytes4(signature);
         require(signature == _REGISTER_SIGNATURE, "Invalid signature");
 
         address nameOwner = data.toAddress(4);
         bytes32 secret = data.toBytes32(24);
         uint256 duration = data.toUint(56);
-        string memory name = data.toString(88, data.length - 88);
+        address addr = data.toAddress(88);
+        string memory name = data.toString(108, data.length - 108);
 
-        _registerWithToken(from, value, name, secret, duration, nameOwner);
+        _registerWithToken(
+            from,
+            value,
+            name,
+            secret,
+            duration,
+            nameOwner,
+            addr
+        );
 
         return true;
     }
@@ -108,11 +117,12 @@ contract PartnerProxy is Ownable {
         string memory name,
         bytes32 secret,
         uint256 duration,
-        address nameOwner
+        address nameOwner,
+        address addr
     ) private {
         uint256 namePrice = _partnerRegistrar.price(name, 0, duration);
         _rif.approve(address(_partnerRegistrar), namePrice);
-        _partnerRegistrar.register(name, nameOwner, secret, duration);
+        _partnerRegistrar.register(name, nameOwner, secret, duration, addr);
         if (amount - namePrice > 0)
             require(
                 _rif.transfer(from, amount - namePrice),

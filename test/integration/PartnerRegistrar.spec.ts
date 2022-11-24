@@ -1,7 +1,11 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
-import { getAddrRegisterData, oneRBTC } from '../utils/mock.utils';
+import {
+  calculatePercentageWPrecision,
+  getAddrRegisterData,
+  oneRBTC,
+} from '../utils/mock.utils';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
@@ -23,6 +27,7 @@ const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = BigNumber.from('1');
+const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
@@ -85,7 +90,7 @@ const initialSetup = async () => {
       isUnicodeSupported: false,
       minDuration: 1,
       maxDuration: 5,
-      feePercentage: 0,
+      feePercentage: FEE_PERCENTAGE,
       discount: 0,
       minCommitmentAge: 0,
     });
@@ -132,15 +137,19 @@ const initialSetup = async () => {
       _rif: RIF.address,
     });
 
+  const partnerProxyName = 'PartnerOne';
   await (
     await PartnerProxyFactory.createNewPartnerProxy(
       partner.address,
-      'PartnerOne',
+      partnerProxyName,
       PartnerRegistrar.address
     )
   ).wait();
 
-  const tx1 = await PartnerProxyFactory.getPartnerProxy(partner.address);
+  const tx1 = await PartnerProxyFactory.getPartnerProxy(
+    partner.address,
+    partnerProxyName
+  );
   const partnerProxyAddress = tx1.proxy;
   const PartnerProxy = PartnerProxyBase.attach(partnerProxyAddress);
 
@@ -168,11 +177,12 @@ const initialSetup = async () => {
     nameOwner,
     signers,
     PartnerProxy,
+    pool,
   };
 };
 
 describe('New Domain Registration', () => {
-  it.only('Should register a new domain', async () => {
+  it('Should register a new domain', async () => {
     const {
       NodeOwner,
       RIF,
@@ -186,11 +196,11 @@ describe('New Domain Registration', () => {
       owner,
       partner,
       PartnerProxy,
+      pool,
     } = await loadFixture(initialSetup);
+
+    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
     const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
-
-    const namePrice = PartnerProxy.price(NAME, 0, DURATION);
-
     const commitment = await partnerProxyAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
@@ -201,7 +211,7 @@ describe('New Domain Registration', () => {
 
     const data = getAddrRegisterData(
       NAME,
-      owner.address,
+      nameOwner.address,
       SECRET,
       DURATION,
       nameOwner.address
@@ -218,7 +228,14 @@ describe('New Domain Registration', () => {
     const resolvedName = await Resolver['addr(bytes32)'](
       namehash(NAME + '.rsk')
     );
-
     expect(resolvedName).to.equal(nameOwner.address);
+
+    const poolBalance = await RIF.balanceOf(pool.address);
+
+    const expectedPoolBalance = namePrice.sub(
+      calculatePercentageWPrecision(namePrice, FEE_PERCENTAGE)
+    );
+
+    expect(+poolBalance).to.equal(+expectedPoolBalance);
   });
 });

@@ -12,7 +12,7 @@ contract PartnerProxyFactory is Ownable, CloneFactory {
         string name;
         PartnerProxy proxy;
     }
-    mapping(address => Partner) private _partnerProxies;
+    mapping(address => mapping(string => Partner)) private _partnerProxies;
     address private _masterProxy;
     uint256 public partnerProxyCount;
     IERC677 private _rif;
@@ -31,20 +31,23 @@ contract PartnerProxyFactory is Ownable, CloneFactory {
     ) external onlyOwner {
         PartnerProxy newPartnerProxy = PartnerProxy(_createClone(_masterProxy));
         newPartnerProxy.init(partner, partnerRegistrar, _rif);
-        _partnerProxies[partner] = Partner(name, newPartnerProxy);
+        _partnerProxies[partner][name] = Partner(name, newPartnerProxy);
         partnerProxyCount++;
-        emit NewPartnerProxyCreated(newPartnerProxy, _partnerProxies[partner]);
+        emit NewPartnerProxyCreated(
+            newPartnerProxy,
+            _partnerProxies[partner][name]
+        );
     }
 
     function getPartnerProxiesCount() external view returns (uint256) {
         return partnerProxyCount;
     }
 
-    function getPartnerProxy(address partner)
+    function getPartnerProxy(address partner, string calldata name)
         external
         view
         returns (Partner memory)
     {
-        return _partnerProxies[partner];
+        return _partnerProxies[partner][name];
     }
 }

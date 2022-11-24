@@ -49,13 +49,28 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         _feeManager = feeManager;
     }
 
+    // - Via ERC-20
+    /// @notice Registers a .rsk name in RNS.
+    /// @dev This method must be called after commiting.
+    /// @param name The name to register.
+    /// @param nameOwner The owner of the name to regiter.
+    /// @param secret The secret used to make the commitment.
+    /// @param duration Time to register in years.
+    /// @param addr Address to set as addr resolution.
     function register(
         string calldata name,
         address nameOwner,
         bytes32 secret,
-        uint256 duration
+        uint256 duration,
+        address addr
     ) external onlyPartner {
-        uint256 cost = _executeRegistration(name, nameOwner, secret, duration);
+        uint256 cost = _executeRegistration(
+            name,
+            nameOwner,
+            secret,
+            duration,
+            addr
+        );
 
         require(
             _rif.transferFrom(msg.sender, address(this), cost),
@@ -101,7 +116,8 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         string memory name,
         address nameOwner,
         bytes32 secret,
-        uint256 duration
+        uint256 duration,
+        address addr
     ) private returns (uint256) {
         bytes32 label = keccak256(abi.encodePacked(name));
         require(
@@ -124,7 +140,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
 
         Resolver(_rns.resolver(_rootNode)).setAddr(
             keccak256(abi.encodePacked(_rootNode, label)),
-            nameOwner
+            addr
         );
 
         uint256 tokenId = uint256(label);
