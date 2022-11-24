@@ -14,7 +14,7 @@ import {
   Signer,
   Wallet,
 } from 'ethers';
-import { formatBytes32String, Fragment } from 'ethers/lib/utils';
+import { arrayify, formatBytes32String, Fragment } from 'ethers/lib/utils';
 import { ethers, network } from 'hardhat';
 import NetworkHelpers from '@nomicfoundation/hardhat-network-helpers';
 
@@ -107,7 +107,7 @@ export const getAddrRegisterData = (
   addr: string
 ) => {
   // 0x + 8 bytes
-  const _signature = '0x5f7b99d5';
+  const _signature = '0xc2c414c8';
 
   // 20 bytes
   const _owner = owner.toLowerCase().slice(2);
@@ -119,6 +119,8 @@ export const getAddrRegisterData = (
     _secret += '0';
   }
 
+  console.log('secret', _secret);
+
   // 32 bytes
   const _duration = duration.toHexString();
 
@@ -128,5 +130,7 @@ export const getAddrRegisterData = (
   // 20 bytes
   const _addr = addr.toLowerCase().slice(2);
 
-  return `${_signature}${_owner}${_secret}${_duration}${_addr}${_name}`;
+  return toUtf8Bytes(
+    `${_signature}${_owner}${_secret}${_duration}${_addr}${_name}`
+  );
 };

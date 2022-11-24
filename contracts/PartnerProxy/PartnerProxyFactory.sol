@@ -5,6 +5,7 @@ import "./PartnerProxy.sol";
 import "./CloneFactory.sol";
 import "../Registrar/IBaseRegistrar.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "@rsksmart/erc677/contracts/IERC677.sol";
 
 contract PartnerProxyFactory is Ownable, CloneFactory {
     struct Partner {
@@ -14,11 +15,13 @@ contract PartnerProxyFactory is Ownable, CloneFactory {
     mapping(address => Partner) private _partnerProxies;
     address private _masterProxy;
     uint256 public partnerProxyCount;
+    IERC677 private _rif;
 
     event NewPartnerProxyCreated(PartnerProxy newPartnerProxy, Partner data);
 
-    constructor(address masterProxy) Ownable() {
+    constructor(address masterProxy, IERC677 rif) Ownable() {
         _masterProxy = masterProxy;
+        _rif = rif;
     }
 
     function createNewPartnerProxy(
@@ -27,7 +30,7 @@ contract PartnerProxyFactory is Ownable, CloneFactory {
         IBaseRegistrar partnerRegistrar
     ) external onlyOwner {
         PartnerProxy newPartnerProxy = PartnerProxy(_createClone(_masterProxy));
-        newPartnerProxy.init(partner, partnerRegistrar);
+        newPartnerProxy.init(partner, partnerRegistrar, _rif);
         _partnerProxies[partner] = Partner(name, newPartnerProxy);
         partnerProxyCount++;
         emit NewPartnerProxyCreated(newPartnerProxy, _partnerProxies[partner]);

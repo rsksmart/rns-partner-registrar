@@ -16,8 +16,10 @@ import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/Partner
 import { BigNumber, utils } from 'ethers';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
+import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
+import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
 
-const SECRET = keccak256(toUtf8Bytes('test'));
+const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = BigNumber.from('1');
@@ -28,7 +30,7 @@ const tldAsSha3 = utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partner = signers[1];
+  const partner = signers[0];
   const nameOwner = signers[2];
   const pool = signers[3];
 
@@ -119,17 +121,38 @@ const initialSetup = async () => {
 
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
 
-  await (await PartnerManager.addPartner(partner.address)).wait();
+  const { contract: PartnerProxyBase } = await deployContract<$PartnerProxy>(
+    '$PartnerProxy',
+    {}
+  );
+
+  const { contract: PartnerProxyFactory } =
+    await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
+      _masterProxy: PartnerProxyBase.address,
+      _rif: RIF.address,
+    });
+
+  await (
+    await PartnerProxyFactory.createNewPartnerProxy(
+      partner.address,
+      'PartnerOne',
+      PartnerRegistrar.address
+    )
+  ).wait();
+
+  const tx1 = await PartnerProxyFactory.getPartnerProxy(partner.address);
+  const partnerProxyAddress = tx1.proxy;
+  const PartnerProxy = PartnerProxyBase.attach(partnerProxyAddress);
+
+  await (await PartnerManager.addPartner(partnerProxyAddress)).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
-      partner.address,
+      partnerProxyAddress,
       PartnerConfiguration.address
     )
   ).wait();
 
-  await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
-
-  const partnerRegistrarAsPartner = PartnerRegistrar.connect(partner);
+  await (await RIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
 
   return {
     NodeOwner,
@@ -144,12 +167,12 @@ const initialSetup = async () => {
     partner,
     nameOwner,
     signers,
-    partnerRegistrarAsPartner,
+    PartnerProxy,
   };
 };
 
 describe('New Domain Registration', () => {
-  it('Should register a new domain', async () => {
+  it.only('Should register a new domain', async () => {
     const {
       NodeOwner,
       RIF,
@@ -162,37 +185,33 @@ describe('New Domain Registration', () => {
       FeeManager,
       owner,
       partner,
+      PartnerProxy,
     } = await loadFixture(initialSetup);
-    const registrarAsPartner = PartnerRegistrar.connect(partner);
+    const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
 
-    const commitment = await registrarAsPartner.makeCommitment(
+    const namePrice = PartnerProxy.price(NAME, 0, DURATION);
+
+    const commitment = await partnerProxyAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
       SECRET
     );
 
-    await (await registrarAsPartner.commit(commitment)).wait();
+    await (await partnerProxyAsNameOwner.commit(commitment)).wait();
+
     const data = getAddrRegisterData(
       NAME,
-      owner,
+      owner.address,
       SECRET,
       DURATION,
       nameOwner.address
     );
-    await (
-      await RIF.connect(partner).transferAndCall(
-        fifsAddrRegistrar.address,
-        amount,
-        data
-      )
-    ).wait();
 
     await (
-      await registrarAsPartner.register(
-        NAME,
-        nameOwner.address,
-        SECRET,
-        DURATION
+      await RIF.connect(nameOwner).transferAndCall(
+        PartnerProxy.address,
+        namePrice,
+        data
       )
     ).wait();
 

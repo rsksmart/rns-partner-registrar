@@ -50,6 +50,11 @@ contract FeeManager is IFeeManager, Ownable {
     }
 
     function deposit(address partner, uint256 cost) external onlyRegistrar {
+        require(
+            _rif.transferFrom(msg.sender, address(this), cost),
+            "Token transfer failed"
+        );
+
         uint256 partnerFee = (cost *
             _getPartnerConfiguration(partner).getFeePercentage()) / 100;
         balances[partner] += partnerFee;
