@@ -22,6 +22,7 @@ import { ERC677Token } from 'typechain-types';
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
+const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 
 async function main() {
   try {
@@ -101,7 +102,7 @@ async function main() {
         isUnicodeSupported: true,
         minDuration: BigNumber.from(1),
         maxDuration: BigNumber.from(5),
-        feePercentage: BigNumber.from(10),
+        feePercentage: FEE_PERCENTAGE,
         discount: BigNumber.from(0),
         minCommittmentAge: BigNumber.from(0),
       });

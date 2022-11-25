@@ -230,11 +230,17 @@ describe('New Domain Registration', () => {
     );
     expect(resolvedName).to.equal(nameOwner.address);
 
+    const feeManagerBalance = await RIF.balanceOf(FeeManager.address);
+    const expectedManagerBalance = calculatePercentageWPrecision(
+      namePrice,
+      FEE_PERCENTAGE
+    );
+
+    expect(+expectedManagerBalance).to.equal(+feeManagerBalance);
+
     const poolBalance = await RIF.balanceOf(pool.address);
 
-    const expectedPoolBalance = namePrice.sub(
-      calculatePercentageWPrecision(namePrice, FEE_PERCENTAGE)
-    );
+    const expectedPoolBalance = namePrice.sub(expectedManagerBalance);
 
     expect(+poolBalance).to.equal(+expectedPoolBalance);
   });
