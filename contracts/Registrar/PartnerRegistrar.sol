@@ -3,19 +3,19 @@ pragma solidity ^0.8.17;
 
 import "./IBaseRegistrar.sol";
 import "../NodeOwner.sol";
-import "../RIF.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../StringUtils.sol";
 import "../FeeManager/IFeeManager.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../test-utils/Resolver.sol";
 import "../RNS.sol";
+import "@rsksmart/erc677/contracts/IERC677.sol";
 
 contract PartnerRegistrar is IBaseRegistrar, Ownable {
     mapping(bytes32 => uint256) private _commitmentRevealTime;
 
     NodeOwner private _nodeOwner;
-    RIF private _rif;
+    IERC677 private _rif;
     IPartnerManager private _partnerManager;
     IFeeManager private _feeManager;
     RNS private _rns;
@@ -25,7 +25,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
 
     constructor(
         NodeOwner nodeOwner,
-        RIF rif,
+        IERC677 rif,
         IPartnerManager partnerManager,
         RNS rns,
         bytes32 rootNode
@@ -49,18 +49,35 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         _feeManager = feeManager;
     }
 
+    // - Via ERC-20
+    /// @notice Registers a .rsk name in RNS.
+    /// @dev This method must be called after commiting.
+    /// @param name The name to register.
+    /// @param nameOwner The owner of the name to regiter.
+    /// @param secret The secret used to make the commitment.
+    /// @param duration Time to register in years.
+    /// @param addr Address to set as addr resolution.
     function register(
         string calldata name,
         address nameOwner,
         bytes32 secret,
-        uint256 duration
+        uint256 duration,
+        address addr
     ) external onlyPartner {
-        uint256 cost = _executeRegistration(name, nameOwner, secret, duration);
+        uint256 cost = _executeRegistration(
+            name,
+            nameOwner,
+            secret,
+            duration,
+            addr
+        );
 
         require(
-            _rif.transferFrom(msg.sender, address(_feeManager), cost),
+            _rif.transferFrom(msg.sender, address(this), cost),
             "Token transfer failed"
         );
+
+        _rif.approve(address(_feeManager), cost);
 
         _feeManager.deposit(msg.sender, cost);
 
@@ -71,7 +88,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external returns (uint256) {
+    ) external view returns (uint256) {
         return _getPartnerConfiguration().getPrice(name, expires, duration);
     }
 
@@ -99,7 +116,8 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         string memory name,
         address nameOwner,
         bytes32 secret,
-        uint256 duration
+        uint256 duration,
+        address addr
     ) private returns (uint256) {
         bytes32 label = keccak256(abi.encodePacked(name));
         require(
@@ -122,7 +140,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
 
         Resolver(_rns.resolver(_rootNode)).setAddr(
             keccak256(abi.encodePacked(_rootNode, label)),
-            nameOwner
+            addr
         );
 
         uint256 tokenId = uint256(label);
@@ -139,6 +157,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
 
     function _getPartnerConfiguration()
         private
+        view
         returns (IPartnerConfiguration)
     {
         return _partnerManager.getPartnerConfiguration(msg.sender);

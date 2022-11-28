@@ -1,7 +1,11 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
-import { oneRBTC } from '../utils/mock.utils';
+import {
+  calculatePercentageWPrecision,
+  getAddrRegisterData,
+  oneRBTC,
+} from '../utils/mock.utils';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
@@ -11,16 +15,19 @@ import { IFeeManager } from '../../typechain-types/contracts/FeeManager/IFeeMana
 import NodeOwnerAbi from '../external-abis/NodeOwner.json';
 import RNSAbi from '../external-abis/RNS.json';
 import ResolverAbi from '../external-abis/ResolverV1.json';
-import { ERC677 } from 'typechain-types/contracts/test-utils';
+import { ERC677Token } from 'typechain-types/contracts/test-utils';
 import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/PartnerConfiguration.sol/$PartnerConfiguration';
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
+import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
+import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
 
-const SECRET = keccak256(toUtf8Bytes('test'));
+const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
-const DURATION = 1;
+const DURATION = BigNumber.from('1');
+const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
@@ -28,7 +35,7 @@ const tldAsSha3 = utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partner = signers[1];
+  const partner = signers[0];
   const nameOwner = signers[2];
   const pool = signers[3];
 
@@ -64,7 +71,7 @@ const initialSetup = async () => {
 
   await (await Resolver.initialize(RNS.address)).wait();
 
-  const { contract: RIF } = await deployContract<ERC677>('ERC677', {
+  const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
     beneficiary: owner.address,
     initialAmount: oneRBTC.mul(100000000000000),
     tokenName: 'ERC677',
@@ -83,7 +90,7 @@ const initialSetup = async () => {
       isUnicodeSupported: false,
       minDuration: 1,
       maxDuration: 5,
-      feePercentage: 0,
+      feePercentage: FEE_PERCENTAGE,
       discount: 0,
       minCommitmentAge: 0,
     });
@@ -119,17 +126,42 @@ const initialSetup = async () => {
 
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
 
-  await (await PartnerManager.addPartner(partner.address)).wait();
+  const { contract: PartnerProxyBase } = await deployContract<$PartnerProxy>(
+    '$PartnerProxy',
+    {}
+  );
+
+  const { contract: PartnerProxyFactory } =
+    await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
+      _masterProxy: PartnerProxyBase.address,
+      _rif: RIF.address,
+    });
+
+  const partnerProxyName = 'PartnerOne';
+  await (
+    await PartnerProxyFactory.createNewPartnerProxy(
+      partner.address,
+      partnerProxyName,
+      PartnerRegistrar.address
+    )
+  ).wait();
+
+  const tx1 = await PartnerProxyFactory.getPartnerProxy(
+    partner.address,
+    partnerProxyName
+  );
+  const partnerProxyAddress = tx1.proxy;
+  const PartnerProxy = PartnerProxyBase.attach(partnerProxyAddress);
+
+  await (await PartnerManager.addPartner(partnerProxyAddress)).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
-      partner.address,
+      partnerProxyAddress,
       PartnerConfiguration.address
     )
   ).wait();
 
-  await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
-
-  const partnerRegistrarAsPartner = PartnerRegistrar.connect(partner);
+  await (await RIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
 
   return {
     NodeOwner,
@@ -144,7 +176,8 @@ const initialSetup = async () => {
     partner,
     nameOwner,
     signers,
-    partnerRegistrarAsPartner,
+    PartnerProxy,
+    pool,
   };
 };
 
@@ -162,37 +195,53 @@ describe('New Domain Registration', () => {
       FeeManager,
       owner,
       partner,
+      PartnerProxy,
+      pool,
     } = await loadFixture(initialSetup);
-    const registrarAsPartner = PartnerRegistrar.connect(partner);
 
-    await (
-      await RIF.connect(partner).approve(
-        PartnerRegistrar.address,
-        oneRBTC.mul(4)
-      )
-    ).wait();
-
-    const commitment = await registrarAsPartner.makeCommitment(
+    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
+    const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
+    const commitment = await partnerProxyAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
       SECRET
     );
 
-    await (await registrarAsPartner.commit(commitment)).wait();
+    await (await partnerProxyAsNameOwner.commit(commitment)).wait();
+
+    const data = getAddrRegisterData(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      nameOwner.address
+    );
 
     await (
-      await registrarAsPartner.register(
-        NAME,
-        nameOwner.address,
-        SECRET,
-        DURATION
+      await RIF.connect(nameOwner).transferAndCall(
+        PartnerProxy.address,
+        namePrice,
+        data
       )
     ).wait();
 
     const resolvedName = await Resolver['addr(bytes32)'](
       namehash(NAME + '.rsk')
     );
-
     expect(resolvedName).to.equal(nameOwner.address);
+
+    const feeManagerBalance = await RIF.balanceOf(FeeManager.address);
+    const expectedManagerBalance = calculatePercentageWPrecision(
+      namePrice,
+      FEE_PERCENTAGE
+    );
+
+    expect(+expectedManagerBalance).to.equal(+feeManagerBalance);
+
+    const poolBalance = await RIF.balanceOf(pool.address);
+
+    const expectedPoolBalance = namePrice.sub(expectedManagerBalance);
+
+    expect(+poolBalance).to.equal(+expectedPoolBalance);
   });
 });

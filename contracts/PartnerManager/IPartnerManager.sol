@@ -11,6 +11,7 @@ interface IPartnerManager {
 
     function getPartnerConfiguration(address partner)
         external
+        view
         returns (IPartnerConfiguration);
 
     function isPartner(address partner) external view returns (bool);

@@ -6,14 +6,15 @@ interface IBaseRegistrar {
         string calldata name,
         address nameOwner,
         bytes32 secret,
-        uint256 duration
+        uint256 duration,
+        address addr
     ) external;
 
     function price(
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external returns (uint256);
+    ) external view returns (uint256);
 
     function makeCommitment(
         bytes32 label,

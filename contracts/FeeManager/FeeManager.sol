@@ -15,6 +15,7 @@ contract FeeManager is IFeeManager, Ownable {
     RIF private _rif;
 
     mapping(address => uint256) public balances;
+    uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10**18);
 
     IBaseRegistrar private _registrar;
     IPartnerManager private _partnerManager;
@@ -50,8 +51,14 @@ contract FeeManager is IFeeManager, Ownable {
     }
 
     function deposit(address partner, uint256 cost) external onlyRegistrar {
+        require(
+            _rif.transferFrom(msg.sender, address(this), cost),
+            "Token transfer failed"
+        );
+
         uint256 partnerFee = (cost *
-            _getPartnerConfiguration(partner).getFeePercentage()) / 100;
+            _getPartnerConfiguration(partner).getFeePercentage()) /
+            _PERCENT100_WITH_PRECISION18;
         balances[partner] += partnerFee;
 
         uint256 balance = cost - partnerFee;
@@ -63,6 +70,7 @@ contract FeeManager is IFeeManager, Ownable {
 
     function _getPartnerConfiguration(address partner)
         private
+        view
         returns (IPartnerConfiguration)
     {
         return _partnerManager.getPartnerConfiguration(partner);

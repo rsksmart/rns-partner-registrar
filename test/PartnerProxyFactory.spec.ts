@@ -83,6 +83,7 @@ async function initialSetup() {
   const { contract: PartnerProxyFactory } =
     await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
       _masterProxy: PartnerProxy.address,
+      _rif: RIF.address,
     });
 
   await RNS.mock.resolver.returns(Resolver.address);
@@ -119,7 +120,10 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerRegistrar.address
     );
     await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+      partner1.address,
+      'PartnerOne'
+    );
 
     const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
@@ -127,7 +131,10 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerRegistrar.address
     );
     await partnerTwoProxy.wait();
-    const tx2 = await PartnerProxyFactory.getPartnerProxy(partner2.address);
+    const tx2 = await PartnerProxyFactory.getPartnerProxy(
+      partner2.address,
+      'PartnerTwo'
+    );
 
     expect([tx1.name, tx2.name]).to.deep.equal(['PartnerOne', 'PartnerTwo']);
   });
@@ -147,7 +154,10 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerRegistrar.address
     );
     await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+      partner1.address,
+      'PartnerOne'
+    );
 
     const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
@@ -155,7 +165,10 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerRegistrar.address
     );
     await partnerTwoProxy.wait();
-    const tx2 = await PartnerProxyFactory.getPartnerProxy(partner2.address);
+    const tx2 = await PartnerProxyFactory.getPartnerProxy(
+      partner2.address,
+      'PartnerTwo'
+    );
 
     const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
     const partnerTwoOwner = PartnerProxy.attach(tx2.proxy);
@@ -187,7 +200,10 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     );
 
     await newPartnerProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+      partner1.address,
+      'PartnerOne'
+    );
     const partnerProxy = PartnerProxy.attach(tx1.proxy);
 
     //
@@ -206,6 +222,8 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     );
 
     await RIF.mock.transferFrom.returns(true);
+
+    await RIF.mock.approve.returns(true);
 
     await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
 
@@ -228,7 +246,13 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       await expect(
         partnerProxy
           .connect(partner1)
-          .register('cheta', nameOwner.address, SECRET, DURATION)
+          .register(
+            'cheta',
+            nameOwner.address,
+            SECRET,
+            DURATION,
+            NodeOwner.address
+          )
       ).to.eventually.be.fulfilled;
     } catch (error) {
       console.log(error);
@@ -245,6 +269,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       partner2,
       nameOwner,
       PartnerRegistrar,
+      RIF,
     } = await loadFixture(initialSetup);
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
@@ -253,14 +278,17 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerRegistrar.address
     );
     await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner1.address);
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+      partner1.address,
+      'PartnerOne'
+    );
 
     const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
 
     await expect(
       partnerOneOwner
         .connect(partner2)
-        .init(partner2.address, PartnerRegistrar.address)
+        .init(partner2.address, PartnerRegistrar.address, RIF.address)
     ).to.be.revertedWith('Init: clone cannot be reinitialized');
   });
 });

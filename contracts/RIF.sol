@@ -9,4 +9,6 @@ interface RIF {
     ) external returns (bool);
 
     function transfer(address to, uint256 value) external returns (bool);
+
+    function approve(address spender, uint256 tokens) external returns (bool);
 }

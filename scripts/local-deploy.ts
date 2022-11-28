@@ -7,29 +7,28 @@ import fs from 'fs';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 import RNSAbi from '../test/external-abis/RNS.json';
 import { deployContract, Factory } from 'utils/deployment.utils';
-import { namehash } from 'ethers/lib/utils';
+import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 import NodeOwnerAbi from '../test/external-abis/NodeOwner.json';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import ResolverAbi from '../test/external-abis/ResolverV1.json';
 import { oneRBTC } from 'test/utils/mock.utils';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
-import { ERC677 } from 'typechain-types';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
 import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
 import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
+import { ERC677Token } from 'typechain-types';
 
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
+const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 
 async function main() {
   try {
-    const [owner, partner, pool] = await ethers.getSigners();
+    const [owner, partner, userAccount, pool] = await ethers.getSigners();
 
     console.log('Deploying contracts with the account:', owner.address);
-
-    console.log('Account balance:', (await owner.getBalance()).toString());
 
     const { contract: RNS } = await deployContract<$RNS>(
       'RNS',
@@ -63,7 +62,7 @@ async function main() {
 
     await (await Resolver.initialize(RNS.address)).wait();
 
-    const { contract: RIF } = await deployContract<ERC677>('ERC677', {
+    const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
       beneficiary: owner.address,
       initialAmount: oneRBTC.mul(100000000000000),
       tokenName: 'ERC677',
@@ -98,40 +97,59 @@ async function main() {
 
     const { contract: DefaultPartnerConfiguration } =
       await deployContract<PartnerConfiguration>('PartnerConfiguration', {
-        minLength: BigNumber.from(3),
-        maxLength: BigNumber.from(0),
-        isUnicodeSupported: false,
-        minDuration: BigNumber.from(0),
-        maxDuration: BigNumber.from(0),
-        feePercentage: BigNumber.from(10),
+        minLength: BigNumber.from(5),
+        maxLength: BigNumber.from(20),
+        isUnicodeSupported: true,
+        minDuration: BigNumber.from(1),
+        maxDuration: BigNumber.from(5),
+        feePercentage: FEE_PERCENTAGE,
         discount: BigNumber.from(0),
         minCommittmentAge: BigNumber.from(0),
       });
 
-    const { contract: PartnerProxy } = await deployContract<$PartnerProxy>(
+    const { contract: PartnerProxyBase } = await deployContract<$PartnerProxy>(
       '$PartnerProxy',
       {}
     );
 
     const { contract: PartnerProxyFactory } =
       await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
-        _masterProxy: PartnerProxy.address,
+        _masterProxy: PartnerProxyBase.address,
+        _rif: RIF.address,
       });
 
+    const FIFSADDRProxyName = 'FIFSADDR';
     await (
       await PartnerProxyFactory.createNewPartnerProxy(
         partner.address,
-        'PartnerOne',
+        FIFSADDRProxyName,
         PartnerRegistrar.address
       )
     ).wait();
 
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(partner.address);
-    const partnerProxyAddress = tx1.proxy;
+    const FIFSADDRpartnerProxyAddress = (
+      await PartnerProxyFactory.getPartnerProxy(
+        partner.address,
+        FIFSADDRProxyName
+      )
+    ).proxy;
+
+    const FIFSProxyName = 'FIFS';
+    await (
+      await PartnerProxyFactory.createNewPartnerProxy(
+        partner.address,
+        FIFSProxyName,
+        PartnerRegistrar.address
+      )
+    ).wait();
+
+    const FIFSpartnerProxyAddress = (
+      await PartnerProxyFactory.getPartnerProxy(partner.address, FIFSProxyName)
+    ).proxy;
 
     console.log('setting up contracts');
 
-    await (await PartnerManager.addPartner(partnerProxyAddress)).wait();
+    await (await PartnerManager.addPartner(FIFSADDRpartnerProxyAddress)).wait();
 
     await (
       await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
@@ -145,15 +163,14 @@ async function main() {
 
     await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
 
-    await (await PartnerManager.addPartner(partner.address)).wait();
     await (
       await PartnerManager.setPartnerConfiguration(
-        partnerProxyAddress,
+        FIFSADDRpartnerProxyAddress,
         DefaultPartnerConfiguration.address
       )
     ).wait();
 
-    //await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+    await (await RIF.transfer(userAccount.address, oneRBTC.mul(10))).wait();
 
     console.log('Writing contract addresses to file...');
     const content = {
@@ -164,19 +181,26 @@ async function main() {
       nameResolver: Resolver.address, // TODO
       multiChainResolver: Resolver.address, // TODO
       rif: RIF.address,
-      fifsRegistrar: partnerProxyAddress, // TODO
-      fifsAddrRegistrar: partnerProxyAddress, // TODO
+      fifsRegistrar: FIFSpartnerProxyAddress, // TODO
+      fifsAddrRegistrar: FIFSADDRpartnerProxyAddress, // TODO
       rskOwner: NodeOwner.address,
       renewer: Resolver.address, // TODO
       partnerManager: PartnerManager.address,
       feeManager: FeeManager.address,
       defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
-      demoPartnerProxyInstance: partnerProxyAddress,
+      demoPartnerProxyInstance: FIFSADDRpartnerProxyAddress,
     };
 
     fs.writeFileSync(
       './deployedAddresses.json',
       JSON.stringify(content, null, 2)
+    );
+
+    console.log(
+      'owner balance ',
+      owner.address,
+      ' ',
+      (await RIF.balanceOf(owner.address)).toString()
     );
     console.log('Done.');
   } catch (err) {
