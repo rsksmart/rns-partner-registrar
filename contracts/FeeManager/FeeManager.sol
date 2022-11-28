@@ -70,6 +70,7 @@ contract FeeManager is IFeeManager, Ownable {
 
     function _getPartnerConfiguration(address partner)
         private
+        view
         returns (IPartnerConfiguration)
     {
         return _partnerManager.getPartnerConfiguration(partner);

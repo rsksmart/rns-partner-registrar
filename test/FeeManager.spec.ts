@@ -8,7 +8,7 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { BigNumber } from 'ethers';
 import { expect } from 'chairc';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { deployMockContract, MockContract } from './utils/mock.utils';
+import { deployMockContract, MockContract, oneRBTC } from './utils/mock.utils';
 import { RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
@@ -42,6 +42,8 @@ async function testSetup() {
 
   await feeManager.deployed();
 
+  const oneRBTC = BigNumber.from(10).pow(18);
+
   return {
     RIF,
     feeManager,
@@ -53,6 +55,7 @@ async function testSetup() {
     account3,
     accounts,
     pool,
+    oneRBTC,
   };
 }
 
@@ -68,6 +71,7 @@ describe('Fee Manager', () => {
           PartnerConfiguration,
           RIF,
           pool,
+          oneRBTC,
         } = await loadFixture(testSetup);
 
         const depositAmount = BigNumber.from(10);
@@ -84,7 +88,9 @@ describe('Fee Manager', () => {
           feeManager.connect(registrar).deposit(partner.address, depositAmount)
         ).to.not.be.reverted;
 
-        const partnerFee = depositAmount.mul(feePercentage).div(100);
+        const partnerFee = depositAmount
+          .mul(feePercentage)
+          .div(oneRBTC.mul(100));
         expect(await feeManager.balances(partner.address)).to.be.equal(
           partnerFee
         );
@@ -131,12 +137,15 @@ describe('Fee Manager', () => {
           pool,
           PartnerConfiguration,
           PartnerManager,
+          oneRBTC,
         } = await loadFixture(testSetup);
 
         RIF.transfer.returns(false);
         const depositAmount = BigNumber.from(10);
         const feePercentage = BigNumber.from(10);
-        const partnerFee = depositAmount.mul(feePercentage).div(100);
+        const partnerFee = depositAmount
+          .mul(feePercentage)
+          .div(oneRBTC.mul(100));
 
         await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
         await PartnerManager.mock.getPartnerConfiguration.returns(
@@ -176,8 +185,8 @@ describe('Fee Manager', () => {
       PartnerConfiguration = vars.PartnerConfiguration;
       PartnerManager = vars.PartnerManager;
 
-      const depositAmount = BigNumber.from(10);
-      const feePercentage = BigNumber.from(10);
+      const depositAmount = oneRBTC.mul(5);
+      const feePercentage = oneRBTC.mul(5);
 
       RIF.transfer.returns(true);
       await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
