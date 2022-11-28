@@ -123,6 +123,8 @@ describe('New Domain Registration', () => {
 
     await RIF.mock.transferFrom.returns(true);
 
+    await RIF.mock.approve.returns(true);
+
     await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
 
     await NodeOwner.mock.register.returns();
@@ -139,10 +141,20 @@ describe('New Domain Registration', () => {
 
     const tx = await PartnerRegistrar.commit(commitment);
     tx.wait();
-
-    await expect(
-      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
-    ).to.eventually.be.fulfilled;
+    try {
+      await expect(
+        PartnerRegistrar.register(
+          'cheta',
+          nameOwner.address,
+          SECRET,
+          DURATION,
+          NodeOwner.address
+        )
+      ).to.eventually.be.fulfilled;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   });
 
   it('Should register a new domain when min commitment age is 0 and no commitment is made', async () => {
@@ -174,6 +186,8 @@ describe('New Domain Registration', () => {
 
     await RIF.mock.transferFrom.returns(true);
 
+    await RIF.mock.approve.returns(true);
+
     await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
 
     await NodeOwner.mock.register.returns();
@@ -183,19 +197,30 @@ describe('New Domain Registration', () => {
     await PartnerRegistrar.setFeeManager(FeeManager.address);
 
     await expect(
-      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register(
+        'cheta',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address
+      )
     ).to.not.be.reverted;
   });
 
   it('Should fail if caller is not a valid partner', async () => {
-    const { PartnerManager, PartnerRegistrar, nameOwner } = await loadFixture(
-      initialSetup
-    );
+    const { PartnerManager, PartnerRegistrar, nameOwner, NodeOwner } =
+      await loadFixture(initialSetup);
 
     await PartnerManager.mock.isPartner.returns(false);
 
     await expect(
-      PartnerRegistrar.register('cheta👀', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register(
+        'cheta👀',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address
+      )
     ).to.be.revertedWith('Partner Registrar: Not a partner');
   });
 
@@ -205,6 +230,7 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       nameOwner,
+      NodeOwner,
     } = await loadFixture(initialSetup);
 
     await PartnerManager.mock.isPartner.returns(true);
@@ -214,7 +240,13 @@ describe('New Domain Registration', () => {
     await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
 
     await expect(
-      PartnerRegistrar.register('ch', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register(
+        'ch',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address
+      )
     ).to.be.revertedWith('Name too short');
   });
 
@@ -224,6 +256,7 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       nameOwner,
+      NodeOwner,
     } = await loadFixture(initialSetup);
 
     await PartnerManager.mock.isPartner.returns(true);
@@ -238,7 +271,8 @@ describe('New Domain Registration', () => {
         'lordcheta',
         nameOwner.address,
         SECRET,
-        DURATION
+        DURATION,
+        NodeOwner.address
       )
     ).to.be.revertedWith('Name too long');
   });
@@ -249,6 +283,7 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       nameOwner,
+      NodeOwner,
     } = await loadFixture(initialSetup);
 
     await PartnerManager.mock.isPartner.returns(true);
@@ -262,7 +297,13 @@ describe('New Domain Registration', () => {
     );
 
     await expect(
-      PartnerRegistrar.register('cheta', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register(
+        'cheta',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address
+      )
     ).to.be.revertedWith('No commitment found');
   });
 
@@ -272,6 +313,7 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       nameOwner,
+      NodeOwner,
     } = await loadFixture(initialSetup);
 
     await PartnerManager.mock.isPartner.returns(true);
@@ -294,7 +336,13 @@ describe('New Domain Registration', () => {
     tx.wait();
 
     await expect(
-      PartnerRegistrar.register('lcheta', nameOwner.address, SECRET, DURATION)
+      PartnerRegistrar.register(
+        'lcheta',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address
+      )
     ).to.be.revertedWith('No commitment found');
   });
 });
