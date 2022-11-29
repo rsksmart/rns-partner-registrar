@@ -1,7 +1,7 @@
 import { FeeManager__factory } from '../typechain-types/factories/contracts/FeeManager/FeeManager__factory';
 import { FeeManager } from '../typechain-types/contracts/FeeManager/FeeManager';
 import { ethers } from 'hardhat';
-import MyRIF from '../artifacts/contracts/Rif.sol/RIF.json';
+import MyRIF from '../artifacts/contracts/RIF.sol/RIF.json';
 import MyPartnerManager from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
 import MyPartnerConfiguration from '../artifacts/contracts/PartnerConfiguration/IPartnerConfiguration.sol/IPartnerConfiguration.json';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
