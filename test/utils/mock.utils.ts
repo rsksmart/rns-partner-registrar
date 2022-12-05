@@ -142,7 +142,7 @@ export const getAddrRegisterData = (
   );
   result.set(_signature, 0);
   result.set(_owner, _signature.length);
-  result.set(_owner, _signature.length + _owner.length);
+  result.set(_secret, _signature.length + _owner.length);
   result.set(_duration, _signature.length + _owner.length + _secret.length);
   result.set(
     _addr,
@@ -156,5 +156,24 @@ export const getAddrRegisterData = (
       _duration.length +
       _addr.length
   );
+  return result;
+};
+
+export const getRenewData = (name: string, duration: BigNumber) => {
+  // 0x + 4 bytes
+  const _signature = arrayify('0x14b1a4fc');
+
+  // 32 bytes
+  const _duration = arrayify(hexZeroPad(duration.toHexString(), 32));
+
+  // variable length
+  const _name = Buffer.from(name);
+
+  const result = new Uint8Array(
+    _signature.length + _duration.length + _name.length
+  );
+  result.set(_signature, 0);
+  result.set(_duration, _signature.length);
+  result.set(_name, _signature.length + _duration.length);
   return result;
 };
