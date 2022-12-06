@@ -12,6 +12,9 @@ import NodeOwnerAbi from '../test/external-abis/NodeOwner.json';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import ResolverAbi from '../test/external-abis/ResolverV1.json';
+import MultichainResolverAbi from '../test/external-abis/MultiChainResolver.json';
+import NameResolverAbi from '../test/external-abis/NameResolver.json';
+import ReverseSetupAbi from '../test/external-abis/ReverseSetup.json';
 import { oneRBTC } from 'test/utils/mock.utils';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
@@ -22,6 +25,8 @@ import { ERC677Token } from 'typechain-types';
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
+const reverseTldNode = namehash('reverse');
+const reverseTldAsSha3 = utils.id('reverse');
 const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 
 async function main() {
@@ -61,6 +66,54 @@ async function main() {
     );
 
     await (await Resolver.initialize(RNS.address)).wait();
+
+    const { contract: MultiChainResolver } = await deployContract<Contract>(
+      'MultiChainResolver',
+      {
+        _rns: RNS.address,
+        _publicResolver: Resolver.address,
+      },
+      (await ethers.getContractFactory(
+        MultichainResolverAbi.abi,
+        MultichainResolverAbi.bytecode
+      )) as Factory<Contract>
+    );
+
+    const { contract: NameResolver } = await deployContract<Contract>(
+      'NameResolver',
+      {
+        _rns: RNS.address,
+      },
+      (await ethers.getContractFactory(
+        NameResolverAbi.abi,
+        NameResolverAbi.bytecode
+      )) as Factory<Contract>
+    );
+
+    const { contract: ReverseRegistrar } = await deployContract<Contract>(
+      'ReverseRegistrar',
+      {
+        _rns: RNS.address,
+      },
+      (await ethers.getContractFactory(
+        NameResolverAbi.abi,
+        NameResolverAbi.bytecode
+      )) as Factory<Contract>
+    );
+
+    const { contract: ReverseSetup } = await deployContract<Contract>(
+      'ReverseSetup',
+      {
+        _rns: RNS.address,
+        _nameResolver: NameResolver.address,
+        _reverseRegistrar: ReverseRegistrar.address,
+        _from: owner.address,
+      },
+      (await ethers.getContractFactory(
+        ReverseSetupAbi.abi,
+        ReverseSetupAbi.bytecode
+      )) as Factory<Contract>
+    );
 
     const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
       beneficiary: owner.address,
@@ -152,6 +205,16 @@ async function main() {
     await (await PartnerManager.addPartner(FIFSADDRpartnerProxyAddress)).wait();
 
     await (
+      await RNS.setSubnodeOwner(
+        rootNodeId,
+        reverseTldAsSha3,
+        ReverseSetup.address
+      )
+    ).wait();
+
+    await (await ReverseSetup.run()).wait();
+
+    await (
       await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
     ).wait();
 
@@ -176,10 +239,10 @@ async function main() {
     const content = {
       rns: RNS.address,
       registrar: PartnerRegistrar.address,
-      reverseRegistrar: PartnerRegistrar.address, // TODO
+      reverseRegistrar: ReverseRegistrar.address,
       publicResolver: Resolver.address,
-      nameResolver: Resolver.address, // TODO
-      multiChainResolver: Resolver.address, // TODO
+      nameResolver: NameResolver.address,
+      multiChainResolver: MultiChainResolver.address,
       rif: RIF.address,
       fifsRegistrar: FIFSpartnerProxyAddress, // TODO
       fifsAddrRegistrar: FIFSADDRpartnerProxyAddress, // TODO
