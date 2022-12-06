@@ -70,7 +70,7 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
     {
         bytes32 label = keccak256(abi.encodePacked(name));
 
-        _nodeOwner.renew(label, duration.mul(365 days));
+        _nodeOwner.renew(label, duration * 365 days);
 
         return
             _getPartnerConfiguration().getPrice(
