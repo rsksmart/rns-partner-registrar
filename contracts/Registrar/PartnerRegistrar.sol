@@ -76,6 +76,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
             _rif.transferFrom(msg.sender, address(this), cost),
             "Token transfer failed"
         );
+        require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
 
         _rif.approve(address(_feeManager), cost);
 
