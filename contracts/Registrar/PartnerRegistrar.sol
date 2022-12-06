@@ -101,6 +101,9 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     }
 
     function canReveal(bytes32 commitment) public view returns (bool) {
+        if (_getPartnerConfiguration().getMinCommitmentAge() == 0) {
+            return true;
+        }
         uint256 revealTime = _commitmentRevealTime[commitment];
         return 0 < revealTime && revealTime <= block.timestamp;
     }
