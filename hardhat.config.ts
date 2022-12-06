@@ -5,6 +5,8 @@ import 'hardhat-exposed';
 import 'hardhat-packager';
 import 'hardhat-watcher';
 import 'tsconfig-paths/register';
+import '@nomiclabs/hardhat-ethers';
+import '@nomicfoundation/hardhat-chai-matchers';
 
 import { HardhatUserConfig } from 'hardhat/config';
 
