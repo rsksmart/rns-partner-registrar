@@ -183,22 +183,8 @@ const initialSetup = async () => {
 
 describe('New Domain Registration', () => {
   it('Should register a new domain', async () => {
-    const {
-      NodeOwner,
-      RIF,
-      PartnerManager,
-      PartnerRegistrar,
-      PartnerConfiguration,
-      Resolver,
-      RNS,
-      nameOwner,
-      FeeManager,
-      owner,
-      partner,
-      PartnerProxy,
-      pool,
-    } = await loadFixture(initialSetup);
-
+    const { RIF, Resolver, nameOwner, FeeManager, PartnerProxy, pool } =
+      await loadFixture(initialSetup);
     const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
     const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
     const commitment = await partnerProxyAsNameOwner.makeCommitment(
