@@ -45,6 +45,8 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
         external
         onlyPartner
     {
+        emit NameRenewed(msg.sender, duration);
+
         uint256 cost = _executeRenovation(name, duration);
 
         require(
@@ -53,11 +55,12 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
         );
         require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
 
-        _rif.approve(address(_feeManager), cost);
+        require(
+            _rif.approve(address(_feeManager), cost),
+            "Token approve failed"
+        );
 
         _feeManager.deposit(msg.sender, cost);
-
-        emit NameRenewed(msg.sender, duration);
     }
 
     /// @notice Executes renovation abstracted from payment method.

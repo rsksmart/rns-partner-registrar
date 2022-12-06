@@ -41,9 +41,11 @@ contract PartnerManager is IPartnerManager, Ownable {
         _partnerConfigurations[partner] = partnerConfiguration;
     }
 
-    function getPartnerConfiguration(
-        address partner
-    ) public view returns (IPartnerConfiguration) {
+    function getPartnerConfiguration(address partner)
+        public
+        view
+        returns (IPartnerConfiguration)
+    {
         return _partnerConfigurations[partner];
     }
 }

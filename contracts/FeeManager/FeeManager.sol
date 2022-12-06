@@ -15,7 +15,7 @@ contract FeeManager is IFeeManager, Ownable {
     RIF private _rif;
 
     mapping(address => uint256) public balances;
-    uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
+    uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10**18);
 
     IBaseRegistrar private _registrar;
     IPartnerManager private _partnerManager;
@@ -68,9 +68,11 @@ contract FeeManager is IFeeManager, Ownable {
         }
     }
 
-    function _getPartnerConfiguration(
-        address partner
-    ) private view returns (IPartnerConfiguration) {
+    function _getPartnerConfiguration(address partner)
+        private
+        view
+        returns (IPartnerConfiguration)
+    {
         return _partnerManager.getPartnerConfiguration(partner);
     }
 }
