@@ -18,7 +18,7 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
         NodeOwner nodeOwner,
         IERC677 rif,
         IPartnerManager partnerManager
-    ) Ownable(){
+    ) Ownable() {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
@@ -41,10 +41,16 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
     /// @dev This method should be called if the owned.
     /// @param name The name to register.
     /// @param duration Time to register in years.
-    function renew(string calldata name, uint duration) external onlyPartner {
-        uint256 cost = executeRenovation(name, duration);
+    function renew(string calldata name, uint256 duration)
+        external
+        onlyPartner
+    {
+        uint256 cost = _executeRenovation(name, duration);
 
-        require(_rif.transferFrom(msg.sender, pool, cost), "Token transfer failed");
+        require(
+            _rif.transferFrom(msg.sender, address(this), cost),
+            "Token transfer failed"
+        );
         require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
 
         _rif.approve(address(_feeManager), cost);
@@ -58,23 +64,26 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
     /// @param name The name to renew.
     /// @param duration Time to renew in years.
     /// @return price Price of the name to register.
-    function executeRenovation(string memory name, uint duration) private returns (uint256) {
+    function _executeRenovation(string memory name, uint256 duration)
+        private
+        returns (uint256)
+    {
         bytes32 label = keccak256(abi.encodePacked(name));
 
         _nodeOwner.renew(label, duration.mul(365 days));
 
         return
-        _getPartnerConfiguration().getPrice(
-            name,
-            _nodeOwner.expirationTime(uint256(label)),
-            duration
-        );
+            _getPartnerConfiguration().getPrice(
+                name,
+                _nodeOwner.expirationTime(uint256(label)),
+                duration
+            );
     }
 
     function _getPartnerConfiguration()
-    private
-    view
-    returns (IPartnerConfiguration)
+        private
+        view
+        returns (IPartnerConfiguration)
     {
         return _partnerManager.getPartnerConfiguration(msg.sender);
     }
