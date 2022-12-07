@@ -362,6 +362,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerConfiguration.address
     );
 
-    expect(partnerOneOwner.canReveal(DUMMY_COMMITMENT)).to.not.be.reverted;
+    expect(partnerOneOwner.commit(DUMMY_COMMITMENT)).to.not.be.reverted;
   });
 });
