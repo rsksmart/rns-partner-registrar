@@ -293,7 +293,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     ).to.be.revertedWith('Init: clone cannot be reinitialized');
   });
 
-  it('Should return true if partner minCommitmentAge is 0 (i.e partner config allows one step purchase', async () => {
+  it('Should revert on commit if partner minCommitmentAge is 0 (i.e partner config allows one step purchase', async () => {
     const {
       PartnerProxy,
       PartnerProxyFactory,
@@ -325,11 +325,12 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerConfiguration.address
     );
 
-    const value = await partnerOneOwner.canReveal(DUMMY_COMMITMENT);
-    expect(value).to.be.true;
+    await expect(partnerOneOwner.commit(DUMMY_COMMITMENT)).to.be.revertedWith(
+      'Commitment not required'
+    );
   });
 
-  it('Should return false if partner minCommitmentAge is not 0 (i.e partner config does not allow one step purchase', async () => {
+  it('Should not be reverted if partner minCommitmentAge is not 0 (i.e partner config does not allow one step purchase', async () => {
     const {
       PartnerProxy,
       PartnerProxyFactory,
@@ -361,7 +362,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerConfiguration.address
     );
 
-    const value = await partnerOneOwner.canReveal(DUMMY_COMMITMENT);
-    expect(value).to.be.false;
+    expect(partnerOneOwner.commit(DUMMY_COMMITMENT)).to.not.be.reverted;
   });
 });
