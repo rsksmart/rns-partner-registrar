@@ -292,4 +292,76 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
         .init(partner2.address, PartnerRegistrar.address, RIF.address)
     ).to.be.revertedWith('Init: clone cannot be reinitialized');
   });
+
+  it('Should revert on commit if partner minCommitmentAge is 0 (i.e partner config allows one step purchase', async () => {
+    const {
+      PartnerProxy,
+      PartnerProxyFactory,
+      PartnerConfiguration,
+      PartnerManager,
+      partner1,
+      PartnerRegistrar,
+      RIF,
+    } = await loadFixture(initialSetup);
+
+    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
+      partner1.address,
+      'PartnerOne',
+      PartnerRegistrar.address
+    );
+    await partnerOneProxy.wait();
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+      partner1.address,
+      'PartnerOne'
+    );
+
+    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
+
+    await PartnerManager.mock.isPartner.returns(true);
+
+    await PartnerConfiguration.mock.getMinCommitmentAge.returns(0);
+
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+
+    await expect(partnerOneOwner.commit(DUMMY_COMMITMENT)).to.be.revertedWith(
+      'Commitment not required'
+    );
+  });
+
+  it('Should not be reverted if partner minCommitmentAge is not 0 (i.e partner config does not allow one step purchase', async () => {
+    const {
+      PartnerProxy,
+      PartnerProxyFactory,
+      PartnerConfiguration,
+      PartnerManager,
+      partner1,
+      PartnerRegistrar,
+      RIF,
+    } = await loadFixture(initialSetup);
+
+    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
+      partner1.address,
+      'PartnerOne',
+      PartnerRegistrar.address
+    );
+    await partnerOneProxy.wait();
+    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+      partner1.address,
+      'PartnerOne'
+    );
+
+    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
+
+    await PartnerManager.mock.isPartner.returns(true);
+
+    await PartnerConfiguration.mock.getMinCommitmentAge.returns(1);
+
+    await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+
+    expect(partnerOneOwner.canReveal(DUMMY_COMMITMENT)).to.not.be.reverted;
+  });
 });

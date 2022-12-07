@@ -106,6 +106,10 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     }
 
     function commit(bytes32 commitment) external onlyPartner {
+        // Check the Partner's one step registration allowance config
+        if (_getPartnerConfiguration().getMinCommitmentAge() == 0) {
+            revert("Commitment not required");
+        }
         require(_commitmentRevealTime[commitment] < 1, "Existent commitment");
         _commitmentRevealTime[commitment] =
             block.timestamp +
