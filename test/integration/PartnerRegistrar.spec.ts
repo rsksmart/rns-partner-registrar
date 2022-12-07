@@ -187,13 +187,15 @@ describe('New Domain Registration', () => {
       await loadFixture(initialSetup);
     const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
     const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
-    const commitment = await partnerProxyAsNameOwner.makeCommitment(
-      LABEL,
-      nameOwner.address,
-      SECRET
-    );
 
-    await (await partnerProxyAsNameOwner.commit(commitment)).wait();
+    /* Below steps become redundant because the commit transaction reverts as the minCommitment age is 0 */
+    // const commitment = await partnerProxyAsNameOwner.makeCommitment(
+    //   LABEL,
+    //   nameOwner.address,
+    //   SECRET
+    // );
+
+    // await (await partnerProxyAsNameOwner.commit(commitment)).wait();
 
     const data = getAddrRegisterData(
       NAME,
