@@ -33,12 +33,13 @@ export default <HardhatUserConfig>{
       chainId: 1337,
       blockGasLimit: 12450000,
     },
-    // testnet: {
-    //   url: 'https://public-node.testnet.rsk.co',
-    //   accounts: {
-    //     mnemonic: process.env.HDWALLET_MNEMONIC,
-    //   },
-    // },
+    testnet: {
+      url: 'https://public-node.testnet.rsk.co',
+      accounts: {
+        mnemonic: process.env.HDWALLET_MNEMONIC || '',
+      },
+      chainId: 31,
+    },
   },
   typechain: {
     target: 'ethers-v5',
