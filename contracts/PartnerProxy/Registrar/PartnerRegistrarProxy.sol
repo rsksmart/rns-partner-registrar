@@ -2,12 +2,13 @@
 pragma solidity ^0.8.17;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import "../Registrar/IBaseRegistrar.sol";
+import "../../Registrar/IBaseRegistrar.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
-import "../BytesUtils.sol";
+import "../../BytesUtils.sol";
 import "hardhat/console.sol";
+import "./IPartnerRegistrarProxy.sol";
 
-contract PartnerProxy is IBaseRegistrar, Ownable {
+contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
     IBaseRegistrar private _partnerRegistrar;
     IERC677 private _rif;
     // sha3('register(string,address,bytes32,uint)')

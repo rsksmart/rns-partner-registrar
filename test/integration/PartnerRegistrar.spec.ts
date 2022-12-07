@@ -20,8 +20,8 @@ import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/Partner
 import { BigNumber, utils } from 'ethers';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
-import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
-import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
+import { $PartnerRegistrarProxy } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxy.sol/$PartnerRegistrarProxy';
+import { $PartnerRegistrarProxyFactory } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxyFactory.sol/$PartnerRegistrarProxyFactory';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
@@ -126,16 +126,17 @@ const initialSetup = async () => {
 
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
 
-  const { contract: PartnerProxyBase } = await deployContract<$PartnerProxy>(
-    '$PartnerProxy',
-    {}
-  );
+  const { contract: PartnerProxyBase } =
+    await deployContract<$PartnerRegistrarProxy>('$PartnerRegistrarProxy', {});
 
   const { contract: PartnerProxyFactory } =
-    await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
-      _masterProxy: PartnerProxyBase.address,
-      _rif: RIF.address,
-    });
+    await deployContract<$PartnerRegistrarProxyFactory>(
+      '$PartnerRegistrarProxyFactory',
+      {
+        _masterProxy: PartnerProxyBase.address,
+        _rif: RIF.address,
+      }
+    );
 
   const partnerProxyName = 'PartnerOne';
   await (
