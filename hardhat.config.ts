@@ -36,7 +36,7 @@ export default <HardhatUserConfig>{
     testnet: {
       url: 'https://public-node.testnet.rsk.co',
       accounts: {
-        mnemonic: process.env.HDWALLET_MNEMONIC,
+        mnemonic: process.env.HDWALLET_MNEMONIC || '',
       },
       chainId: 31,
     },
