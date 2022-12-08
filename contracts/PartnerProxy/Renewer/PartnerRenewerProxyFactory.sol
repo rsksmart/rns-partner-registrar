@@ -43,8 +43,8 @@ contract PartnerRenewerProxyFactory is Ownable, CloneFactory {
         );
 
         newPartnerProxy.init(partner, partnerRegistrar, partnerRenewer, _rif);
-        _partnerProxies[partner][name] = Partner(name, newPartnerProxy);
         partnerProxyCount++;
+        _partnerProxies[partner][name] = Partner(name, newPartnerProxy);
     }
 
     function getPartnerProxiesCount() external view returns (uint256) {
