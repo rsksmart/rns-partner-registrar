@@ -22,6 +22,7 @@ import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 import { $PartnerRegistrarProxy } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxy.sol/$PartnerRegistrarProxy';
 import { $PartnerRegistrarProxyFactory } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxyFactory.sol/$PartnerRegistrarProxyFactory';
+import { $PartnerRenewer } from '../../typechain-types/contracts-exposed/Renewer/PartnerRenewer.sol/$PartnerRenewer';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
@@ -104,11 +105,21 @@ const initialSetup = async () => {
       rootNode: tldNode,
     });
 
+  const { contract: PartnerRenewer } = await deployContract<$PartnerRenewer>(
+    '$PartnerRenewer',
+    {
+      nodeOwner: NodeOwner.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+    }
+  );
+
   const { contract: FeeManager } = await deployContract<IFeeManager>(
     '$FeeManager',
     {
       rif: RIF.address,
       registrar: PartnerRegistrar.address,
+      renewer: PartnerRenewer.address,
       partnerManager: PartnerManager.address,
       pool: pool.address,
     }

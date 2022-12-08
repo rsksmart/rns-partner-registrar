@@ -6,6 +6,7 @@ import "./IFeeManager.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../Registrar/IBaseRegistrar.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "../Renewer/IBaseRenewer.sol";
 
 error ZeroBalance();
 error NotAuthorized(address sender);
@@ -18,22 +19,30 @@ contract FeeManager is IFeeManager, Ownable {
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10**18);
 
     IBaseRegistrar private _registrar;
+    IBaseRenewer private _renewer;
     IPartnerManager private _partnerManager;
     address private _pool;
 
-    modifier onlyRegistrar() {
-        if (msg.sender != address(_registrar)) revert NotAuthorized(msg.sender);
-        _;
+    modifier onlyAuthorised() {
+        if (
+            msg.sender == address(_registrar) || msg.sender == address(_renewer)
+        ) {
+            _;
+        } else {
+            revert NotAuthorized(msg.sender);
+        }
     }
 
     constructor(
         RIF rif,
         IBaseRegistrar registrar,
+        IBaseRenewer renewer,
         IPartnerManager partnerManager,
         address pool
     ) Ownable() {
         _rif = rif;
         _registrar = registrar;
+        _renewer = renewer;
         _partnerManager = partnerManager;
         _pool = pool;
     }
@@ -50,7 +59,7 @@ contract FeeManager is IFeeManager, Ownable {
         }
     }
 
-    function deposit(address partner, uint256 cost) external onlyRegistrar {
+    function deposit(address partner, uint256 cost) external onlyAuthorised {
         require(
             _rif.transferFrom(msg.sender, address(this), cost),
             "Token transfer failed"

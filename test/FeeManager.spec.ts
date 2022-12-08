@@ -2,7 +2,7 @@ import { FeeManager__factory } from '../typechain-types/factories/contracts/FeeM
 import { FeeManager } from '../typechain-types/contracts/FeeManager/FeeManager';
 import { ethers } from 'hardhat';
 import MyRIF from '../artifacts/contracts/RIF.sol/RIF.json';
-import MyPartnerManager from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
+import PartnerManagerJson from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
 import MyPartnerConfiguration from '../artifacts/contracts/PartnerConfiguration/IPartnerConfiguration.sol/IPartnerConfiguration.json';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { BigNumber } from 'ethers';
@@ -15,15 +15,16 @@ import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfig
 import { smock, FakeContract } from '@defi-wonderland/smock';
 
 async function testSetup() {
-  const [owner, registrar, account2, account3, pool, ...accounts] =
+  const [owner, registrar, renewer, account2, account3, pool, ...accounts] =
     await ethers.getSigners();
 
   const RIF = await smock.fake<RIFType>(MyRIF.abi);
 
   const PartnerManager = await deployMockContract<PartnerManager>(
     owner,
-    MyPartnerManager.abi
+    PartnerManagerJson.abi
   );
+
   const PartnerConfiguration = await deployMockContract<PartnerConfiguration>(
     owner,
     MyPartnerConfiguration.abi
@@ -36,6 +37,7 @@ async function testSetup() {
   const feeManager = (await FeeManager.deploy(
     RIF.address,
     registrar.address,
+    renewer.address,
     PartnerManager.address,
     pool.address
   )) as FeeManager;
