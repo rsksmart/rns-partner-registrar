@@ -219,9 +219,9 @@ describe('Fee Manager', () => {
       try {
         await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
           .eventually.fulfilled;
-        expect(await feeManager.getBalance(partner.address)).to.be.equals(
-          ethers.constants.Zero
-        );
+        expect(
+          await feeManager.getBalance(partnerOwnerAccount.address)
+        ).to.be.equals(ethers.constants.Zero);
       } catch (error) {
         console.log(error);
         throw error;
