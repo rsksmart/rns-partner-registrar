@@ -1,33 +1,35 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from '../chairc';
-import { deployContract } from 'utils/deployment.utils';
-import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
-import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
-import { deployMockContract } from './utils/mock.utils';
-import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
-import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
-import { $RIF } from 'typechain-types/contracts-exposed/RIF.sol/$RIF';
-import { $IPartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration';
-import { IFeeManager } from 'typechain-types/contracts/FeeManager/IFeeManager';
-import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
-import NodeOwnerJson from '../artifacts/contracts-exposed/NodeOwner.sol/$NodeOwner.json';
+import {
+  PartnerProxy,
+  PartnerProxyFactory__factory,
+  PartnerProxy__factory,
+  PartnerRegistrar__factory,
+} from 'typechain-types';
+import { PartnerProxyFactory } from 'typechain-types';
+import { PartnerRegistrar } from 'typechain-types';
+import { NodeOwner as NodeOwnerType } from 'typechain-types';
+import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
+import { RIF as RIFType } from 'typechain-types';
+import { IPartnerConfiguration as IPartnerConfigurationType } from 'typechain-types';
+import { IFeeManager as IFeeManagerType } from 'typechain-types';
+import { PartnerManager as PartnerManagerType } from 'typechain-types';
 import RIFJson from '../artifacts/contracts-exposed/RIF.sol/$RIF.json';
-import IPartnerConfigurationJson from '../artifacts/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
+import IPartnerConfigurationJson from '../artifacts/contracts/PartnerConfiguration/IPartnerConfiguration.sol/IPartnerConfiguration.json';
 import IFeeManagerJson from '../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
-import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager.json';
-import PartnerRegistrarJson from '../artifacts/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar.json';
+import PartnerMangerJson from '../artifacts/contracts/PartnerManager/PartnerManager.sol/PartnerManager.json';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
-import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
-import RNSJson from '../artifacts/contracts-exposed/RNS.sol/$RNS.json';
-import ResolverJson from '../artifacts/contracts-exposed/test-utils/Resolver.sol/$Resolver.json';
-import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
+import { RNS as RNSType } from 'typechain-types';
+import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
+import ResolverJson from '../artifacts/contracts/test-utils/Resolver.sol/Resolver.json';
+import { Resolver as ResolverType } from 'typechain-types';
+import { smock, FakeContract } from '@defi-wonderland/smock';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
-const MIN_COMMITMENT_AGE = 1;
 const PRICE = 1;
 const EXPIRATION_TIME = 365;
 const DURATION = 1;
@@ -41,58 +43,57 @@ async function initialSetup() {
   const partner2 = signers[2];
   const nameOwner = signers[3];
 
-  const RNS = await deployMockContract<$RNS>(owner, RNSJson.abi);
+  const RNS = await smock.fake<RNSType>(RNSJson.abi);
 
-  const Resolver = await deployMockContract<$Resolver>(owner, ResolverJson.abi);
+  const Resolver = await smock.fake<ResolverType>(ResolverJson.abi);
 
-  const NodeOwner = await deployMockContract<$NodeOwner>(
-    owner,
-    NodeOwnerJson.abi
-  );
+  const NodeOwner = await smock.fake<NodeOwnerType>(NodeOwnerJson.abi);
 
-  const RIF = await deployMockContract<$RIF>(owner, RIFJson.abi);
+  const RIF = await smock.fake<RIFType>(RIFJson.abi);
 
-  const PartnerConfiguration = await deployMockContract<$IPartnerConfiguration>(
-    owner,
+  const PartnerConfiguration = await smock.fake<IPartnerConfigurationType>(
     IPartnerConfigurationJson.abi
   );
 
-  const FeeManager = await deployMockContract<IFeeManager>(
-    owner,
-    IFeeManagerJson.abi
-  );
+  const FeeManager = await smock.fake<IFeeManagerType>(IFeeManagerJson.abi);
 
-  const PartnerManager = await deployMockContract<$PartnerManager>(
-    owner,
+  const PartnerManager = await smock.fake<PartnerManagerType>(
     PartnerMangerJson.abi
   );
 
-  const { contract: PartnerRegistrar } =
-    await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
-      NodeOwner: NodeOwner.address,
-      RIF: RIF.address,
-      IPartnerManager: PartnerManager.address,
-      RNS: RNS.address,
-      rootNode: tldNode,
-    });
+  const partnerRegistrar = (await ethers.getContractFactory(
+    'PartnerRegistrar'
+  )) as PartnerRegistrar__factory;
 
-  const { contract: PartnerProxy } = await deployContract<$PartnerProxy>(
-    '$PartnerProxy',
-    {}
-  );
+  const PartnerRegistrar = (await partnerRegistrar.deploy(
+    NodeOwner.address,
+    RIF.address,
+    PartnerManager.address,
+    RNS.address,
+    tldNode
+  )) as PartnerRegistrar;
 
-  const { contract: PartnerProxyFactory } =
-    await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
-      _masterProxy: PartnerProxy.address,
-      _rif: RIF.address,
-    });
+  const partnerProxy = (await ethers.getContractFactory(
+    'PartnerProxy'
+  )) as PartnerProxy__factory;
 
-  await RNS.mock.resolver.returns(Resolver.address);
+  const PartnerProxy = (await partnerProxy.deploy()) as PartnerProxy;
 
-  await Resolver.mock.setAddr.returns();
+  const partnerProxyFactory = (await ethers.getContractFactory(
+    'PartnerProxyFactory'
+  )) as PartnerProxyFactory__factory;
 
-  await NodeOwner.mock.reclaim.returns();
-  await NodeOwner.mock.transferFrom.returns();
+  const PartnerProxyFactory = (await partnerProxyFactory.deploy(
+    PartnerProxy.address,
+    RIF.address
+  )) as PartnerProxyFactory;
+
+  RNS.resolver.returns(Resolver.address);
+
+  Resolver.setAddr.returns();
+
+  NodeOwner.reclaim.returns();
+  NodeOwner.transferFrom.returns();
 
   return {
     PartnerProxy,
@@ -208,29 +209,29 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     const partnerProxy = PartnerProxy.attach(tx1.proxy);
 
     //
-    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+    await PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
 
-    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
+    await PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
 
-    await PartnerConfiguration.mock.getMinCommitmentAge.returns(1);
+    await PartnerConfiguration.getMinCommitmentAge.returns(1);
 
-    await PartnerConfiguration.mock.getPrice.returns(PRICE);
+    await PartnerConfiguration.getPrice.returns(PRICE);
 
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    await PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
-    await RIF.mock.transferFrom.returns(true);
+    RIF.transferFrom.returns(true);
 
-    await RIF.mock.approve.returns(true);
+    RIF.approve.returns(true);
 
-    await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
+    await NodeOwner.expirationTime.returns(EXPIRATION_TIME);
 
-    await NodeOwner.mock.register.returns();
+    await NodeOwner.register.returns();
 
-    await FeeManager.mock.deposit.returns();
+    await FeeManager.deposit.returns();
 
     await PartnerRegistrar.setFeeManager(FeeManager.address);
 
@@ -317,11 +318,11 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
 
-    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.mock.getMinCommitmentAge.returns(0);
+    await PartnerConfiguration.getMinCommitmentAge.returns(0);
 
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    await PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
@@ -354,11 +355,11 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
 
-    await PartnerManager.mock.isPartner.returns(true);
+    await PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.mock.getMinCommitmentAge.returns(1);
+    await PartnerConfiguration.getMinCommitmentAge.returns(1);
 
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    await PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
