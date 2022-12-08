@@ -15,7 +15,7 @@ import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfig
 import { smock, FakeContract } from '@defi-wonderland/smock';
 
 async function testSetup() {
-  const [owner, registrar, account2, account3, pool, ...accounts] =
+  const [owner, registrar, partnerOwnerAccount, account3, pool, ...accounts] =
     await ethers.getSigners();
 
   const RIF = await smock.fake<RIFType>(MyRIF.abi);
@@ -51,7 +51,7 @@ async function testSetup() {
     registrar,
     PartnerManager,
     PartnerConfiguration,
-    account2,
+    partnerOwnerAccount,
     account3,
     accounts,
     pool,
@@ -72,6 +72,7 @@ describe('Fee Manager', () => {
           RIF,
           pool,
           oneRBTC,
+          partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
         const depositAmount = BigNumber.from(10);
@@ -84,6 +85,10 @@ describe('Fee Manager', () => {
           PartnerConfiguration.address
         );
 
+        await PartnerManager.mock.getPartnerOwnerAccount.returns(
+          partnerOwnerAccount.address
+        );
+
         await expect(
           feeManager.connect(registrar).deposit(partner.address, depositAmount)
         ).to.not.be.reverted;
@@ -91,9 +96,9 @@ describe('Fee Manager', () => {
         const partnerFee = depositAmount
           .mul(feePercentage)
           .div(oneRBTC.mul(100));
-        expect(await feeManager.balances(partner.address)).to.be.equal(
-          partnerFee
-        );
+        await expect(
+          +(await feeManager.getBalance(partnerOwnerAccount.address))
+        ).to.be.equal(+partnerFee);
 
         expect(RIF.transfer).to.have.been.calledOnceWith(
           pool.address,
@@ -138,8 +143,10 @@ describe('Fee Manager', () => {
           PartnerConfiguration,
           PartnerManager,
           oneRBTC,
+          partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
+        RIF.transferFrom.returns(true);
         RIF.transfer.returns(false);
         const depositAmount = BigNumber.from(10);
         const feePercentage = BigNumber.from(10);
@@ -150,6 +157,9 @@ describe('Fee Manager', () => {
         await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
         await PartnerManager.mock.getPartnerConfiguration.returns(
           PartnerConfiguration.address
+        );
+        await PartnerManager.mock.getPartnerOwnerAccount.returns(
+          partnerOwnerAccount.address
         );
 
         await expect(
@@ -172,6 +182,7 @@ describe('Fee Manager', () => {
     let feeManager: FeeManager,
       registrar: SignerWithAddress,
       partner: SignerWithAddress,
+      partnerOwnerAccount: SignerWithAddress,
       RIF: FakeContract<RIFType>,
       PartnerManager: MockContract<PartnerManager>,
       PartnerConfiguration: MockContract<PartnerConfiguration>;
@@ -184,25 +195,31 @@ describe('Fee Manager', () => {
       RIF = vars.RIF;
       PartnerConfiguration = vars.PartnerConfiguration;
       PartnerManager = vars.PartnerManager;
+      partnerOwnerAccount = vars.partnerOwnerAccount;
 
       const depositAmount = oneRBTC.mul(5);
       const feePercentage = oneRBTC.mul(5);
 
       RIF.transfer.returns(true);
+      RIF.transferFrom.returns(true);
       await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
       await PartnerManager.mock.getPartnerConfiguration.returns(
         PartnerConfiguration.address
       );
+      await PartnerManager.mock.getPartnerOwnerAccount.returns(
+        partnerOwnerAccount.address
+      );
 
       await expect(
         feeManager.connect(registrar).deposit(partner.address, depositAmount)
-      ).to.not.be.reverted;
+      ).eventually.fulfilled;
     });
 
     it('should withdraw successfully', async () => {
       try {
-        await expect(feeManager.connect(partner).withdraw()).to.not.be.reverted;
-        expect(await feeManager.balances(partner.address)).to.be.equals(
+        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
+          .eventually.fulfilled;
+        expect(await feeManager.getBalance(partner.address)).to.be.equals(
           ethers.constants.Zero
         );
       } catch (error) {
@@ -213,7 +230,8 @@ describe('Fee Manager', () => {
 
     it('should revert when user has no balance', async () => {
       try {
-        await expect(feeManager.connect(partner).withdraw()).to.not.be.reverted;
+        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
+          .eventually.fulfilled;
         await expect(
           feeManager.connect(partner).withdraw()
         ).to.be.revertedWithCustomError(feeManager, 'ZeroBalance');
@@ -226,12 +244,14 @@ describe('Fee Manager', () => {
     it('should revert if transfer fails', async () => {
       try {
         RIF.transfer.returns(false);
-        await expect(feeManager.connect(partner).withdraw())
+        await expect(feeManager.connect(partnerOwnerAccount).withdraw())
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(
             feeManager.address,
-            partner.address,
-            await feeManager.connect(partner).balances(partner.address)
+            partnerOwnerAccount.address,
+            await feeManager
+              .connect(partnerOwnerAccount.address)
+              .getBalance(partnerOwnerAccount.address)
           );
       } catch (error) {
         console.log(error);

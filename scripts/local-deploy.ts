@@ -25,7 +25,6 @@ import { ERC677Token } from 'typechain-types';
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
-const reverseTldNode = namehash('reverse');
 const reverseTldAsSha3 = utils.id('reverse');
 const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 
@@ -235,7 +234,12 @@ async function main() {
 
     console.log('setting up contracts');
 
-    await (await PartnerManager.addPartner(FIFSADDRpartnerProxyAddress)).wait();
+    await (
+      await PartnerManager.addPartner(
+        FIFSADDRpartnerProxyAddress,
+        partner.address
+      )
+    ).wait();
 
     console.log('partner added ', FIFSADDRpartnerProxyAddress);
 

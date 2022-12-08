@@ -27,7 +27,7 @@ const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = BigNumber.from('1');
-const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
+const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
@@ -35,7 +35,7 @@ const tldAsSha3 = utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partner = signers[0];
+  const partnerOwnerAccount = signers[0];
   const nameOwner = signers[2];
   const pool = signers[3];
 
@@ -140,20 +140,25 @@ const initialSetup = async () => {
   const partnerProxyName = 'PartnerOne';
   await (
     await PartnerProxyFactory.createNewPartnerProxy(
-      partner.address,
+      partnerOwnerAccount.address,
       partnerProxyName,
       PartnerRegistrar.address
     )
   ).wait();
 
   const tx1 = await PartnerProxyFactory.getPartnerProxy(
-    partner.address,
+    partnerOwnerAccount.address,
     partnerProxyName
   );
   const partnerProxyAddress = tx1.proxy;
   const PartnerProxy = PartnerProxyBase.attach(partnerProxyAddress);
 
-  await (await PartnerManager.addPartner(partnerProxyAddress)).wait();
+  await (
+    await PartnerManager.addPartner(
+      partnerProxyAddress,
+      partnerOwnerAccount.address
+    )
+  ).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
       partnerProxyAddress,
@@ -173,7 +178,7 @@ const initialSetup = async () => {
     Resolver,
     RNS,
     owner,
-    partner,
+    partnerOwnerAccount,
     nameOwner,
     signers,
     PartnerProxy,
@@ -182,11 +187,17 @@ const initialSetup = async () => {
 };
 
 describe('New Domain Registration', () => {
-  it('Should register a new domain for a partner with 0 minCommitmentAge', async () => {
-    const { RIF, Resolver, nameOwner, FeeManager, PartnerProxy, pool } =
-      await loadFixture(initialSetup);
+  it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
+    const {
+      RIF,
+      Resolver,
+      nameOwner,
+      FeeManager,
+      PartnerProxy,
+      pool,
+      partnerOwnerAccount,
+    } = await loadFixture(initialSetup);
     const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
-    const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
 
     const data = getAddrRegisterData(
       NAME,
@@ -222,9 +233,17 @@ describe('New Domain Registration', () => {
     const expectedPoolBalance = namePrice.sub(expectedManagerBalance);
 
     expect(+poolBalance).to.equal(+expectedPoolBalance);
+
+    const partnerBalanceInFeeManager = await FeeManager.getBalance(
+      partnerOwnerAccount.address
+    );
+    const expectedPartnerAccountBalance = expectedManagerBalance; //since it is the only operation...
+    expect(+partnerBalanceInFeeManager).to.equal(
+      +expectedPartnerAccountBalance
+    );
   });
 
-  it('Should register a new domain for a partner with a non 0 minCommitmentAge', async () => {
+  it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
     const {
       RIF,
       Resolver,

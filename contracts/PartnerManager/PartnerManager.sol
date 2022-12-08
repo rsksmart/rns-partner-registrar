@@ -8,24 +8,28 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract PartnerManager is IPartnerManager, Ownable {
     mapping(address => bool) private _partners;
     mapping(address => IPartnerConfiguration) private _partnerConfigurations;
+    mapping(address => address) private _partnerOwnerAccounts;
 
-    event PartnerAdded(address indexed partner);
-    event PartnerRemoved(address indexed partner);
+    event PartnerAdded(address indexed partner, address indexed ownerAccount);
+    event PartnerRemoved(address indexed partner, address indexed ownerAccount);
 
     function isPartner(address partner) public view returns (bool) {
         return _partners[partner];
     }
 
-    function addPartner(address partner) external onlyOwner {
+    function addPartner(
+        address partner,
+        address partnerOwnerAccount
+    ) external onlyOwner {
         _partners[partner] = true;
-
-        emit PartnerAdded(partner);
+        _partnerOwnerAccounts[partner] = partnerOwnerAccount;
+        emit PartnerAdded(partner, partnerOwnerAccount);
     }
 
     function removePartner(address partner) external onlyOwner {
         _partners[partner] = false;
 
-        emit PartnerRemoved(partner);
+        emit PartnerRemoved(partner, _partnerOwnerAccounts[partner]);
     }
 
     function setPartnerConfiguration(
@@ -45,5 +49,11 @@ contract PartnerManager is IPartnerManager, Ownable {
         address partner
     ) public view returns (IPartnerConfiguration) {
         return _partnerConfigurations[partner];
+    }
+
+    function getPartnerOwnerAccount(
+        address partner
+    ) external view returns (address) {
+        return _partnerOwnerAccounts[partner];
     }
 }
