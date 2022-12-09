@@ -14,7 +14,6 @@ import RIFJson from '../artifacts/contracts-exposed/RIF.sol/$RIF.json';
 import IPartnerConfigurationJson from '../artifacts/contracts-exposed/PartnerConfiguration/IPartnerConfiguration.sol/$IPartnerConfiguration.json';
 import IFeeManagerJson from '../artifacts/contracts/FeeManager/IFeeManager.sol/IFeeManager.json';
 import PartnerMangerJson from '../artifacts/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager.json';
-import PartnerRegistrarJson from '../artifacts/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar.json';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 import RNSJson from '../artifacts/contracts-exposed/RNS.sol/$RNS.json';
@@ -22,12 +21,12 @@ import ResolverJson from '../artifacts/contracts-exposed/test-utils/Resolver.sol
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import { $PartnerRegistrarProxy } from '../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxy.sol/$PartnerRegistrarProxy';
 import { $PartnerRegistrarProxyFactory } from '../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxyFactory.sol/$PartnerRegistrarProxyFactory';
+import { $PartnerRenewer } from 'typechain-types/contracts-exposed/Renewer/PartnerRenewer.sol/$PartnerRenewer';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
-const MIN_COMMITMENT_AGE = 1;
 const PRICE = 1;
 const EXPIRATION_TIME = 365;
 const DURATION = 1;
@@ -76,15 +75,22 @@ async function initialSetup() {
       rootNode: tldNode,
     });
 
-  const { contract: PartnerRegistrarProxy } =
-    await deployContract<$PartnerRegistrarProxy>('$PartnerRegistrarProxy', {});
+  const { contract: PartnerRenewer } = await deployContract<$PartnerRenewer>(
+    '$PartnerRenewer',
+    {
+      NodeOwner: NodeOwner.address,
+      RIF: RIF.address,
+      IPartnerManager: PartnerManager.address,
+    }
+  );
 
   const { contract: PartnerRegistrarProxyFactory } =
     await deployContract<$PartnerRegistrarProxyFactory>(
       '$PartnerRegistrarProxyFactory',
       {
-        _masterProxy: PartnerRegistrarProxy.address,
         _rif: RIF.address,
+        _partnerRegistrar: PartnerRegistrar.address,
+        _partnerRenewer: PartnerRenewer.address,
       }
     );
 
@@ -96,7 +102,7 @@ async function initialSetup() {
   await NodeOwner.mock.transferFrom.returns();
 
   return {
-    PartnerProxy: PartnerRegistrarProxy,
+    PartnerProxy: await ethers.getContractFactory('PartnerRegistrarProxy'),
     PartnerProxyFactory: PartnerRegistrarProxyFactory,
     NodeOwner,
     RIF,
@@ -113,32 +119,34 @@ async function initialSetup() {
 }
 describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partner Proxies', () => {
   it('should successfully create new partner proxies', async () => {
-    const { PartnerProxyFactory, partner1, partner2, PartnerRegistrar } =
-      await loadFixture(initialSetup);
+    const { PartnerProxyFactory, partner1, partner2 } = await loadFixture(
+      initialSetup
+    );
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne',
-      PartnerRegistrar.address
+      'PartnerOne'
     );
     await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+    const result1 = await PartnerProxyFactory.getPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
 
     const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
-      'PartnerTwo',
-      PartnerRegistrar.address
+      'PartnerTwo'
     );
     await partnerTwoProxy.wait();
-    const tx2 = await PartnerProxyFactory.getPartnerProxy(
+    const result2 = await PartnerProxyFactory.getPartnerProxy(
       partner2.address,
       'PartnerTwo'
     );
 
-    expect([tx1.name, tx2.name]).to.deep.equal(['PartnerOne', 'PartnerTwo']);
+    expect([result1.name, result2.name]).to.deep.equal([
+      'PartnerOne',
+      'PartnerTwo',
+    ]);
   });
 
   it('should successfully identify the owner of each proxy', async () => {
@@ -152,28 +160,26 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne',
-      PartnerRegistrar.address
+      'PartnerOne'
     );
     await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+    const result1 = await PartnerProxyFactory.getPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
 
     const partnerTwoProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner2.address,
-      'PartnerTwo',
-      PartnerRegistrar.address
+      'PartnerTwo'
     );
     await partnerTwoProxy.wait();
-    const tx2 = await PartnerProxyFactory.getPartnerProxy(
+    const result2 = await PartnerProxyFactory.getPartnerProxy(
       partner2.address,
       'PartnerTwo'
     );
 
-    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
-    const partnerTwoOwner = PartnerProxy.attach(tx2.proxy);
+    const partnerOneOwner = PartnerProxy.attach(result1.proxy);
+    const partnerTwoOwner = PartnerProxy.attach(result2.proxy);
 
     expect([
       await partnerOneOwner.owner(),
@@ -197,16 +203,15 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const newPartnerProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne',
-      PartnerRegistrar.address
+      'PartnerOne'
     );
 
     await newPartnerProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+    const result1 = await PartnerProxyFactory.getPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
-    const partnerProxy = PartnerProxy.attach(tx1.proxy);
+    const partnerProxy = PartnerProxy.attach(result1.proxy);
 
     //
     await PartnerManager.mock.isPartner.returns(true);
@@ -263,37 +268,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     }
   });
 
-  it('should fail if proxy clone is reinitilized', async () => {
-    const {
-      PartnerProxy,
-      PartnerProxyFactory,
-      partner1,
-      partner2,
-      nameOwner,
-      PartnerRegistrar,
-      RIF,
-    } = await loadFixture(initialSetup);
-
-    const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
-      partner1.address,
-      'PartnerOne',
-      PartnerRegistrar.address
-    );
-    await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(
-      partner1.address,
-      'PartnerOne'
-    );
-
-    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
-
-    await expect(
-      partnerOneOwner
-        .connect(partner2)
-        .init(partner2.address, PartnerRegistrar.address, RIF.address)
-    ).to.be.revertedWith('Init: clone cannot be reinitialized');
-  });
-
   it('Should revert on commit if partner minCommitmentAge is 0 (i.e partner config allows one step purchase', async () => {
     const {
       PartnerProxy,
@@ -307,16 +281,15 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne',
-      PartnerRegistrar.address
+      'PartnerOne'
     );
     await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+    const result1 = await PartnerProxyFactory.getPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
 
-    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
+    const partnerOneOwner = PartnerProxy.attach(result1.proxy);
 
     await PartnerManager.mock.isPartner.returns(true);
 
@@ -344,16 +317,15 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const partnerOneProxy = await PartnerProxyFactory.createNewPartnerProxy(
       partner1.address,
-      'PartnerOne',
-      PartnerRegistrar.address
+      'PartnerOne'
     );
     await partnerOneProxy.wait();
-    const tx1 = await PartnerProxyFactory.getPartnerProxy(
+    const result1 = await PartnerProxyFactory.getPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
 
-    const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
+    const partnerOneOwner = PartnerProxy.attach(result1.proxy);
 
     await PartnerManager.mock.isPartner.returns(true);
 

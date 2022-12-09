@@ -9,7 +9,7 @@ import "@rsksmart/erc677/contracts/IERC677.sol";
 interface IPartnerProxyFactory {
     struct Partner {
         string name;
-        address partnerProxy;
+        address proxy;
     }
 
     event NewPartnerProxyCreated(address newPartnerProxy, Partner data);

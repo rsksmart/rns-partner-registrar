@@ -22,11 +22,9 @@ import { BigNumber, utils } from 'ethers';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 import { $PartnerRenewer } from '../../typechain-types/contracts-exposed/Renewer/PartnerRenewer.sol/$PartnerRenewer';
-import { $PartnerRenewerProxy } from '../../typechain-types/contracts-exposed/PartnerProxy/Renewer/PartnerRenewerProxy.sol/$PartnerRenewerProxy';
-import { $PartnerRenewerProxyFactory } from '../../typechain-types/contracts-exposed/PartnerProxy/Renewer/PartnerRenewerProxyFactory.sol/$PartnerRenewerProxyFactory';
-import { partnerProxy } from '../../typechain-types/contracts';
 import { $PartnerRegistrarProxy } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxy.sol/$PartnerRegistrarProxy';
 import { $PartnerRegistrarProxyFactory } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxyFactory.sol/$PartnerRegistrarProxyFactory';
+import { $PartnerRenewerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRenewerProxyFactory.sol/$PartnerRenewerProxyFactory';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
@@ -143,15 +141,16 @@ const initialSetup = async () => {
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
   await (await PartnerRenewer.setFeeManager(FeeManager.address)).wait();
 
-  const { contract: MasterRenewerProxy } =
-    await deployContract<$PartnerRenewerProxy>('$PartnerRenewerProxy', {});
-
+  const MasterRenewerProxy = await ethers.getContractFactory(
+    'PartnerRenewerProxy'
+  );
   const { contract: PartnerRenewerProxyFactory } =
     await deployContract<$PartnerRenewerProxyFactory>(
       '$PartnerRenewerProxyFactory',
       {
-        _masterProxy: MasterRenewerProxy.address,
         _rif: RIF.address,
+        _partnerRegistrar: PartnerRegistrar.address,
+        _partnerRenewer: PartnerRenewer.address,
       }
     );
 
@@ -159,9 +158,7 @@ const initialSetup = async () => {
   await (
     await PartnerRenewerProxyFactory.createNewPartnerProxy(
       partner.address,
-      partnerRenewerProxyName,
-      PartnerRegistrar.address,
-      PartnerRenewer.address
+      partnerRenewerProxyName
     )
   ).wait();
 
@@ -184,15 +181,17 @@ const initialSetup = async () => {
     )
   ).wait();
 
-  const { contract: MasterRegistrarProxy } =
-    await deployContract<$PartnerRegistrarProxy>('$PartnerRegistrarProxy', {});
+  const MasterRegistrarProxy = await ethers.getContractFactory(
+    'PartnerRegistrarProxy'
+  );
 
   const { contract: PartnerRegistrarProxyFactory } =
     await deployContract<$PartnerRegistrarProxyFactory>(
       '$PartnerRegistrarProxyFactory',
       {
-        _masterProxy: MasterRegistrarProxy.address,
         _rif: RIF.address,
+        _partnerRegistrar: PartnerRegistrar.address,
+        _partnerRenewer: PartnerRenewer.address,
       }
     );
 
@@ -200,8 +199,7 @@ const initialSetup = async () => {
   await (
     await PartnerRegistrarProxyFactory.createNewPartnerProxy(
       partner.address,
-      partnerRegistrarProxyName,
-      PartnerRegistrar.address
+      partnerRegistrarProxyName
     )
   ).wait();
 
