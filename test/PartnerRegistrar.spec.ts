@@ -26,7 +26,6 @@ const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
-const MIN_COMMITMENT_AGE = 0;
 const PRICE = 1;
 const EXPIRATION_TIME = 365;
 const DURATION = 1;

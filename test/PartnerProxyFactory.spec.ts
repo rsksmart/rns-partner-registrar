@@ -198,18 +198,17 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     );
     const partnerProxy = PartnerProxy.attach(tx1.proxy);
 
-    //
-    await PartnerManager.isPartner.returns(true);
+    PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
 
-    await PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
 
-    await PartnerConfiguration.getMinCommitmentAge.returns(1);
+    PartnerConfiguration.getMinCommitmentAge.returns(1);
 
-    await PartnerConfiguration.getPrice.returns(PRICE);
+    PartnerConfiguration.getPrice.returns(PRICE);
 
-    await PartnerManager.getPartnerConfiguration.returns(
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
@@ -217,11 +216,11 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     RIF.approve.returns(true);
 
-    await NodeOwner.expirationTime.returns(EXPIRATION_TIME);
+    NodeOwner.expirationTime.returns(EXPIRATION_TIME);
 
-    await NodeOwner.register.returns();
+    NodeOwner.register.returns();
 
-    await FeeManager.deposit.returns();
+    FeeManager.deposit.returns();
 
     await PartnerRegistrar.setFeeManager(FeeManager.address);
 
@@ -259,7 +258,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerProxyFactory,
       partner1,
       partner2,
-      nameOwner,
       PartnerRegistrar,
       RIF,
     } = await loadFixture(initialSetup);
@@ -308,11 +306,11 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
 
-    await PartnerManager.isPartner.returns(true);
+    PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.getMinCommitmentAge.returns(0);
+    PartnerConfiguration.getMinCommitmentAge.returns(0);
 
-    await PartnerManager.getPartnerConfiguration.returns(
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
@@ -345,11 +343,11 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
 
     const partnerOneOwner = PartnerProxy.attach(tx1.proxy);
 
-    await PartnerManager.isPartner.returns(true);
+    PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.getMinCommitmentAge.returns(1);
+    PartnerConfiguration.getMinCommitmentAge.returns(1);
 
-    await PartnerManager.getPartnerConfiguration.returns(
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
