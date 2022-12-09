@@ -267,7 +267,12 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       partnerOneProxyStruct.proxy
     );
 
-    await (await PartnerManager.addPartner(partnerRenewerProxy.address)).wait();
+    await (
+      await PartnerManager.addPartner(
+        partnerRenewerProxy.address,
+        partner1.address
+      )
+    ).wait();
     await (
       await PartnerManager.setPartnerConfiguration(
         partnerRenewerProxy.address,

@@ -15,7 +15,7 @@ error TransferFailed(address from, address to, uint256 amount);
 contract FeeManager is IFeeManager, Ownable {
     RIF private _rif;
 
-    mapping(address => uint256) public balances;
+    mapping(address => uint256) private _balances;
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10**18);
 
     IBaseRegistrar private _registrar;
@@ -48,11 +48,11 @@ contract FeeManager is IFeeManager, Ownable {
     }
 
     function withdraw() external {
-        uint256 amount = balances[msg.sender];
+        uint256 amount = _balances[msg.sender];
 
         if (amount == 0) revert ZeroBalance();
 
-        balances[msg.sender] = 0;
+        _balances[msg.sender] = 0;
 
         if (!_rif.transfer(msg.sender, amount)) {
             revert TransferFailed(address(this), msg.sender, amount);
@@ -60,15 +60,14 @@ contract FeeManager is IFeeManager, Ownable {
     }
 
     function deposit(address partner, uint256 cost) external onlyAuthorised {
-        require(
-            _rif.transferFrom(msg.sender, address(this), cost),
-            "Token transfer failed"
-        );
+        if (!_rif.transferFrom(msg.sender, address(this), cost)) {
+            revert TransferFailed(msg.sender, address(this), cost);
+        }
 
         uint256 partnerFee = (cost *
             _getPartnerConfiguration(partner).getFeePercentage()) /
             _PERCENT100_WITH_PRECISION18;
-        balances[partner] += partnerFee;
+        _balances[_getPartnerOwnerAccount(partner)] += partnerFee;
 
         uint256 balance = cost - partnerFee;
 
@@ -83,5 +82,17 @@ contract FeeManager is IFeeManager, Ownable {
         returns (IPartnerConfiguration)
     {
         return _partnerManager.getPartnerConfiguration(partner);
+    }
+
+    function _getPartnerOwnerAccount(address partner)
+        private
+        view
+        returns (address)
+    {
+        return _partnerManager.getPartnerOwnerAccount(partner);
+    }
+
+    function getBalance(address partner) external view returns (uint256) {
+        return _balances[partner];
     }
 }

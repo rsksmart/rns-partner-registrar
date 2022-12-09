@@ -13,7 +13,7 @@ library BytesUtils {
 
     function toBytes4(bytes memory input, uint256 offset)
         internal
-        view
+        pure
         minLength(input.length, offset, 4)
         returns (bytes4)
     {
@@ -28,7 +28,7 @@ library BytesUtils {
 
     function toAddress(bytes memory input, uint256 offset)
         internal
-        view
+        pure
         minLength(input.length, offset, 20)
         returns (address)
     {
@@ -43,7 +43,7 @@ library BytesUtils {
 
     function toBytes32(bytes memory input, uint256 offset)
         internal
-        view
+        pure
         minLength(input.length, offset, 32)
         returns (bytes32)
     {
@@ -58,7 +58,7 @@ library BytesUtils {
 
     function toUint(bytes memory input, uint256 offset)
         internal
-        view
+        pure
         returns (uint256)
     {
         return uint256(toBytes32(input, offset));
@@ -71,7 +71,7 @@ library BytesUtils {
         uint256 strLength
     )
         internal
-        view
+        pure
         minLength(input.length, offset, strLength)
         returns (string memory)
     {

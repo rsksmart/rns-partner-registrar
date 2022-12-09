@@ -5,8 +5,14 @@ import { PartnerManager__factory } from '../typechain-types/factories/contracts/
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
 
 async function testSetup() {
-  const [owner, account1, account2, account3, ...accounts] =
-    await ethers.getSigners();
+  const [
+    owner,
+    account1,
+    account2,
+    account3,
+    partnerOwnerAccount,
+    ...accounts
+  ] = await ethers.getSigners();
 
   const PartnerManager = (await ethers.getContractFactory(
     'PartnerManager'
@@ -23,6 +29,7 @@ async function testSetup() {
     account2,
     account3,
     accounts,
+    partnerOwnerAccount,
   };
 }
 
@@ -40,13 +47,19 @@ describe('partnerManager', () => {
     });
 
     it('should return true if partner address is passed', async () => {
-      const { partnerManager, account1: partner } = await loadFixture(
-        testSetup
-      );
+      const {
+        partnerManager,
+        account1: partner,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.eventually.fulfilled;
         expect(await partnerManager.isPartner(partner.address)).to.be.true;
       } catch (e) {
         console.log(e);
@@ -57,13 +70,19 @@ describe('partnerManager', () => {
 
   describe('Add Partner', () => {
     it('should whitelist a partner contract', async () => {
-      const { partnerManager, account1: partner } = await loadFixture(
-        testSetup
-      );
+      const {
+        partnerManager,
+        account1: partner,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.not.be.reverted;
         expect(await partnerManager.isPartner(partner.address)).to.be.true;
       } catch (e) {
         console.log(e);
@@ -76,11 +95,14 @@ describe('partnerManager', () => {
         partnerManager,
         account1: partner,
         account2,
+        partnerOwnerAccount,
       } = await loadFixture(testSetup);
 
       try {
         await expect(
-          partnerManager.connect(account2).addPartner(partner.address)
+          partnerManager
+            .connect(account2)
+            .addPartner(partner.address, partnerOwnerAccount.address)
         ).to.be.reverted;
       } catch (e) {
         console.log(e);
@@ -91,13 +113,19 @@ describe('partnerManager', () => {
 
   describe('Remove Partner', () => {
     it('should remove a partner contract', async () => {
-      const { partnerManager, account1: partner } = await loadFixture(
-        testSetup
-      );
+      const {
+        partnerManager,
+        account1: partner,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.not.be.reverted;
 
         await expect(partnerManager.removePartner(partner.address)).to.not.be
           .reverted;
@@ -114,11 +142,16 @@ describe('partnerManager', () => {
         partnerManager,
         account1: partner,
         account2,
+        partnerOwnerAccount,
       } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.not.be.reverted;
 
         await expect(
           partnerManager.connect(account2).removePartner(partner.address)
@@ -136,11 +169,16 @@ describe('partnerManager', () => {
         partnerManager,
         account1: partner,
         account3,
+        partnerOwnerAccount,
       } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.not.be.reverted;
 
         await expect(
           partnerManager.setPartnerConfiguration(
@@ -159,6 +197,7 @@ describe('partnerManager', () => {
         partnerManager,
         account1: partner,
         account3,
+        partnerOwnerAccount,
       } = await loadFixture(testSetup);
 
       try {
@@ -175,13 +214,19 @@ describe('partnerManager', () => {
     });
 
     it('should revert if called with invalid configuration', async () => {
-      const { partnerManager, account1: partner } = await loadFixture(
-        testSetup
-      );
+      const {
+        partnerManager,
+        account1: partner,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.not.be.reverted;
 
         await expect(
           partnerManager.setPartnerConfiguration(
@@ -201,11 +246,16 @@ describe('partnerManager', () => {
         account1: partner,
         account2,
         account3,
+        partnerOwnerAccount,
       } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.not.be.reverted;
 
         await expect(
           partnerManager
@@ -225,11 +275,16 @@ describe('partnerManager', () => {
         partnerManager,
         account1: partner,
         account3,
+        partnerOwnerAccount,
       } = await loadFixture(testSetup);
 
       try {
-        await expect(partnerManager.addPartner(partner.address)).to.not.be
-          .reverted;
+        await expect(
+          partnerManager.addPartner(
+            partner.address,
+            partnerOwnerAccount.address
+          )
+        ).to.not.be.reverted;
 
         await expect(
           partnerManager.setPartnerConfiguration(

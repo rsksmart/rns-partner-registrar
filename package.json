@@ -13,6 +13,7 @@
     "ci:lint": "solhint 'contracts/**/*.sol' && eslint test --ext .ts ",
     "ci:test": "npm run compile && npm run test",
     "deploy": "hardhat run scripts/deploy.ts --network",
+    "deploy:testnet": "npm run compile && hardhat run scripts/test-deploy.ts --network testnet",
     "lint:sol": "solhint --fix 'contracts/**/*.sol'",
     "lint:ts": "eslint test --ext .ts --fix",
     "lint": "npm run lint:sol && npm run lint:ts",

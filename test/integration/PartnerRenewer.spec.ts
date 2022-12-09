@@ -97,7 +97,7 @@ const initialSetup = async () => {
       maxDuration: 5,
       feePercentage: FEE_PERCENTAGE,
       discount: 0,
-      minCommitmentAge: 0,
+      minCommitmentAge: 1,
     });
 
   const { contract: PartnerRegistrar } =
@@ -174,7 +174,9 @@ const initialSetup = async () => {
     partnerRenewerProxyAddress
   );
 
-  await (await PartnerManager.addPartner(partnerRenewerProxyAddress)).wait();
+  await (
+    await PartnerManager.addPartner(partnerRenewerProxyAddress, partner.address)
+  ).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
       partnerRenewerProxyAddress,
@@ -212,7 +214,12 @@ const initialSetup = async () => {
     partnerRegistrarProxyAddress
   );
 
-  await (await PartnerManager.addPartner(partnerRegistrarProxyAddress)).wait();
+  await (
+    await PartnerManager.addPartner(
+      partnerRegistrarProxyAddress,
+      partner.address
+    )
+  ).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
       partnerRegistrarProxyAddress,

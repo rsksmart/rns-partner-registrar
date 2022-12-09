@@ -28,7 +28,7 @@ const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = BigNumber.from('1');
-const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
+const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
@@ -36,7 +36,7 @@ const tldAsSha3 = utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partner = signers[0];
+  const partnerOwnerAccount = signers[0];
   const nameOwner = signers[2];
   const pool = signers[3];
 
@@ -152,20 +152,25 @@ const initialSetup = async () => {
   const partnerProxyName = 'PartnerOne';
   await (
     await PartnerProxyFactory.createNewPartnerProxy(
-      partner.address,
+      partnerOwnerAccount.address,
       partnerProxyName,
       PartnerRegistrar.address
     )
   ).wait();
 
   const tx1 = await PartnerProxyFactory.getPartnerProxy(
-    partner.address,
+    partnerOwnerAccount.address,
     partnerProxyName
   );
   const partnerProxyAddress = tx1.proxy;
   const PartnerProxy = PartnerProxyBase.attach(partnerProxyAddress);
 
-  await (await PartnerManager.addPartner(partnerProxyAddress)).wait();
+  await (
+    await PartnerManager.addPartner(
+      partnerProxyAddress,
+      partnerOwnerAccount.address
+    )
+  ).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
       partnerProxyAddress,
@@ -185,7 +190,7 @@ const initialSetup = async () => {
     Resolver,
     RNS,
     owner,
-    partner,
+    partnerOwnerAccount,
     nameOwner,
     signers,
     PartnerProxy,
@@ -194,11 +199,80 @@ const initialSetup = async () => {
 };
 
 describe('New Domain Registration', () => {
-  it('Should register a new domain', async () => {
-    const { RIF, Resolver, nameOwner, FeeManager, PartnerProxy, pool } =
-      await loadFixture(initialSetup);
+  it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
+    const {
+      RIF,
+      Resolver,
+      nameOwner,
+      FeeManager,
+      PartnerProxy,
+      pool,
+      partnerOwnerAccount,
+    } = await loadFixture(initialSetup);
     const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
+
+    const data = getAddrRegisterData(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      nameOwner.address
+    );
+
+    await (
+      await RIF.connect(nameOwner).transferAndCall(
+        PartnerProxy.address,
+        namePrice,
+        data
+      )
+    ).wait();
+
+    const resolvedName = await Resolver['addr(bytes32)'](
+      namehash(NAME + '.rsk')
+    );
+    expect(resolvedName).to.equal(nameOwner.address);
+
+    const feeManagerBalance = await RIF.balanceOf(FeeManager.address);
+    const expectedManagerBalance = calculatePercentageWPrecision(
+      namePrice,
+      FEE_PERCENTAGE
+    );
+
+    expect(+expectedManagerBalance).to.equal(+feeManagerBalance);
+
+    const poolBalance = await RIF.balanceOf(pool.address);
+
+    const expectedPoolBalance = namePrice.sub(expectedManagerBalance);
+
+    expect(+poolBalance).to.equal(+expectedPoolBalance);
+
+    const partnerBalanceInFeeManager = await FeeManager.getBalance(
+      partnerOwnerAccount.address
+    );
+    const expectedPartnerAccountBalance = expectedManagerBalance; //since it is the only operation...
+    expect(+partnerBalanceInFeeManager).to.equal(
+      +expectedPartnerAccountBalance
+    );
+  });
+
+  it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
+    const {
+      RIF,
+      Resolver,
+      nameOwner,
+      FeeManager,
+      PartnerProxy,
+      pool,
+      PartnerManager,
+      PartnerConfiguration,
+    } = await loadFixture(initialSetup);
+    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
+
+    // set minCommitmentAge of partner so as not skip the commit step in the registration flow
+    await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
+
     const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
+
     const commitment = await partnerProxyAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
