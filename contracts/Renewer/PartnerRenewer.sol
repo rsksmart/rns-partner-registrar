@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../NodeOwner.sol";
@@ -43,6 +43,7 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
     /// @param duration Time to register in years.
     function renew(string calldata name, uint256 duration)
         external
+        override
         onlyPartner
     {
         emit NameRenewed(msg.sender, duration);

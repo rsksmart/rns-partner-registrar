@@ -27,7 +27,7 @@ contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
         address _partner,
         IBaseRegistrar partnerRegistrar,
         IERC677 rif
-    ) external onlyOnce {
+    ) external override onlyOnce {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
         _rif = rif;

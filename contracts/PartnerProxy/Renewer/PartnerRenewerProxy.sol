@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../../Registrar/IBaseRegistrar.sol";
@@ -28,14 +28,14 @@ contract PartnerRenewerProxy is IPartnerRenewerProxy, Ownable {
         IBaseRegistrar partnerRegistrar,
         IBaseRenewer partnerRenewer,
         IERC677 rif
-    ) external onlyOnce {
+    ) external override onlyOnce {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
         _partnerRenewer = partnerRenewer;
         _rif = rif;
     }
 
-    function renew(string calldata name, uint256 duration) external {
+    function renew(string calldata name, uint256 duration) override external {
         _partnerRenewer.renew(name, duration);
     }
 

@@ -45,21 +45,6 @@ contract PartnerManager is IPartnerManager, Ownable {
         _partnerConfigurations[partner] = partnerConfiguration;
     }
 
-<<<<<<< HEAD
-    function getPartnerConfiguration(address partner)
-        public
-        view
-        returns (IPartnerConfiguration)
-    {
-        return _partnerConfigurations[partner];
-    }
-
-    function getPartnerOwnerAccount(address partner)
-        external
-        view
-        returns (address)
-    {
-=======
     function getPartnerConfiguration(
         address partner
     ) public view override returns (IPartnerConfiguration) {
@@ -69,7 +54,6 @@ contract PartnerManager is IPartnerManager, Ownable {
     function getPartnerOwnerAccount(
         address partner
     ) external view override returns (address) {
->>>>>>> 5f1a8d4 (fix: added override keyword)
         return _partnerOwnerAccounts[partner];
     }
 }
