@@ -17,7 +17,7 @@ contract PartnerRegistrarProxyFactory is Ownable, CloneFactory {
     uint256 public partnerProxyCount;
     IERC677 private _rif;
 
-    event NewPartnerProxyCreated(
+    event NewPartnerRegistrarProxyCreated(
         PartnerRegistrarProxy newPartnerProxy,
         Partner data
     );
@@ -38,7 +38,7 @@ contract PartnerRegistrarProxyFactory is Ownable, CloneFactory {
         newPartnerProxy.init(partner, partnerRegistrar, _rif);
         _partnerProxies[partner][name] = Partner(name, newPartnerProxy);
         partnerProxyCount++;
-        emit NewPartnerProxyCreated(
+        emit NewPartnerRegistrarProxyCreated(
             newPartnerProxy,
             _partnerProxies[partner][name]
         );

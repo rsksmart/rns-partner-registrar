@@ -17,7 +17,7 @@ contract PartnerRenewerProxyFactory is Ownable, CloneFactory {
     uint256 public partnerProxyCount;
     IERC677 private _rif;
 
-    event NewPartnerProxyCreated(
+    event NewPartnerRenewerProxyCreated(
         PartnerRenewerProxy newPartnerProxy,
         Partner data
     );
@@ -37,7 +37,7 @@ contract PartnerRenewerProxyFactory is Ownable, CloneFactory {
             _createClone(_masterProxy)
         );
 
-        emit NewPartnerProxyCreated(
+        emit NewPartnerRenewerProxyCreated(
             newPartnerProxy,
             _partnerProxies[partner][name]
         );
