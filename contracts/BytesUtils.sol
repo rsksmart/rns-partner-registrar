@@ -14,7 +14,7 @@ library BytesUtils {
     function toBytes4(
         bytes memory input,
         uint256 offset
-    ) internal view minLength(input.length, offset, 4) returns (bytes4) {
+    ) internal pure minLength(input.length, offset, 4) returns (bytes4) {
         bytes4 output;
 
         assembly {
@@ -27,7 +27,7 @@ library BytesUtils {
     function toAddress(
         bytes memory input,
         uint256 offset
-    ) internal view minLength(input.length, offset, 20) returns (address) {
+    ) internal pure minLength(input.length, offset, 20) returns (address) {
         bytes20 output;
 
         assembly {
@@ -40,7 +40,7 @@ library BytesUtils {
     function toBytes32(
         bytes memory input,
         uint256 offset
-    ) internal view minLength(input.length, offset, 32) returns (bytes32) {
+    ) internal pure minLength(input.length, offset, 32) returns (bytes32) {
         bytes32 output;
 
         assembly {
@@ -53,7 +53,7 @@ library BytesUtils {
     function toUint(
         bytes memory input,
         uint256 offset
-    ) internal view returns (uint256) {
+    ) internal pure returns (uint256) {
         return uint256(toBytes32(input, offset));
     }
 
@@ -64,7 +64,7 @@ library BytesUtils {
         uint256 strLength
     )
         internal
-        view
+        pure
         minLength(input.length, offset, strLength)
         returns (string memory)
     {

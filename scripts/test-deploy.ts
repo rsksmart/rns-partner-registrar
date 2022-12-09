@@ -235,7 +235,12 @@ async function main() {
 
     console.log('setting up contracts');
 
-    await (await PartnerManager.addPartner(FIFSADDRpartnerProxyAddress)).wait();
+    await (
+      await PartnerManager.addPartner(
+        FIFSADDRpartnerProxyAddress,
+        partner.address
+      )
+    ).wait();
 
     console.log('partner added ', FIFSADDRpartnerProxyAddress);
 
