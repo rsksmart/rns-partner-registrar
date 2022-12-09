@@ -2,8 +2,6 @@ import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from '../chairc';
 import { deployContract } from 'utils/deployment.utils';
-import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
-import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
 import { deployMockContract } from './utils/mock.utils';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
@@ -22,6 +20,8 @@ import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
 import RNSJson from '../artifacts/contracts-exposed/RNS.sol/$RNS.json';
 import ResolverJson from '../artifacts/contracts-exposed/test-utils/Resolver.sol/$Resolver.json';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
+import { $PartnerRegistrarProxy } from '../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxy.sol/$PartnerRegistrarProxy';
+import { $PartnerRegistrarProxyFactory } from '../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxyFactory.sol/$PartnerRegistrarProxyFactory';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
@@ -76,16 +76,17 @@ async function initialSetup() {
       rootNode: tldNode,
     });
 
-  const { contract: PartnerProxy } = await deployContract<$PartnerProxy>(
-    '$PartnerProxy',
-    {}
-  );
+  const { contract: PartnerRegistrarProxy } =
+    await deployContract<$PartnerRegistrarProxy>('$PartnerRegistrarProxy', {});
 
-  const { contract: PartnerProxyFactory } =
-    await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
-      _masterProxy: PartnerProxy.address,
-      _rif: RIF.address,
-    });
+  const { contract: PartnerRegistrarProxyFactory } =
+    await deployContract<$PartnerRegistrarProxyFactory>(
+      '$PartnerRegistrarProxyFactory',
+      {
+        _masterProxy: PartnerRegistrarProxy.address,
+        _rif: RIF.address,
+      }
+    );
 
   await RNS.mock.resolver.returns(Resolver.address);
 
@@ -95,8 +96,8 @@ async function initialSetup() {
   await NodeOwner.mock.transferFrom.returns();
 
   return {
-    PartnerProxy,
-    PartnerProxyFactory,
+    PartnerProxy: PartnerRegistrarProxy,
+    PartnerProxyFactory: PartnerRegistrarProxyFactory,
     NodeOwner,
     RIF,
     PartnerConfiguration,

@@ -17,10 +17,10 @@ contract PartnerManager is IPartnerManager, Ownable {
         return _partners[partner];
     }
 
-    function addPartner(
-        address partner,
-        address partnerOwnerAccount
-    ) external onlyOwner {
+    function addPartner(address partner, address partnerOwnerAccount)
+        external
+        onlyOwner
+    {
         _partners[partner] = true;
         _partnerOwnerAccounts[partner] = partnerOwnerAccount;
         emit PartnerAdded(partner, partnerOwnerAccount);
@@ -45,15 +45,19 @@ contract PartnerManager is IPartnerManager, Ownable {
         _partnerConfigurations[partner] = partnerConfiguration;
     }
 
-    function getPartnerConfiguration(
-        address partner
-    ) public view returns (IPartnerConfiguration) {
+    function getPartnerConfiguration(address partner)
+        public
+        view
+        returns (IPartnerConfiguration)
+    {
         return _partnerConfigurations[partner];
     }
 
-    function getPartnerOwnerAccount(
-        address partner
-    ) external view returns (address) {
+    function getPartnerOwnerAccount(address partner)
+        external
+        view
+        returns (address)
+    {
         return _partnerOwnerAccounts[partner];
     }
 }

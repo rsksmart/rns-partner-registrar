@@ -113,9 +113,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         if ((_maxDuration != 0) && (duration > _maxDuration))
             revert("PartnerConfiguration: More than max duration");
 
-        if (duration == 1) return 2 * (10 ** 18);
-        if (duration == 2) return 4 * (10 ** 18);
+        if (duration == 1) return 2 * (10**18);
+        if (duration == 2) return 4 * (10**18);
 
-        return (duration + 2) * (10 ** 18);
+        return (duration + 2) * (10**18);
     }
 }

@@ -16,6 +16,11 @@ export default <HardhatUserConfig>{
       {
         version: '0.8.17',
         settings: {
+          outputSelection: {
+            '*': {
+              '*': ['storageLayout'],
+            },
+          },
           optimizer: {
             enabled: true,
             runs: 1000,

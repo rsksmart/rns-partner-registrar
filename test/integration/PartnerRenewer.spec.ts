@@ -4,6 +4,7 @@ import { deployContract, Factory } from '../../utils/deployment.utils';
 import {
   calculatePercentageWPrecision,
   getAddrRegisterData,
+  getRenewData,
   oneRBTC,
 } from '../utils/mock.utils';
 import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
@@ -20,15 +21,18 @@ import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/Partner
 import { BigNumber, utils } from 'ethers';
 import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
 import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
+import { $PartnerRenewer } from '../../typechain-types/contracts-exposed/Renewer/PartnerRenewer.sol/$PartnerRenewer';
+import { $PartnerRenewerProxy } from '../../typechain-types/contracts-exposed/PartnerProxy/Renewer/PartnerRenewerProxy.sol/$PartnerRenewerProxy';
+import { $PartnerRenewerProxyFactory } from '../../typechain-types/contracts-exposed/PartnerProxy/Renewer/PartnerRenewerProxyFactory.sol/$PartnerRenewerProxyFactory';
+import { partnerProxy } from '../../typechain-types/contracts';
 import { $PartnerRegistrarProxy } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxy.sol/$PartnerRegistrarProxy';
 import { $PartnerRegistrarProxyFactory } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxyFactory.sol/$PartnerRegistrarProxyFactory';
-import { $PartnerRenewer } from '../../typechain-types/contracts-exposed/Renewer/PartnerRenewer.sol/$PartnerRenewer';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = BigNumber.from('1');
-const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
+const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
@@ -36,7 +40,7 @@ const tldAsSha3 = utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partnerOwnerAccount = signers[0];
+  const partner = signers[0];
   const nameOwner = signers[2];
   const pool = signers[3];
 
@@ -93,7 +97,7 @@ const initialSetup = async () => {
       maxDuration: 5,
       feePercentage: FEE_PERCENTAGE,
       discount: 0,
-      minCommitmentAge: 0,
+      minCommitmentAge: 1,
     });
 
   const { contract: PartnerRegistrar } =
@@ -130,50 +134,95 @@ const initialSetup = async () => {
   ).wait();
 
   await (await NodeOwner.addRegistrar(PartnerRegistrar.address)).wait();
+  await (await NodeOwner.addRenewer(PartnerRenewer.address)).wait();
 
   await (await RNS.setDefaultResolver(Resolver.address)).wait();
 
   await (await NodeOwner.setRootResolver(Resolver.address)).wait();
 
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
+  await (await PartnerRenewer.setFeeManager(FeeManager.address)).wait();
 
-  const { contract: PartnerProxyBase } =
-    await deployContract<$PartnerRegistrarProxy>('$PartnerRegistrarProxy', {});
+  const { contract: MasterRenewerProxy } =
+    await deployContract<$PartnerRenewerProxy>('$PartnerRenewerProxy', {});
 
-  const { contract: PartnerProxyFactory } =
-    await deployContract<$PartnerRegistrarProxyFactory>(
-      '$PartnerRegistrarProxyFactory',
+  const { contract: PartnerRenewerProxyFactory } =
+    await deployContract<$PartnerRenewerProxyFactory>(
+      '$PartnerRenewerProxyFactory',
       {
-        _masterProxy: PartnerProxyBase.address,
+        _masterProxy: MasterRenewerProxy.address,
         _rif: RIF.address,
       }
     );
 
-  const partnerProxyName = 'PartnerOne';
+  const partnerRenewerProxyName = 'PartnerRenewer';
   await (
-    await PartnerProxyFactory.createNewPartnerProxy(
-      partnerOwnerAccount.address,
-      partnerProxyName,
+    await PartnerRenewerProxyFactory.createNewPartnerProxy(
+      partner.address,
+      partnerRenewerProxyName,
+      PartnerRegistrar.address,
+      PartnerRenewer.address
+    )
+  ).wait();
+
+  const tx1 = await PartnerRenewerProxyFactory.getPartnerProxy(
+    partner.address,
+    partnerRenewerProxyName
+  );
+  const partnerRenewerProxyAddress = tx1.proxy;
+  const PartnerRenewerProxy = MasterRenewerProxy.attach(
+    partnerRenewerProxyAddress
+  );
+
+  await (
+    await PartnerManager.addPartner(partnerRenewerProxyAddress, partner.address)
+  ).wait();
+  await (
+    await PartnerManager.setPartnerConfiguration(
+      partnerRenewerProxyAddress,
+      PartnerConfiguration.address
+    )
+  ).wait();
+
+  const { contract: MasterRegistrarProxy } =
+    await deployContract<$PartnerRegistrarProxy>('$PartnerRegistrarProxy', {});
+
+  const { contract: PartnerRegistrarProxyFactory } =
+    await deployContract<$PartnerRegistrarProxyFactory>(
+      '$PartnerRegistrarProxyFactory',
+      {
+        _masterProxy: MasterRegistrarProxy.address,
+        _rif: RIF.address,
+      }
+    );
+
+  const partnerRegistrarProxyName = 'PartnerRegistrar';
+  await (
+    await PartnerRegistrarProxyFactory.createNewPartnerProxy(
+      partner.address,
+      partnerRegistrarProxyName,
       PartnerRegistrar.address
     )
   ).wait();
 
-  const tx1 = await PartnerProxyFactory.getPartnerProxy(
-    partnerOwnerAccount.address,
-    partnerProxyName
+  const tx2 = await PartnerRegistrarProxyFactory.getPartnerProxy(
+    partner.address,
+    partnerRegistrarProxyName
   );
-  const partnerProxyAddress = tx1.proxy;
-  const PartnerProxy = PartnerProxyBase.attach(partnerProxyAddress);
+  const partnerRegistrarProxyAddress = tx2.proxy;
+  const PartnerRegistrarProxy = MasterRegistrarProxy.attach(
+    partnerRegistrarProxyAddress
+  );
 
   await (
     await PartnerManager.addPartner(
-      partnerProxyAddress,
-      partnerOwnerAccount.address
+      partnerRegistrarProxyAddress,
+      partner.address
     )
   ).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
-      partnerProxyAddress,
+      partnerRegistrarProxyAddress,
       PartnerConfiguration.address
     )
   ).wait();
@@ -190,117 +239,74 @@ const initialSetup = async () => {
     Resolver,
     RNS,
     owner,
-    partnerOwnerAccount,
+    partner,
     nameOwner,
     signers,
-    PartnerProxy,
+    PartnerRenewerProxy,
+    PartnerRegistrarProxy,
     pool,
   };
 };
 
-describe('New Domain Registration', () => {
-  it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
-    const {
-      RIF,
-      Resolver,
-      nameOwner,
-      FeeManager,
-      PartnerProxy,
-      pool,
-      partnerOwnerAccount,
-    } = await loadFixture(initialSetup);
-    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
-
-    const data = getAddrRegisterData(
+describe('Domain Renewal', () => {
+  it('Should revert with `Name already expired`', async () => {
+    const { RIF, PartnerRenewerProxy, PartnerRegistrarProxy, nameOwner } =
+      await loadFixture(initialSetup);
+    const namePrice = await PartnerRegistrarProxy.price(
       NAME,
-      nameOwner.address,
-      SECRET,
-      DURATION,
-      nameOwner.address
+      BigNumber.from(0),
+      DURATION
     );
 
-    await (
-      await RIF.connect(nameOwner).transferAndCall(
-        PartnerProxy.address,
-        namePrice,
-        data
-      )
-    ).wait();
+    const renewData = getRenewData(NAME, DURATION);
 
-    const resolvedName = await Resolver['addr(bytes32)'](
-      namehash(NAME + '.rsk')
-    );
-    expect(resolvedName).to.equal(nameOwner.address);
-
-    const feeManagerBalance = await RIF.balanceOf(FeeManager.address);
-    const expectedManagerBalance = calculatePercentageWPrecision(
-      namePrice,
-      FEE_PERCENTAGE
-    );
-
-    expect(+expectedManagerBalance).to.equal(+feeManagerBalance);
-
-    const poolBalance = await RIF.balanceOf(pool.address);
-
-    const expectedPoolBalance = namePrice.sub(expectedManagerBalance);
-
-    expect(+poolBalance).to.equal(+expectedPoolBalance);
-
-    const partnerBalanceInFeeManager = await FeeManager.getBalance(
-      partnerOwnerAccount.address
-    );
-    const expectedPartnerAccountBalance = expectedManagerBalance; //since it is the only operation...
-    expect(+partnerBalanceInFeeManager).to.equal(
-      +expectedPartnerAccountBalance
-    );
+    await expect(
+      RIF.transferAndCall(PartnerRenewerProxy.address, namePrice, renewData)
+    ).to.be.revertedWith('Name already expired');
   });
 
-  it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
+  it('Should renew a domain name', async () => {
     const {
       RIF,
-      Resolver,
+      PartnerRenewerProxy,
+      PartnerRegistrarProxy,
       nameOwner,
       FeeManager,
-      PartnerProxy,
       pool,
-      PartnerManager,
-      PartnerConfiguration,
     } = await loadFixture(initialSetup);
-    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
 
-    // set minCommitmentAge of partner so as not skip the commit step in the registration flow
-    await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
+    const namePrice = await PartnerRegistrarProxy.price(NAME, 0, DURATION);
 
-    const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
+    const partnerRegistrarProxyAsNameOwner =
+      PartnerRegistrarProxy.connect(nameOwner);
 
-    const commitment = await partnerProxyAsNameOwner.makeCommitment(
+    const commitment = await partnerRegistrarProxyAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
       SECRET
     );
 
-    await (await partnerProxyAsNameOwner.commit(commitment)).wait();
+    await (await partnerRegistrarProxyAsNameOwner.commit(commitment)).wait();
 
-    const data = getAddrRegisterData(
+    const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
       SECRET,
       DURATION,
       nameOwner.address
     );
+    const renewData = getRenewData(NAME, DURATION);
 
     await (
       await RIF.connect(nameOwner).transferAndCall(
-        PartnerProxy.address,
+        PartnerRegistrarProxy.address,
         namePrice,
-        data
+        registerData
       )
     ).wait();
-
-    const resolvedName = await Resolver['addr(bytes32)'](
-      namehash(NAME + '.rsk')
-    );
-    expect(resolvedName).to.equal(nameOwner.address);
+    await expect(
+      RIF.transferAndCall(PartnerRenewerProxy.address, namePrice, renewData)
+    ).to.be.fulfilled;
 
     const feeManagerBalance = await RIF.balanceOf(FeeManager.address);
     const expectedManagerBalance = calculatePercentageWPrecision(
@@ -308,12 +314,14 @@ describe('New Domain Registration', () => {
       FEE_PERCENTAGE
     );
 
-    expect(+expectedManagerBalance).to.equal(+feeManagerBalance);
+    // double the amount
+    expect(expectedManagerBalance.mul(2)).to.be.equal(feeManagerBalance);
 
     const poolBalance = await RIF.balanceOf(pool.address);
 
     const expectedPoolBalance = namePrice.sub(expectedManagerBalance);
 
-    expect(+poolBalance).to.equal(+expectedPoolBalance);
+    // double the amount
+    expect(expectedPoolBalance.mul(2)).to.equal(poolBalance);
   });
 });

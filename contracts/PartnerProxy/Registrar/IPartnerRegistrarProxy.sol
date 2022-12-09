@@ -1,14 +1,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.17;
 
-interface IPartnerProxy {
-    function init(address _partner) external;
+import "../../Registrar/IBaseRegistrar.sol";
+import "@rsksmart/erc677/contracts/IERC677.sol";
+
+interface IPartnerRegistrarProxy {
+    function init(
+        address _partner,
+        IBaseRegistrar partnerRegistrar,
+        IERC677 rif
+    ) external;
 
     function register(
         string calldata name,
         address nameOwner,
         bytes32 secret,
-        uint256 duration
+        uint256 duration,
+        address addr
     ) external;
 
     function price(
