@@ -6,10 +6,10 @@ import "../RNS.sol";
 interface Resolver {
     function addr(bytes32 node) external view returns (address payable);
 
-    function addr(
-        bytes32 node,
-        uint256 coinType
-    ) external view returns (bytes memory);
+    function addr(bytes32 node, uint256 coinType)
+        external
+        view
+        returns (bytes memory);
 
     function setAddr(bytes32 node, address addrValue) external;
 
