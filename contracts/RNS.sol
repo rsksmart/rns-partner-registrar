@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 interface RNS {
     function owner(bytes32 node) external view returns (address);

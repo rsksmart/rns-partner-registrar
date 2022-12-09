@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 // Use only for testing purposes
 import "@rsksmart/erc677/contracts/ERC677.sol";
