@@ -35,7 +35,7 @@ contract PartnerRenewerProxy is IPartnerRenewerProxy, Ownable {
         _rif = rif;
     }
 
-    function renew(string calldata name, uint256 duration) override external {
+    function renew(string calldata name, uint256 duration) external override {
         _partnerRenewer.renew(name, duration);
     }
 

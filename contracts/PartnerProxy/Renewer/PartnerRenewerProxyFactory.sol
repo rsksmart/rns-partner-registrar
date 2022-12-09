@@ -51,11 +51,10 @@ contract PartnerRenewerProxyFactory is Ownable, CloneFactory {
         return partnerProxyCount;
     }
 
-    function getPartnerProxy(address partner, string calldata name)
-        external
-        view
-        returns (Partner memory)
-    {
+    function getPartnerProxy(
+        address partner,
+        string calldata name
+    ) external view returns (Partner memory) {
         return _partnerProxies[partner][name];
     }
 }

@@ -16,7 +16,7 @@ contract FeeManager is IFeeManager, Ownable {
     RIF private _rif;
 
     mapping(address => uint256) private _balances;
-    uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10**18);
+    uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
 
     IBaseRegistrar private _registrar;
     IBaseRenewer private _renewer;
@@ -25,12 +25,11 @@ contract FeeManager is IFeeManager, Ownable {
 
     modifier onlyAuthorised() {
         if (
-            msg.sender == address(_registrar) || msg.sender == address(_renewer)
+            !(msg.sender == address(_registrar) || msg.sender == address(_renewer))
         ) {
-            _;
-        } else {
             revert NotAuthorized(msg.sender);
-        }
+        } 
+        _;
     }
 
     constructor(
@@ -59,7 +58,10 @@ contract FeeManager is IFeeManager, Ownable {
         }
     }
 
-    function deposit(address partner, uint256 cost) external override onlyAuthorised {
+    function deposit(
+        address partner,
+        uint256 cost
+    ) external override onlyAuthorised {
         if (!_rif.transferFrom(msg.sender, address(this), cost)) {
             revert TransferFailed(msg.sender, address(this), cost);
         }
@@ -76,19 +78,15 @@ contract FeeManager is IFeeManager, Ownable {
         }
     }
 
-    function _getPartnerConfiguration(address partner)
-        private
-        view
-        returns (IPartnerConfiguration)
-    {
+    function _getPartnerConfiguration(
+        address partner
+    ) private view returns (IPartnerConfiguration) {
         return _partnerManager.getPartnerConfiguration(partner);
     }
 
-    function _getPartnerOwnerAccount(address partner)
-        private
-        view
-        returns (address)
-    {
+    function _getPartnerOwnerAccount(
+        address partner
+    ) private view returns (address) {
         return _partnerManager.getPartnerOwnerAccount(partner);
     }
 

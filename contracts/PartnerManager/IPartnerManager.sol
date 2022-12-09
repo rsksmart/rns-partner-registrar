@@ -9,10 +9,9 @@ interface IPartnerManager {
         IPartnerConfiguration configuration
     ) external;
 
-    function getPartnerConfiguration(address partner)
-        external
-        view
-        returns (IPartnerConfiguration);
+    function getPartnerConfiguration(
+        address partner
+    ) external view returns (IPartnerConfiguration);
 
     function isPartner(address partner) external view returns (bool);
 
@@ -20,8 +19,7 @@ interface IPartnerManager {
 
     function removePartner(address partner) external;
 
-    function getPartnerOwnerAccount(address partner)
-        external
-        view
-        returns (address);
+    function getPartnerOwnerAccount(
+        address partner
+    ) external view returns (address);
 }
