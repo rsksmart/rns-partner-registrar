@@ -57,10 +57,10 @@ const initialSetup = async () => {
 
   const { contract: PartnerRegistrar } =
     await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
-      NodeOwner: NodeOwner.address,
-      RIF: RIF.address,
-      IPartnerManager: PartnerManager.address,
-      RNS: RNS.address,
+      nodeOwner: NodeOwner.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+      rns: RNS.address,
       rootNode: tldNode,
     });
 

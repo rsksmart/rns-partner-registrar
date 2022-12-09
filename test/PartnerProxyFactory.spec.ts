@@ -60,11 +60,11 @@ async function initialSetup() {
   const { contract: PartnerRegistrar } = await deployContract(
     'PartnerRegistrar',
     {
-      _nodeOwner: NodeOwner.address,
-      _rif: RIF.address,
-      _partnerManager: PartnerManager.address,
-      _rns: RNS.address,
-      _rootNode: tldNode,
+      nodeOwner: NodeOwner.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+      rns: RNS.address,
+      rootNode: tldNode,
     }
   );
 
