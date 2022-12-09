@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.16;
 
 import "./IPartnerProxyFactory.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -9,7 +9,7 @@ import "../../Renewer/IBaseRenewer.sol";
 
 abstract contract PartnerProxyFactoryBase is IPartnerProxyFactory, Ownable {
     mapping(address => mapping(string => Partner)) internal _partnerProxies;
-    uint256 public partnerProxyCount;
+    uint256 public partnerProxyCount = 0;
     IERC677 internal _rif;
     IBaseRegistrar internal _partnerRegistrar;
     IBaseRenewer internal _partnerRenewer;

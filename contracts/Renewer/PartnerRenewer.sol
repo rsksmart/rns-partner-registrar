@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.16;
 
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../NodeOwner.sol";
