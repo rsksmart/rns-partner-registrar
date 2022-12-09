@@ -192,7 +192,7 @@ async function main() {
         maxDuration: BigNumber.from(5),
         feePercentage: FEE_PERCENTAGE,
         discount: BigNumber.from(0),
-        minCommittmentAge: BigNumber.from(0),
+        minCommitmentAge: BigNumber.from(0),
       });
 
     console.log(
@@ -200,32 +200,23 @@ async function main() {
       DefaultPartnerConfiguration.address
     );
 
-    const { contract: MasterRegistrarProxyContract } =
-      await deployContract<PartnerRegistrarProxy>('PartnerRegistrarProxy', {});
-
-    const { contract: MasterRenewerProxyContract } =
-      await deployContract<PartnerRenewerProxy>('PartnerRenewerProxy', {});
-
     const { contract: PartnerRegistrarProxyFactoryContract } =
       await deployContract<PartnerRegistrarProxyFactory>(
         'PartnerRegistrarProxyFactory',
         {
-          _masterProxy: MasterRegistrarProxyContract.address,
           _rif: RIF.address,
+          _partnerRegistrar: PartnerRegistrarContract.address,
+          _partnerRenewer: PartnerRenewerContract.address,
         }
       );
-
-    console.log(
-      'MasterRegistrarProxyContract:',
-      MasterRegistrarProxyContract.address
-    );
 
     const { contract: PartnerRenewerProxyFactoryContract } =
       await deployContract<PartnerRenewerProxyFactory>(
         'PartnerRenewerProxyFactory',
         {
-          _masterProxy: MasterRenewerProxyContract.address,
           _rif: RIF.address,
+          _partnerRegistrar: PartnerRegistrarContract.address,
+          _partnerRenewer: PartnerRenewerContract.address,
         }
       );
 
@@ -238,8 +229,7 @@ async function main() {
     await (
       await PartnerRegistrarProxyFactoryContract.createNewPartnerProxy(
         partner.address,
-        FIFSADDRProxyName,
-        PartnerRegistrarContract.address
+        FIFSADDRProxyName
       )
     ).wait();
 
@@ -256,8 +246,7 @@ async function main() {
     await (
       await PartnerRegistrarProxyFactoryContract.createNewPartnerProxy(
         partner.address,
-        FIFSProxyName,
-        PartnerRegistrarContract.address
+        FIFSProxyName
       )
     ).wait();
 
@@ -270,9 +259,7 @@ async function main() {
     const RenewerProxyName = 'Renewer';
     await PartnerRenewerProxyFactoryContract.createNewPartnerProxy(
       partner.address,
-      RenewerProxyName,
-      PartnerRegistrarContract.address,
-      PartnerRenewerContract.address
+      RenewerProxyName
     );
 
     const RenewerProxyAddress = (
@@ -363,10 +350,10 @@ async function main() {
       nameResolver: NameResolver.address,
       multiChainResolver: MultiChainResolver.address,
       rif: RIF.address,
-      fifsRegistrar: FIFSPartnerProxyAddress, // TODO
-      fifsAddrRegistrar: FIFSADDRpartnerProxyAddress, // TODO
+      fifsRegistrar: FIFSPartnerProxyAddress,
+      fifsAddrRegistrar: FIFSADDRpartnerProxyAddress,
       rskOwner: NodeOwnerContract.address,
-      renewer: RenewerProxyAddress, // TODO
+      renewer: RenewerProxyAddress,
       partnerManager: PartnerManagerContract.address,
       feeManager: FeeManager.address,
       defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
