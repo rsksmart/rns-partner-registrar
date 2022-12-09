@@ -80,7 +80,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         return _feePercentage;
     }
 
-    function setFeePercentage(uint256 feePercentage) external override onlyOwner {
+    function setFeePercentage(
+        uint256 feePercentage
+    ) external override onlyOwner {
         _feePercentage = feePercentage;
     }
 
@@ -96,7 +98,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         return _minCommitmentAge;
     }
 
-    function setMinCommitmentAge(uint256 minCommitmentAge) external override onlyOwner {
+    function setMinCommitmentAge(
+        uint256 minCommitmentAge
+    ) external override onlyOwner {
         _minCommitmentAge = minCommitmentAge;
     }
 
