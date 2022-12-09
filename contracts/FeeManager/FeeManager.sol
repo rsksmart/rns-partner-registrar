@@ -25,10 +25,11 @@ contract FeeManager is IFeeManager, Ownable {
 
     modifier onlyAuthorised() {
         if (
-            !(msg.sender == address(_registrar) || msg.sender == address(_renewer))
+            !(msg.sender == address(_registrar) ||
+                msg.sender == address(_renewer))
         ) {
             revert NotAuthorized(msg.sender);
-        } 
+        }
         _;
     }
 
