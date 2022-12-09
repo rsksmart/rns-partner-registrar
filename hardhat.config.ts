@@ -86,4 +86,11 @@ export default <HardhatUserConfig>{
     clear: true,
     runOnCompile: false,
   },
+  settings: {
+    outputSelection: {
+      '*': {
+        '*': ['storageLayout'],
+      },
+    },
+  },
 };

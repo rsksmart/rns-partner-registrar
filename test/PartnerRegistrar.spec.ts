@@ -38,31 +38,23 @@ const initialSetup = async () => {
   const partner = signers[1];
   const nameOwner = signers[2];
 
-  const RNS = await deployMockContract<$RNS>(owner, RNSJson.abi);
+  const RNS = await deployMockContract<$RNS>(RNSJson.abi);
 
-  const Resolver = await deployMockContract<$Resolver>(owner, ResolverJson.abi);
+  const Resolver = await deployMockContract<$Resolver>(ResolverJson.abi);
 
-  const NodeOwner = await deployMockContract<$NodeOwner>(
-    owner,
-    NodeOwnerJson.abi
-  );
+  const NodeOwner = await deployMockContract<$NodeOwner>(NodeOwnerJson.abi);
 
-  const RIF = await deployMockContract<$RIF>(owner, RIFJson.abi);
+  const RIF = await deployMockContract<$RIF>(RIFJson.abi);
 
   const PartnerManager = await deployMockContract<$PartnerManager>(
-    owner,
     PartnerMangerJson.abi
   );
 
   const PartnerConfiguration = await deployMockContract<$IPartnerConfiguration>(
-    owner,
     IPartnerConfigurationJson.abi
   );
 
-  const FeeManager = await deployMockContract<IFeeManager>(
-    owner,
-    IFeeManagerJson.abi
-  );
+  const FeeManager = await deployMockContract<IFeeManager>(IFeeManagerJson.abi);
 
   const { contract: PartnerRegistrar } =
     await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
@@ -73,12 +65,12 @@ const initialSetup = async () => {
       rootNode: tldNode,
     });
 
-  await RNS.mock.resolver.returns(Resolver.address);
+  RNS.resolver.returns(Resolver.address);
 
-  await Resolver.mock.setAddr.returns();
+  Resolver.setAddr.returns();
 
-  await NodeOwner.mock.reclaim.returns();
-  await NodeOwner.mock.transferFrom.returns();
+  NodeOwner.reclaim.returns();
+  NodeOwner.transferFrom.returns();
 
   return {
     RNS,
@@ -107,31 +99,31 @@ describe('New Domain Registration', () => {
       FeeManager,
     } = await loadFixture(initialSetup);
 
-    await PartnerManager.mock.isPartner.returns(true);
+    PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
 
-    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
 
-    await PartnerConfiguration.mock.getMinCommitmentAge.returns(1);
+    PartnerConfiguration.getMinCommitmentAge.returns(1);
 
-    await PartnerConfiguration.mock.getPrice.returns(PRICE);
+    PartnerConfiguration.getPrice.returns(PRICE);
 
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
-    await RIF.mock.transferFrom.returns(true);
+    RIF.transferFrom.returns(true);
 
-    await RIF.mock.approve.returns(true);
+    RIF.approve.returns(true);
 
-    await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
+    NodeOwner.expirationTime.returns(EXPIRATION_TIME);
 
-    await NodeOwner.mock.register.returns();
+    NodeOwner.register.returns();
 
-    await FeeManager.mock.deposit.returns();
+    FeeManager.deposit.returns();
 
-    await PartnerRegistrar.setFeeManager(FeeManager.address);
+    PartnerRegistrar.setFeeManager(FeeManager.address);
 
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,
@@ -168,33 +160,31 @@ describe('New Domain Registration', () => {
       FeeManager,
     } = await loadFixture(initialSetup);
 
-    await PartnerManager.mock.isPartner.returns(true);
+    PartnerManager.isPartner.returns(true);
 
-    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
 
-    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
 
-    await PartnerConfiguration.mock.getMinCommitmentAge.returns(
-      BigNumber.from(0)
-    );
+    PartnerConfiguration.getMinCommitmentAge.returns(BigNumber.from(0));
 
-    await PartnerConfiguration.mock.getPrice.returns(PRICE);
+    PartnerConfiguration.getPrice.returns(PRICE);
 
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
 
-    await RIF.mock.transferFrom.returns(true);
+    RIF.transferFrom.returns(true);
 
-    await RIF.mock.approve.returns(true);
+    RIF.approve.returns(true);
 
-    await NodeOwner.mock.expirationTime.returns(EXPIRATION_TIME);
+    NodeOwner.expirationTime.returns(EXPIRATION_TIME);
 
-    await NodeOwner.mock.register.returns();
+    NodeOwner.register.returns();
 
-    await FeeManager.mock.deposit.returns();
+    FeeManager.deposit.returns();
 
-    await PartnerRegistrar.setFeeManager(FeeManager.address);
+    PartnerRegistrar.setFeeManager(FeeManager.address);
 
     await expect(
       PartnerRegistrar.register(
@@ -211,7 +201,7 @@ describe('New Domain Registration', () => {
     const { PartnerManager, PartnerRegistrar, nameOwner, NodeOwner } =
       await loadFixture(initialSetup);
 
-    await PartnerManager.mock.isPartner.returns(false);
+    PartnerManager.isPartner.returns(false);
 
     await expect(
       PartnerRegistrar.register(
@@ -233,11 +223,11 @@ describe('New Domain Registration', () => {
       NodeOwner,
     } = await loadFixture(initialSetup);
 
-    await PartnerManager.mock.isPartner.returns(true);
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    PartnerManager.isPartner.returns(true);
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
 
     await expect(
       PartnerRegistrar.register(
@@ -259,12 +249,12 @@ describe('New Domain Registration', () => {
       NodeOwner,
     } = await loadFixture(initialSetup);
 
-    await PartnerManager.mock.isPartner.returns(true);
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    PartnerManager.isPartner.returns(true);
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
-    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
 
     await expect(
       PartnerRegistrar.register(
@@ -286,15 +276,13 @@ describe('New Domain Registration', () => {
       NodeOwner,
     } = await loadFixture(initialSetup);
 
-    await PartnerManager.mock.isPartner.returns(true);
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    PartnerManager.isPartner.returns(true);
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
-    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
-    await PartnerConfiguration.mock.getMinCommitmentAge.returns(
-      BigNumber.from(1)
-    );
+    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinCommitmentAge.returns(BigNumber.from(1));
 
     await expect(
       PartnerRegistrar.register(
@@ -316,15 +304,13 @@ describe('New Domain Registration', () => {
       NodeOwner,
     } = await loadFixture(initialSetup);
 
-    await PartnerManager.mock.isPartner.returns(true);
-    await PartnerManager.mock.getPartnerConfiguration.returns(
+    PartnerManager.isPartner.returns(true);
+    PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    await PartnerConfiguration.mock.getMinLength.returns(MIN_LENGTH);
-    await PartnerConfiguration.mock.getMaxLength.returns(MAX_LENGTH);
-    await PartnerConfiguration.mock.getMinCommitmentAge.returns(
-      BigNumber.from(1)
-    );
+    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinCommitmentAge.returns(BigNumber.from(1));
 
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,

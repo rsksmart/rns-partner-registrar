@@ -1,5 +1,4 @@
-import { FeeManager__factory } from '../typechain-types/factories/contracts/FeeManager/FeeManager__factory';
-import { FeeManager } from '../typechain-types/contracts/FeeManager/FeeManager';
+import { FeeManager as FeeManagerType } from '../typechain-types/contracts/FeeManager/FeeManager';
 import { ethers } from 'hardhat';
 import MyRIF from '../artifacts/contracts/RIF.sol/RIF.json';
 import MyPartnerManager from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
@@ -8,37 +7,35 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { BigNumber } from 'ethers';
 import { expect } from 'chairc';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { deployMockContract, MockContract, oneRBTC } from './utils/mock.utils';
+import { deployMockContract, oneRBTC } from './utils/mock.utils';
 import { RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
-import { smock, FakeContract } from '@defi-wonderland/smock';
+import { FakeContract } from '@defi-wonderland/smock';
+import { deployContract } from 'utils/deployment.utils';
 
 async function testSetup() {
   const [owner, registrar, account2, account3, pool, ...accounts] =
     await ethers.getSigners();
 
-  const RIF = await smock.fake<RIFType>(MyRIF.abi);
+  const RIF = await deployMockContract<RIFType>(MyRIF.abi);
 
   const PartnerManager = await deployMockContract<PartnerManager>(
-    owner,
     MyPartnerManager.abi
   );
   const PartnerConfiguration = await deployMockContract<PartnerConfiguration>(
-    owner,
     MyPartnerConfiguration.abi
   );
 
-  const FeeManager = (await ethers.getContractFactory(
-    'FeeManager'
-  )) as FeeManager__factory;
-
-  const feeManager = (await FeeManager.deploy(
-    RIF.address,
-    registrar.address,
-    PartnerManager.address,
-    pool.address
-  )) as FeeManager;
+  const { contract: feeManager } = await deployContract<FeeManagerType>(
+    'FeeManager',
+    {
+      rif: RIF.address,
+      registrar: registrar.address,
+      partnerManager: PartnerManager.address,
+      pool: pool.address,
+    }
+  );
 
   await feeManager.deployed();
 
@@ -79,8 +76,8 @@ describe('Fee Manager', () => {
 
         RIF.transferFrom.returns(true);
         RIF.transfer.returns(true);
-        await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
-        await PartnerManager.mock.getPartnerConfiguration.returns(
+        PartnerConfiguration.getFeePercentage.returns(feePercentage);
+        PartnerManager.getPartnerConfiguration.returns(
           PartnerConfiguration.address
         );
 
@@ -147,8 +144,8 @@ describe('Fee Manager', () => {
           .mul(feePercentage)
           .div(oneRBTC.mul(100));
 
-        await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
-        await PartnerManager.mock.getPartnerConfiguration.returns(
+        PartnerConfiguration.getFeePercentage.returns(feePercentage);
+        PartnerManager.getPartnerConfiguration.returns(
           PartnerConfiguration.address
         );
 
@@ -169,12 +166,12 @@ describe('Fee Manager', () => {
   });
 
   describe('Withdraw', () => {
-    let feeManager: FeeManager,
+    let feeManager: FeeManagerType,
       registrar: SignerWithAddress,
       partner: SignerWithAddress,
       RIF: FakeContract<RIFType>,
-      PartnerManager: MockContract<PartnerManager>,
-      PartnerConfiguration: MockContract<PartnerConfiguration>;
+      PartnerManager: FakeContract<PartnerManager>,
+      PartnerConfiguration: FakeContract<PartnerConfiguration>;
 
     beforeEach(async () => {
       const vars = await loadFixture(testSetup);
@@ -189,8 +186,8 @@ describe('Fee Manager', () => {
       const feePercentage = oneRBTC.mul(5);
 
       RIF.transfer.returns(true);
-      await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
-      await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.getFeePercentage.returns(feePercentage);
+      PartnerManager.getPartnerConfiguration.returns(
         PartnerConfiguration.address
       );
 
