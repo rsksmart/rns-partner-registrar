@@ -47,7 +47,7 @@ contract FeeManager is IFeeManager, Ownable {
         _pool = pool;
     }
 
-    function withdraw() external {
+    function withdraw() override external {
         uint256 amount = _balances[msg.sender];
 
         if (amount == 0) revert ZeroBalance();
@@ -59,7 +59,7 @@ contract FeeManager is IFeeManager, Ownable {
         }
     }
 
-    function deposit(address partner, uint256 cost) external onlyAuthorised {
+    function deposit(address partner, uint256 cost) external override onlyAuthorised {
         if (!_rif.transferFrom(msg.sender, address(this), cost)) {
             revert TransferFailed(msg.sender, address(this), cost);
         }
@@ -92,7 +92,7 @@ contract FeeManager is IFeeManager, Ownable {
         return _partnerManager.getPartnerOwnerAccount(partner);
     }
 
-    function getBalance(address partner) external view returns (uint256) {
+    function getBalance(address partner) external view override returns (uint256) {
         return _balances[partner];
     }
 }
