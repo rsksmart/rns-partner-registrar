@@ -5,11 +5,9 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../../Registrar/IBaseRegistrar.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../../BytesUtils.sol";
-import "hardhat/console.sol";
-import "./IPartnerRenewerProxy.sol";
 import "../../Renewer/IBaseRenewer.sol";
 
-contract PartnerRenewerProxy is IPartnerRenewerProxy, Ownable {
+contract PartnerRenewerProxy is IBaseRenewer, Ownable {
     IBaseRegistrar private _partnerRegistrar;
     IBaseRenewer private _partnerRenewer;
     IERC677 private _rif;
@@ -18,17 +16,12 @@ contract PartnerRenewerProxy is IPartnerRenewerProxy, Ownable {
 
     using BytesUtils for bytes;
 
-    modifier onlyOnce() {
-        require(owner() == address(0), "Init: Cannot be reinitialized");
-        _;
-    }
-
-    function init(
+    constructor(
         address _partner,
         IBaseRegistrar partnerRegistrar,
         IBaseRenewer partnerRenewer,
         IERC677 rif
-    ) external override onlyOnce {
+    ) Ownable() {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
         _partnerRenewer = partnerRenewer;

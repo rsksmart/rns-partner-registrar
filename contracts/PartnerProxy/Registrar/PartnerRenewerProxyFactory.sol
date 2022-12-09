@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.7;
 
-import "./PartnerRegistrarProxy.sol";
+import "./PartnerProxyFactoryBase.sol";
 import "../../Registrar/IBaseRegistrar.sol";
 import "../../Renewer/IBaseRenewer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
-import "./PartnerProxyFactoryBase.sol";
+import "./PartnerRenewerProxy.sol";
 
-contract PartnerRegistrarProxyFactory is PartnerProxyFactoryBase {
+contract PartnerRenewerProxyFactory is PartnerProxyFactoryBase {
     constructor(
         IERC677 rif,
         IBaseRegistrar partnerRegistrar,
@@ -20,16 +20,18 @@ contract PartnerRegistrarProxyFactory is PartnerProxyFactoryBase {
         override
         onlyOwner
     {
-        PartnerRegistrarProxy newPartnerProxy = new PartnerRegistrarProxy(
+        PartnerRenewerProxy newPartnerProxy = new PartnerRenewerProxy(
             partner,
             _partnerRegistrar,
+            _partnerRenewer,
             _rif
         );
+
+        partnerProxyCount++;
         _partnerProxies[partner][name] = Partner(
             name,
             address(newPartnerProxy)
         );
-        partnerProxyCount++;
         emit NewPartnerProxyCreated(
             address(newPartnerProxy),
             _partnerProxies[partner][name]
