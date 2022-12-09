@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 //solhint-disable max-line-length
 //solhint-disable no-inline-assembly
@@ -22,11 +22,10 @@ contract CloneFactory {
         }
     }
 
-    function _isClone(address target, address query)
-        internal
-        view
-        returns (bool result)
-    {
+    function _isClone(
+        address target,
+        address query
+    ) internal view returns (bool result) {
         bytes20 targetBytes = bytes20(target);
         assembly {
             let clone := mload(0x40)

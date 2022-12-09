@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 interface IPartnerConfiguration {
     function getMinLength() external view returns (uint256);
@@ -23,4 +23,20 @@ interface IPartnerConfiguration {
         uint256 expires,
         uint256 duration
     ) external view returns (uint256);
+
+    function setMinCommitmentAge(uint256 minCommitmentAge) external;
+
+    function setDiscount(uint256 discount) external;
+
+    function setFeePercentage(uint256 feePercentage) external;
+
+    function setMaxDuration(uint256 maxDuration) external;
+
+    function setUnicodeSupport(bool flag) external;
+
+    function setMaxLength(uint256 maxLength) external;
+
+    function setMinDuration(uint256 minDuration) external;
+
+    function setMinLength(uint256 minLength) external;
 }

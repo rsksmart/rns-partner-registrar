@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 import "./IPartnerManager.sol";
 import "../PartnerConfiguration/IPartnerConfiguration.sol";
@@ -13,20 +13,20 @@ contract PartnerManager is IPartnerManager, Ownable {
     event PartnerAdded(address indexed partner, address indexed ownerAccount);
     event PartnerRemoved(address indexed partner, address indexed ownerAccount);
 
-    function isPartner(address partner) public view returns (bool) {
+    function isPartner(address partner) public view override returns (bool) {
         return _partners[partner];
     }
 
-    function addPartner(address partner, address partnerOwnerAccount)
-        external
-        onlyOwner
-    {
+    function addPartner(
+        address partner,
+        address partnerOwnerAccount
+    ) external override onlyOwner {
         _partners[partner] = true;
         _partnerOwnerAccounts[partner] = partnerOwnerAccount;
         emit PartnerAdded(partner, partnerOwnerAccount);
     }
 
-    function removePartner(address partner) external onlyOwner {
+    function removePartner(address partner) external override onlyOwner {
         _partners[partner] = false;
 
         emit PartnerRemoved(partner, _partnerOwnerAccounts[partner]);
@@ -35,7 +35,7 @@ contract PartnerManager is IPartnerManager, Ownable {
     function setPartnerConfiguration(
         address partner,
         IPartnerConfiguration partnerConfiguration
-    ) external onlyOwner {
+    ) external override onlyOwner {
         require(
             partnerConfiguration != IPartnerConfiguration(address(0)),
             "PartnerManager: Invalid configuration"
@@ -45,19 +45,15 @@ contract PartnerManager is IPartnerManager, Ownable {
         _partnerConfigurations[partner] = partnerConfiguration;
     }
 
-    function getPartnerConfiguration(address partner)
-        public
-        view
-        returns (IPartnerConfiguration)
-    {
+    function getPartnerConfiguration(
+        address partner
+    ) public view override returns (IPartnerConfiguration) {
         return _partnerConfigurations[partner];
     }
 
-    function getPartnerOwnerAccount(address partner)
-        external
-        view
-        returns (address)
-    {
+    function getPartnerOwnerAccount(
+        address partner
+    ) external view override returns (address) {
         return _partnerOwnerAccounts[partner];
     }
 }

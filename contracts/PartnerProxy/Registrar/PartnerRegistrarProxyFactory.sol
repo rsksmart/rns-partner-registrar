@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 import "./PartnerRegistrarProxy.sol";
 import "../CloneFactory.sol";
@@ -48,11 +48,10 @@ contract PartnerRegistrarProxyFactory is Ownable, CloneFactory {
         return partnerProxyCount;
     }
 
-    function getPartnerProxy(address partner, string calldata name)
-        external
-        view
-        returns (Partner memory)
-    {
+    function getPartnerProxy(
+        address partner,
+        string calldata name
+    ) external view returns (Partner memory) {
         return _partnerProxies[partner][name];
     }
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.7;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../../Registrar/IBaseRegistrar.sol";
@@ -27,7 +27,7 @@ contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
         address _partner,
         IBaseRegistrar partnerRegistrar,
         IERC677 rif
-    ) external onlyOnce {
+    ) external override onlyOnce {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
         _rif = rif;
@@ -39,7 +39,7 @@ contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
         bytes32 secret,
         uint256 duration,
         address addr
-    ) external {
+    ) external override {
         _partnerRegistrar.register(name, nameOwner, secret, duration, addr);
     }
 
@@ -47,11 +47,11 @@ contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         return _partnerRegistrar.price(name, expires, duration);
     }
 
-    function canReveal(bytes32 commitment) public view returns (bool) {
+    function canReveal(bytes32 commitment) public view override returns (bool) {
         return _partnerRegistrar.canReveal(commitment);
     }
 
@@ -59,11 +59,11 @@ contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
         bytes32 label,
         address nameOwner,
         bytes32 secret
-    ) public pure returns (bytes32) {
+    ) public pure override returns (bytes32) {
         return keccak256(abi.encodePacked(label, nameOwner, secret));
     }
 
-    function commit(bytes32 commitment) external {
+    function commit(bytes32 commitment) external override {
         _partnerRegistrar.commit(commitment);
     }
 
