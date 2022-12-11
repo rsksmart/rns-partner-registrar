@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.16;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../../Registrar/IBaseRegistrar.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../../BytesUtils.sol";
 import "hardhat/console.sol";
-import "./IPartnerRegistrarProxy.sol";
 
-contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
+contract PartnerRegistrarProxy is IBaseRegistrar, Ownable {
     IBaseRegistrar private _partnerRegistrar;
     IERC677 private _rif;
     // sha3('register(string,address,bytes32,uint)')
@@ -16,18 +15,11 @@ contract PartnerRegistrarProxy is IPartnerRegistrarProxy, Ownable {
 
     using BytesUtils for bytes;
 
-    constructor() Ownable() {}
-
-    modifier onlyOnce() {
-        require(owner() == address(0), "Init: clone cannot be reinitialized");
-        _;
-    }
-
-    function init(
+    constructor(
         address _partner,
         IBaseRegistrar partnerRegistrar,
         IERC677 rif
-    ) external override onlyOnce {
+    ) Ownable() {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
         _rif = rif;

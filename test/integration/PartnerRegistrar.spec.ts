@@ -137,15 +137,17 @@ const initialSetup = async () => {
 
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
 
-  const { contract: PartnerProxyBase } =
-    await deployContract<$PartnerRegistrarProxy>('$PartnerRegistrarProxy', {});
+  const PartnerProxyBase = await ethers.getContractFactory(
+    'PartnerRegistrarProxy'
+  );
 
   const { contract: PartnerProxyFactory } =
     await deployContract<$PartnerRegistrarProxyFactory>(
       '$PartnerRegistrarProxyFactory',
       {
-        _masterProxy: PartnerProxyBase.address,
         _rif: RIF.address,
+        _partnerRegistrar: PartnerRegistrar.address,
+        _partnerRenewer: PartnerRenewer.address,
       }
     );
 
@@ -153,8 +155,7 @@ const initialSetup = async () => {
   await (
     await PartnerProxyFactory.createNewPartnerProxy(
       partnerOwnerAccount.address,
-      partnerProxyName,
-      PartnerRegistrar.address
+      partnerProxyName
     )
   ).wait();
 

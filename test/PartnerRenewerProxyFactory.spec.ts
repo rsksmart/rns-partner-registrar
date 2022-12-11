@@ -108,22 +108,18 @@ async function initialSetup() {
   await PartnerRegistrar.setFeeManager(FeeManager.address);
   await PartnerRenewer.setFeeManager(FeeManager.address);
 
-  const PartnerRenewerProxyContractFactory =
-    await smock.mock<PartnerRenewerProxy__factory>('PartnerRenewerProxy');
-
-  const MasterRenewerProxy = await PartnerRenewerProxyContractFactory.deploy();
-
   const { contract: PartnerRenewerProxyFactory } =
     await deployContract<PartnerRenewerProxyFactory>(
       'PartnerRenewerProxyFactory',
       {
-        _masterProxy: MasterRenewerProxy.address,
         _rif: RIF.address,
+        _partnerRegistrar: PartnerRegistrar.address,
+        _partnerRenewer: PartnerRenewer.address,
       }
     );
 
   return {
-    MasterRenewerProxy,
+    MasterRenewerProxy: await ethers.getContractFactory('PartnerRenewerProxy'),
     PartnerRenewerProxyFactory,
     NodeOwner,
     RIF,
@@ -151,9 +147,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner1.address,
-        'PartnerOne',
-        PartnerRegistrar.address,
-        PartnerRenewer.address
+        'PartnerOne'
       )
     ).wait();
 
@@ -166,9 +160,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner2.address,
-        'PartnerTwo',
-        PartnerRegistrar.address,
-        PartnerRenewer.address
+        'PartnerTwo'
       )
     ).wait();
 
@@ -197,9 +189,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner1.address,
-        'PartnerOne',
-        PartnerRegistrar.address,
-        PartnerRenewer.address
+        'PartnerOne'
       )
     ).wait();
 
@@ -212,9 +202,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner2.address,
-        'PartnerTwo',
-        PartnerRegistrar.address,
-        PartnerRenewer.address
+        'PartnerTwo'
       )
     ).wait();
 
@@ -251,9 +239,7 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner1.address,
-        'PartnerOne',
-        PartnerRegistrar.address,
-        PartnerRenewer.address
+        'PartnerOne'
       )
     ).wait();
 
@@ -287,42 +273,5 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       console.log(error);
       throw error;
     }
-  });
-
-  it('should fail if proxy clone is reinitilized', async () => {
-    const {
-      MasterRenewerProxy,
-      PartnerRenewerProxyFactory,
-      partner1,
-      PartnerRegistrar,
-      PartnerRenewer,
-      RIF,
-    } = await loadFixture(initialSetup);
-
-    await (
-      await PartnerRenewerProxyFactory.createNewPartnerProxy(
-        partner1.address,
-        'PartnerOne',
-        PartnerRegistrar.address,
-        PartnerRenewer.address
-      )
-    ).wait();
-
-    const partnerOneProxyStruct =
-      await PartnerRenewerProxyFactory.getPartnerProxy(
-        partner1.address,
-        'PartnerOne'
-      );
-
-    const partnerProxy = MasterRenewerProxy.attach(partnerOneProxyStruct.proxy);
-
-    await expect(
-      partnerProxy.init(
-        partner1.address,
-        PartnerRegistrar.address,
-        PartnerRenewer.address,
-        RIF.address
-      )
-    ).to.be.revertedWith('Init: Cannot be reinitialized');
   });
 });
