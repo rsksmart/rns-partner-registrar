@@ -6,6 +6,11 @@ import "../../Registrar/IBaseRegistrar.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../../BytesUtils.sol";
 
+/**
+ * @title PartnerRegistrarProxy
+ * @author Identity Team @IOVLabs
+ * @dev Sample implementations of Registrar PartnerProxy contracts that are compatible with the Partner Registrar
+ */
 contract PartnerRegistrarProxy is IBaseRegistrar, Ownable {
     IBaseRegistrar private _partnerRegistrar;
     IERC677 private _rif;
@@ -24,6 +29,9 @@ contract PartnerRegistrarProxy is IBaseRegistrar, Ownable {
         _rif = rif;
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function register(
         string calldata name,
         address nameOwner,
@@ -34,6 +42,9 @@ contract PartnerRegistrarProxy is IBaseRegistrar, Ownable {
         _partnerRegistrar.register(name, nameOwner, secret, duration, addr);
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function price(
         string calldata name,
         uint256 expires,
@@ -42,10 +53,16 @@ contract PartnerRegistrarProxy is IBaseRegistrar, Ownable {
         return _partnerRegistrar.price(name, expires, duration);
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function canReveal(bytes32 commitment) public view override returns (bool) {
         return _partnerRegistrar.canReveal(commitment);
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function makeCommitment(
         bytes32 label,
         address nameOwner,

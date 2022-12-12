@@ -7,6 +7,11 @@ import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../../BytesUtils.sol";
 import "../../Renewer/IBaseRenewer.sol";
 
+/**
+ * @title PartnerRenewerProxy
+ * @author Identity Team @IOVLabs
+ * @dev Sample implementations of Renewer PartnerProxy contracts that are compatible with the PartnerRenewer contract
+ */
 contract PartnerRenewerProxy is IBaseRenewer, Ownable {
     IBaseRegistrar private _partnerRegistrar;
     IBaseRenewer private _partnerRenewer;
