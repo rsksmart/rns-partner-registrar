@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.16;
 
 import "../PartnerConfiguration/IPartnerConfiguration.sol";
 
@@ -15,7 +15,11 @@ interface IPartnerManager {
 
     function isPartner(address partner) external view returns (bool);
 
-    function addPartner(address partner) external;
+    function addPartner(address partner, address partnerOwnerAccount) external;
 
     function removePartner(address partner) external;
+
+    function getPartnerOwnerAccount(
+        address partner
+    ) external view returns (address);
 }

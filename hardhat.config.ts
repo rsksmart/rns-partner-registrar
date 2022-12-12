@@ -14,8 +14,13 @@ export default <HardhatUserConfig>{
   solidity: {
     compilers: [
       {
-        version: '0.8.17',
+        version: '0.8.16',
         settings: {
+          outputSelection: {
+            '*': {
+              '*': ['storageLayout'],
+            },
+          },
           optimizer: {
             enabled: true,
             runs: 1000,

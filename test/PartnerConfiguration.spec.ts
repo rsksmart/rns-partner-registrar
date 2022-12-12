@@ -1,8 +1,9 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/PartnerConfiguration.sol/$PartnerConfiguration';
-import { deployContract } from 'utils/deployment.utils';
+import { PartnerConfiguration, PartnerConfiguration__factory } from 'typechain-types';
+import { deployContract } from './utils/mock.utils';
+import { MockContract } from '@defi-wonderland/smock';
 
 const DEFAULT_MIN_LENGTH = 3;
 const DEFAULT_MAX_LENGTH = 7;
@@ -17,17 +18,16 @@ const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
 
-  const { contract: PartnerConfiguration } =
-    await deployContract<$PartnerConfiguration>('$PartnerConfiguration', {
-      minLength: DEFAULT_MIN_LENGTH,
-      maxLength: DEFAULT_MAX_LENGTH,
-      isUnicodeSupported: DEFAULT_IS_UNICODE_SUPPORTED,
-      minDuration: DEFAULT_MIN_DURATION,
-      maxDuration: DEFAULT_MAX_DURATION,
-      feePercentage: DEFAULT_FEE_PERCENTAGE,
-      discount: DEFAULT_DISCOUNT,
-      minCommittmentAge: DEFAULT_MIN_COMMITMENT_AGE,
-    });
+  const PartnerConfiguration = await deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+    DEFAULT_MIN_LENGTH,
+    DEFAULT_MAX_LENGTH,
+    DEFAULT_IS_UNICODE_SUPPORTED,
+    DEFAULT_MIN_DURATION,
+    DEFAULT_MAX_DURATION,
+    DEFAULT_FEE_PERCENTAGE,
+    DEFAULT_DISCOUNT,
+    DEFAULT_MIN_COMMITMENT_AGE,
+  ]);
 
   return {
     PartnerConfiguration,
@@ -37,9 +37,11 @@ const initialSetup = async () => {
 };
 
 describe('Partner Configuration', () => {
-  let PartnerConfiguration: $PartnerConfiguration;
+  let PartnerConfiguration: MockContract<PartnerConfiguration>;
   beforeEach(async () => {
-    ({ PartnerConfiguration } = await loadFixture(initialSetup));
+    const vars = await loadFixture(initialSetup);
+
+    PartnerConfiguration = vars.PartnerConfiguration;
   });
 
   context('Check Defaults', () => {

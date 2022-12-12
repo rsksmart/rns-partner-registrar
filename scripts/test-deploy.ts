@@ -18,14 +18,17 @@ import ReverseSetupAbi from '../test/external-abis/ReverseSetup.json';
 import { oneRBTC } from 'test/utils/mock.utils';
 import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
 import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
-import { $PartnerProxy } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxy.sol/$PartnerProxy';
-import { $PartnerProxyFactory } from 'typechain-types/contracts-exposed/PartnerProxy/PartnerProxyFactory.sol/$PartnerProxyFactory';
-import { ERC677Token } from 'typechain-types';
+import {
+  ERC677Token,
+  PartnerRegistrarProxyFactory,
+  PartnerRenewer,
+  PartnerRenewerProxyFactory,
+} from 'typechain-types';
+import { partnerManager } from 'typechain-types/contracts';
 
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
-const reverseTldNode = namehash('reverse');
 const reverseTldAsSha3 = utils.id('reverse');
 const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 
@@ -35,7 +38,7 @@ async function main() {
 
     console.log('Deploying contracts with the account:', owner.address);
 
-    const { contract: RNS } = await deployContract<$RNS>(
+    const { contract: RNSContract } = await deployContract<$RNS>(
       'RNS',
       {},
       (await ethers.getContractFactory(
@@ -44,12 +47,12 @@ async function main() {
       )) as Factory<$RNS>
     );
 
-    console.log('RNS:', RNS.address);
+    console.log('RNS:', RNSContract.address);
 
-    const { contract: NodeOwner } = await deployContract<$NodeOwner>(
+    const { contract: NodeOwnerContract } = await deployContract<$NodeOwner>(
       'NodeOwner',
       {
-        _rns: RNS.address,
+        _rns: RNSContract.address,
         _rootNode: tldNode,
       },
       (await ethers.getContractFactory(
@@ -57,7 +60,7 @@ async function main() {
         NodeOwnerAbi.bytecode
       )) as Factory<$NodeOwner>
     );
-    console.log('NodeOwner:', NodeOwner.address);
+    console.log('NodeOwner:', NodeOwnerContract.address);
 
     const { contract: Resolver } = await deployContract<$Resolver>(
       'ResolverV1',
@@ -70,12 +73,12 @@ async function main() {
 
     console.log('ResolverV1:', Resolver.address);
 
-    await (await Resolver.initialize(RNS.address)).wait();
+    await (await Resolver.initialize(RNSContract.address)).wait();
 
     const { contract: MultiChainResolver } = await deployContract<Contract>(
       'MultiChainResolver',
       {
-        _rns: RNS.address,
+        _rns: RNSContract.address,
         _publicResolver: Resolver.address,
       },
       (await ethers.getContractFactory(
@@ -89,7 +92,7 @@ async function main() {
     const { contract: NameResolver } = await deployContract<Contract>(
       'NameResolver',
       {
-        _rns: RNS.address,
+        _rns: RNSContract.address,
       },
       (await ethers.getContractFactory(
         NameResolverAbi.abi,
@@ -102,7 +105,7 @@ async function main() {
     const { contract: ReverseRegistrar } = await deployContract<Contract>(
       'ReverseRegistrar',
       {
-        _rns: RNS.address,
+        _rns: RNSContract.address,
       },
       (await ethers.getContractFactory(
         NameResolverAbi.abi,
@@ -115,7 +118,7 @@ async function main() {
     const { contract: ReverseSetup } = await deployContract<Contract>(
       'ReverseSetup',
       {
-        _rns: RNS.address,
+        _rns: RNSContract.address,
         _nameResolver: NameResolver.address,
         _reverseRegistrar: ReverseRegistrar.address,
         _from: owner.address,
@@ -137,29 +140,37 @@ async function main() {
 
     console.log('RIF:', RIF.address);
 
-    const { contract: PartnerManager } = await deployContract<$PartnerManager>(
-      '$PartnerManager',
-      {}
-    );
-    console.log('PartnerManager:', PartnerManager.address);
+    const { contract: PartnerManagerContract } =
+      await deployContract<$PartnerManager>('$PartnerManager', {});
+    console.log('PartnerManager:', PartnerManagerContract.address);
 
     const { contract: PartnerRegistrar } =
       await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
-        nodeOwner: NodeOwner.address,
+        nodeOwner: NodeOwnerContract.address,
         rif: RIF.address,
-        partnerManager: PartnerManager.address,
-        rns: RNS.address,
+        partnerManager: PartnerManagerContract.address,
+        rns: RNSContract.address,
         rootNode: tldNode,
       });
 
     console.log('PartnerRegistrar:', PartnerRegistrar.address);
+
+    const { contract: PartnerRenewerContract } =
+      await deployContract<PartnerRenewer>('PartnerRenewer', {
+        nodeOwner: NodeOwnerContract.address,
+        rif: RIF.address,
+        partnerManager: PartnerManagerContract.address,
+      });
+
+    console.log('PartnerRenewer:', PartnerRenewerContract.address);
 
     const { contract: FeeManager } = await deployContract<FeeManager>(
       'FeeManager',
       {
         rif: RIF.address,
         partnerRegistrar: PartnerRegistrar.address,
-        partnerManager: PartnerManager.address,
+        partnerRenewer: PartnerRenewerContract.address,
+        partnerManager: PartnerManagerContract.address,
         pool: pool.address,
       }
     );
@@ -177,7 +188,7 @@ async function main() {
         maxDuration: BigNumber.from(5),
         feePercentage: FEE_PERCENTAGE,
         discount: BigNumber.from(0),
-        minCommittmentAge: BigNumber.from(0),
+        minCommitmentAge: BigNumber.from(0),
       });
 
     console.log(
@@ -185,32 +196,54 @@ async function main() {
       DefaultPartnerConfiguration.address
     );
 
-    const { contract: PartnerProxyBase } = await deployContract<$PartnerProxy>(
-      '$PartnerProxy',
-      {}
-    );
-
-    console.log('PartnerProxyBase:', PartnerProxyBase.address);
-
-    const { contract: PartnerProxyFactory } =
-      await deployContract<$PartnerProxyFactory>('$PartnerProxyFactory', {
-        _masterProxy: PartnerProxyBase.address,
-        _rif: RIF.address,
+    const { contract: PartnerRegistrarContract } =
+      await deployContract<PartnerRegistrar>('PartnerRegistrar', {
+        nodeOwner: NodeOwnerContract.address,
+        rif: RIF.address,
+        partnerManager: PartnerManagerContract.address,
+        rns: RNSContract.address,
+        rootNode: tldNode,
       });
 
-    console.log('PartnerProxyFactory:', PartnerProxyFactory.address);
+    const { contract: PartnerRegistrarProxyFactoryContract } =
+      await deployContract<PartnerRegistrarProxyFactory>(
+        'PartnerRegistrarProxyFactory',
+        {
+          _rif: RIF.address,
+          _partnerRegistrar: PartnerRegistrarContract.address,
+          _partnerRenewer: PartnerRenewerContract.address,
+        }
+      );
+
+    const { contract: PartnerRenewerProxyFactoryContract } =
+      await deployContract<PartnerRenewerProxyFactory>(
+        'PartnerRenewerProxyFactory',
+        {
+          _rif: RIF.address,
+          _partnerRegistrar: PartnerRegistrarContract.address,
+          _partnerRenewer: PartnerRenewerContract.address,
+        }
+      );
+
+    console.log(
+      'PartnerRegistrarProxyFactoryContract:',
+      PartnerRegistrarProxyFactoryContract.address
+    );
+    console.log(
+      'PartnerRenewerProxyFactoryContract:',
+      PartnerRenewerProxyFactoryContract.address
+    );
 
     const FIFSADDRProxyName = 'FIFSADDR';
     await (
-      await PartnerProxyFactory.createNewPartnerProxy(
+      await PartnerRegistrarProxyFactoryContract.createNewPartnerProxy(
         partner.address,
-        FIFSADDRProxyName,
-        PartnerRegistrar.address
+        FIFSADDRProxyName
       )
     ).wait();
 
     const FIFSADDRpartnerProxyAddress = (
-      await PartnerProxyFactory.getPartnerProxy(
+      await PartnerRegistrarProxyFactoryContract.getPartnerProxy(
         partner.address,
         FIFSADDRProxyName
       )
@@ -220,27 +253,49 @@ async function main() {
 
     const FIFSProxyName = 'FIFS';
     await (
-      await PartnerProxyFactory.createNewPartnerProxy(
+      await PartnerRegistrarProxyFactoryContract.createNewPartnerProxy(
         partner.address,
-        FIFSProxyName,
-        PartnerRegistrar.address
+        FIFSProxyName
       )
     ).wait();
 
     const FIFSpartnerProxyAddress = (
-      await PartnerProxyFactory.getPartnerProxy(partner.address, FIFSProxyName)
+      await PartnerRegistrarProxyFactoryContract.getPartnerProxy(
+        partner.address,
+        FIFSProxyName
+      )
     ).proxy;
 
     console.log('FIFSpartnerProxyAddress:', FIFSpartnerProxyAddress);
 
+    const RenewerProxyName = 'Renewer';
+    await PartnerRenewerProxyFactoryContract.createNewPartnerProxy(
+      partner.address,
+      RenewerProxyName
+    );
+
+    const RenewerProxyAddress = (
+      await PartnerRenewerProxyFactoryContract.getPartnerProxy(
+        partner.address,
+        RenewerProxyName
+      )
+    ).proxy;
+
+    console.log('RenewerProxyAddress:', RenewerProxyAddress);
+
     console.log('setting up contracts');
 
-    await (await PartnerManager.addPartner(FIFSADDRpartnerProxyAddress)).wait();
+    await (
+      await PartnerManagerContract.addPartner(
+        FIFSADDRpartnerProxyAddress,
+        partner.address
+      )
+    ).wait();
 
     console.log('partner added ', FIFSADDRpartnerProxyAddress);
 
     await (
-      await RNS.setSubnodeOwner(
+      await RNSContract.setSubnodeOwner(
         rootNodeId,
         reverseTldAsSha3,
         ReverseSetup.address
@@ -254,21 +309,27 @@ async function main() {
     console.log('reverse run');
 
     await (
-      await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
+      await RNSContract.setSubnodeOwner(
+        rootNodeId,
+        tldAsSha3,
+        NodeOwnerContract.address
+      )
     ).wait();
     console.log('rootNodeId set');
-    await (await NodeOwner.addRegistrar(PartnerRegistrar.address)).wait();
+    await (
+      await NodeOwnerContract.addRegistrar(PartnerRegistrar.address)
+    ).wait();
 
     console.log('PartnerRegistrar added to nodeowner');
 
-    await (await RNS.setDefaultResolver(Resolver.address)).wait();
+    await (await RNSContract.setDefaultResolver(Resolver.address)).wait();
     console.log('default resolver set');
-    await (await NodeOwner.setRootResolver(Resolver.address)).wait();
+    await (await NodeOwnerContract.setRootResolver(Resolver.address)).wait();
     console.log('node root resolver set');
     await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
     console.log('fee manager set');
     await (
-      await PartnerManager.setPartnerConfiguration(
+      await PartnerManagerContract.setPartnerConfiguration(
         FIFSADDRpartnerProxyAddress,
         DefaultPartnerConfiguration.address
       )
@@ -278,7 +339,7 @@ async function main() {
 
     console.log('Writing contract addresses to file...');
     const content = {
-      rns: RNS.address,
+      rns: RNSContract.address,
       registrar: PartnerRegistrar.address,
       reverseRegistrar: ReverseRegistrar.address,
       publicResolver: Resolver.address,
@@ -287,9 +348,9 @@ async function main() {
       rif: RIF.address,
       fifsRegistrar: FIFSpartnerProxyAddress, // TODO
       fifsAddrRegistrar: FIFSADDRpartnerProxyAddress, // TODO
-      rskOwner: NodeOwner.address,
-      renewer: Resolver.address, // TODO
-      partnerManager: PartnerManager.address,
+      rskOwner: NodeOwnerContract.address,
+      renewer: RenewerProxyAddress, // TODO
+      partnerManager: PartnerManagerContract.address,
       feeManager: FeeManager.address,
       defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
       demoPartnerProxyInstance: FIFSADDRpartnerProxyAddress,

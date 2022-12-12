@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.16;
 
 library StringUtils {
     function strlen(string memory s) internal pure returns (uint256) {

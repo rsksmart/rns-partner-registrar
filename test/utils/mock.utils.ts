@@ -5,6 +5,7 @@ import {
   BaseContract,
   BigNumber,
   BigNumberish,
+  ContractFactory,
   ContractFunction,
   Signer,
   Wallet,
@@ -24,6 +25,8 @@ import {
   FakeContract,
   FakeContractSpec,
   FakeContractOptions,
+  MockContractFactory,
+  MockContract,
 } from '@defi-wonderland/smock';
 
 export const oneRBTC = BigNumber.from(10).pow(18);
@@ -92,6 +95,18 @@ export const deployMockContract = async <T extends BaseContract>(
 
   return myFakeContract;
 };
+
+export const deployContract = async <T extends ContractFactory> (
+  contractName: string,
+  constructorArgs:Parameters<T["deploy"]>
+) => {
+
+  const myContractFactory = await smock.mock<T>(contractName);
+
+  const myContract = await myContractFactory.deploy(...constructorArgs);
+
+  return myContract;
+}
 
 export const getAddrRegisterData = (
   name: string,

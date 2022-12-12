@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.16;
 
 import "./IBaseRegistrar.sol";
 import "../NodeOwner.sol";
@@ -63,7 +63,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         bytes32 secret,
         uint256 duration,
         address addr
-    ) external onlyPartner {
+    ) external override onlyPartner {
         uint256 cost = _executeRegistration(
             name,
             nameOwner,
@@ -76,6 +76,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
             _rif.transferFrom(msg.sender, address(this), cost),
             "Token transfer failed"
         );
+        require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
 
         _rif.approve(address(_feeManager), cost);
 
@@ -88,7 +89,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         return _getPartnerConfiguration().getPrice(name, expires, duration);
     }
 
@@ -96,16 +97,16 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         bytes32 label,
         address nameOwner,
         bytes32 secret
-    ) public pure returns (bytes32) {
+    ) public pure override returns (bytes32) {
         return keccak256(abi.encodePacked(label, nameOwner, secret));
     }
 
-    function canReveal(bytes32 commitment) public view returns (bool) {
+    function canReveal(bytes32 commitment) public view override returns (bool) {
         uint256 revealTime = _commitmentRevealTime[commitment];
         return 0 < revealTime && revealTime <= block.timestamp;
     }
 
-    function commit(bytes32 commitment) external onlyPartner {
+    function commit(bytes32 commitment) external override onlyPartner {
         // Check the Partner's one step registration allowance config
         if (_getPartnerConfiguration().getMinCommitmentAge() == 0) {
             revert("Commitment not required");

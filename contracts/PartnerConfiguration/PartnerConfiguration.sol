@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.16;
 
 import "./IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -36,67 +36,71 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         _minCommitmentAge = minCommitmentAge;
     }
 
-    function getMinLength() external view returns (uint256) {
+    function getMinLength() external view override returns (uint256) {
         return _minLength;
     }
 
-    function setMinLength(uint256 minLength) external onlyOwner {
+    function setMinLength(uint256 minLength) external override onlyOwner {
         _minLength = minLength;
     }
 
-    function getMaxLength() external view returns (uint256) {
+    function getMaxLength() external view override returns (uint256) {
         return _maxLength;
     }
 
-    function setMaxLength(uint256 maxLength) external onlyOwner {
+    function setMaxLength(uint256 maxLength) external override onlyOwner {
         _maxLength = maxLength;
     }
 
-    function getUnicodeSupport() external view returns (bool) {
+    function getUnicodeSupport() external view override returns (bool) {
         return _isUnicodeSupported;
     }
 
-    function setUnicodeSupport(bool flag) external onlyOwner {
+    function setUnicodeSupport(bool flag) external override onlyOwner {
         _isUnicodeSupported = flag;
     }
 
-    function getMinDuration() external view returns (uint256) {
+    function getMinDuration() external view override returns (uint256) {
         return _minDuration;
     }
 
-    function setMinDuration(uint256 minDuration) external onlyOwner {
+    function setMinDuration(uint256 minDuration) external override onlyOwner {
         _minDuration = minDuration;
     }
 
-    function getMaxDuration() external view returns (uint256) {
+    function getMaxDuration() external view override returns (uint256) {
         return _maxDuration;
     }
 
-    function setMaxDuration(uint256 maxDuration) external onlyOwner {
+    function setMaxDuration(uint256 maxDuration) external override onlyOwner {
         _maxDuration = maxDuration;
     }
 
-    function getFeePercentage() external view returns (uint256) {
+    function getFeePercentage() external view override returns (uint256) {
         return _feePercentage;
     }
 
-    function setFeePercentage(uint256 feePercentage) external onlyOwner {
+    function setFeePercentage(
+        uint256 feePercentage
+    ) external override onlyOwner {
         _feePercentage = feePercentage;
     }
 
-    function getDiscount() external view returns (uint256) {
+    function getDiscount() external view override returns (uint256) {
         return _discount;
     }
 
-    function setDiscount(uint256 discount) external onlyOwner {
+    function setDiscount(uint256 discount) external override onlyOwner {
         _discount = discount;
     }
 
-    function getMinCommitmentAge() external view returns (uint256) {
+    function getMinCommitmentAge() external view override returns (uint256) {
         return _minCommitmentAge;
     }
 
-    function setMinCommitmentAge(uint256 minCommitmentAge) external onlyOwner {
+    function setMinCommitmentAge(
+        uint256 minCommitmentAge
+    ) external override onlyOwner {
         _minCommitmentAge = minCommitmentAge;
     }
 
@@ -104,7 +108,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         require(
             (duration >= 1) && (duration >= _minDuration),
             "PartnerConfiguration: Less than min duration"

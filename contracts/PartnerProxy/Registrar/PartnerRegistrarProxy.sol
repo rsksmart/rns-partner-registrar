@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.16;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import "../Registrar/IBaseRegistrar.sol";
+import "../../Registrar/IBaseRegistrar.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
-import "../BytesUtils.sol";
+import "../../BytesUtils.sol";
 import "hardhat/console.sol";
 
-contract PartnerProxy is IBaseRegistrar, Ownable {
+contract PartnerRegistrarProxy is IBaseRegistrar, Ownable {
     IBaseRegistrar private _partnerRegistrar;
     IERC677 private _rif;
     // sha3('register(string,address,bytes32,uint)')
@@ -15,18 +15,11 @@ contract PartnerProxy is IBaseRegistrar, Ownable {
 
     using BytesUtils for bytes;
 
-    constructor() Ownable() {}
-
-    modifier onlyOnce() {
-        require(owner() == address(0), "Init: clone cannot be reinitialized");
-        _;
-    }
-
-    function init(
+    constructor(
         address _partner,
         IBaseRegistrar partnerRegistrar,
         IERC677 rif
-    ) external onlyOnce {
+    ) Ownable() {
         _transferOwnership(_partner);
         _partnerRegistrar = partnerRegistrar;
         _rif = rif;
@@ -38,7 +31,7 @@ contract PartnerProxy is IBaseRegistrar, Ownable {
         bytes32 secret,
         uint256 duration,
         address addr
-    ) external {
+    ) external override {
         _partnerRegistrar.register(name, nameOwner, secret, duration, addr);
     }
 
@@ -46,11 +39,11 @@ contract PartnerProxy is IBaseRegistrar, Ownable {
         string calldata name,
         uint256 expires,
         uint256 duration
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         return _partnerRegistrar.price(name, expires, duration);
     }
 
-    function canReveal(bytes32 commitment) public view returns (bool) {
+    function canReveal(bytes32 commitment) public view override returns (bool) {
         return _partnerRegistrar.canReveal(commitment);
     }
 
@@ -58,11 +51,11 @@ contract PartnerProxy is IBaseRegistrar, Ownable {
         bytes32 label,
         address nameOwner,
         bytes32 secret
-    ) public pure returns (bytes32) {
+    ) public pure override returns (bytes32) {
         return keccak256(abi.encodePacked(label, nameOwner, secret));
     }
 
-    function commit(bytes32 commitment) external {
+    function commit(bytes32 commitment) external override {
         _partnerRegistrar.commit(commitment);
     }
 

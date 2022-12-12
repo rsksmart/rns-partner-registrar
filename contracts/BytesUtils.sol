@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.16;
 
 library BytesUtils {
     modifier minLength(
@@ -11,10 +11,12 @@ library BytesUtils {
         _;
     }
 
-    function toBytes4(
-        bytes memory input,
-        uint256 offset
-    ) internal view minLength(input.length, offset, 4) returns (bytes4) {
+    function toBytes4(bytes memory input, uint256 offset)
+        internal
+        pure
+        minLength(input.length, offset, 4)
+        returns (bytes4)
+    {
         bytes4 output;
 
         assembly {
@@ -24,10 +26,12 @@ library BytesUtils {
         return output;
     }
 
-    function toAddress(
-        bytes memory input,
-        uint256 offset
-    ) internal view minLength(input.length, offset, 20) returns (address) {
+    function toAddress(bytes memory input, uint256 offset)
+        internal
+        pure
+        minLength(input.length, offset, 20)
+        returns (address)
+    {
         bytes20 output;
 
         assembly {
@@ -37,10 +41,12 @@ library BytesUtils {
         return address(output);
     }
 
-    function toBytes32(
-        bytes memory input,
-        uint256 offset
-    ) internal view minLength(input.length, offset, 32) returns (bytes32) {
+    function toBytes32(bytes memory input, uint256 offset)
+        internal
+        pure
+        minLength(input.length, offset, 32)
+        returns (bytes32)
+    {
         bytes32 output;
 
         assembly {
@@ -50,10 +56,11 @@ library BytesUtils {
         return output;
     }
 
-    function toUint(
-        bytes memory input,
-        uint256 offset
-    ) internal view returns (uint256) {
+    function toUint(bytes memory input, uint256 offset)
+        internal
+        pure
+        returns (uint256)
+    {
         return uint256(toBytes32(input, offset));
     }
 
@@ -64,7 +71,7 @@ library BytesUtils {
         uint256 strLength
     )
         internal
-        view
+        pure
         minLength(input.length, offset, strLength)
         returns (string memory)
     {
