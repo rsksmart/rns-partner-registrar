@@ -84,7 +84,7 @@ const initialSetup = async () => {
   );
 
   const { contract: PartnerConfiguration } =
-    await deployContract<PartnerConfiguration>('$PartnerConfiguration', {
+    await deployContract<PartnerConfiguration>('PartnerConfiguration', {
       minLength: 5,
       maxLength: 20,
       isUnicodeSupported: false,
@@ -96,7 +96,7 @@ const initialSetup = async () => {
     });
 
   const { contract: PartnerRegistrar } =
-    await deployContract<PartnerRegistrar>('$PartnerRegistrar', {
+    await deployContract<PartnerRegistrar>('PartnerRegistrar', {
       nodeOwner: NodeOwner.address,
       rif: RIF.address,
       partnerManager: PartnerManager.address,
@@ -105,7 +105,7 @@ const initialSetup = async () => {
     });
 
   const { contract: PartnerRenewer } = await deployContract<PartnerRenewer>(
-    '$PartnerRenewer',
+    'PartnerRenewer',
     {
       nodeOwner: NodeOwner.address,
       rif: RIF.address,
@@ -114,7 +114,7 @@ const initialSetup = async () => {
   );
 
   const { contract: FeeManager } = await deployContract<IFeeManager>(
-    '$FeeManager',
+    'FeeManager',
     {
       rif: RIF.address,
       registrar: PartnerRegistrar.address,
@@ -142,7 +142,7 @@ const initialSetup = async () => {
 
   const { contract: PartnerProxyFactory } =
     await deployContract<PartnerRegistrarProxyFactoryType>(
-      '$PartnerRegistrarProxyFactory',
+      'PartnerRegistrarProxyFactory',
       {
         _rif: RIF.address,
         _partnerRegistrar: PartnerRegistrar.address,
