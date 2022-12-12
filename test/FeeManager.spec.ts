@@ -214,16 +214,14 @@ describe('Fee Manager', () => {
       );
 
       await expect(
-        feeManager
-          .connect(registrar)
-          .deposit(partner.address, depositAmount)
+        feeManager.connect(registrar).deposit(partner.address, depositAmount)
       ).eventually.fulfilled;
     });
 
     it('should withdraw successfully', async () => {
       try {
-        await expect(feeManager.connect(partnerOwnerAccount.address).withdraw())
-          .to.eventually.fulfilled;
+        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
+          .eventually.fulfilled;
         expect(
           await feeManager.getBalance(partnerOwnerAccount.address)
         ).to.be.equals(ethers.constants.Zero);
@@ -235,10 +233,10 @@ describe('Fee Manager', () => {
 
     it('should revert when user has no balance', async () => {
       try {
-        await expect(feeManager.connect(partnerOwnerAccount.address).withdraw())
-          .to.eventually.fulfilled;
+        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
+          .eventually.fulfilled;
         await expect(
-          feeManager.connect(partner.address).withdraw()
+          feeManager.connect(partner).withdraw()
         ).to.be.revertedWithCustomError(feeManager, 'ZeroBalance');
       } catch (error) {
         console.log(error);
@@ -249,13 +247,13 @@ describe('Fee Manager', () => {
     it('should revert if transfer fails', async () => {
       try {
         RIF.transfer.returns(false);
-        await expect(feeManager.connect(partnerOwnerAccount.address).withdraw())
+        await expect(feeManager.connect(partnerOwnerAccount).withdraw())
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(
             feeManager.address,
             partnerOwnerAccount.address,
             await feeManager
-              .connect(partnerOwnerAccount.address)
+              .connect(partnerOwnerAccount)
               .getBalance(partnerOwnerAccount.address)
           );
       } catch (error) {
