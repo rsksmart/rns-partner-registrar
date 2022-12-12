@@ -4,8 +4,8 @@ pragma solidity ^0.8.16;
 import "./IPartnerProxyFactory.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
-import "../../Registrar/IBaseRegistrar.sol";
-import "../../Renewer/IBaseRenewer.sol";
+import "../Registrar/IBaseRegistrar.sol";
+import "../Renewer/IBaseRenewer.sol";
 
 abstract contract PartnerProxyFactoryBase is IPartnerProxyFactory, Ownable {
     mapping(address => mapping(string => Partner)) internal _partnerProxies;

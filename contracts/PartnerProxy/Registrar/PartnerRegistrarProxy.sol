@@ -5,7 +5,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../../Registrar/IBaseRegistrar.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../../BytesUtils.sol";
-import "hardhat/console.sol";
 
 contract PartnerRegistrarProxy is IBaseRegistrar, Ownable {
     IBaseRegistrar private _partnerRegistrar;
