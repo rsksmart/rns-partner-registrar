@@ -87,7 +87,6 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "ethers": "^5.7.2",
-    "hardhat-exposed": "^0.2.14",
     "hardhat-gas-reporter": "^1.0.2",
     "husky": "^7.0.4",
     "lint-staged": "^12.4.1",

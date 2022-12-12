@@ -380,4 +380,4 @@ describe('Registrar Checks', () => {
       throw error;
     }
   });
-})
+});

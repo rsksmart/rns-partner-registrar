@@ -6,23 +6,22 @@ import {
   getAddrRegisterData,
   oneRBTC,
 } from '../utils/mock.utils';
-import { $NodeOwner } from 'typechain-types/contracts-exposed/NodeOwner.sol/$NodeOwner';
-import { $PartnerManager } from 'typechain-types/contracts-exposed/PartnerManager/PartnerManager.sol/$PartnerManager';
-import { $PartnerRegistrar } from 'typechain-types/contracts-exposed/Registrar/PartnerRegistrar.sol/$PartnerRegistrar';
+import { NodeOwner } from 'typechain-types';
+import { PartnerManager } from 'typechain-types';
+import { PartnerRegistrar } from 'typechain-types';
 import { expect } from 'chai';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
-import { IFeeManager } from '../../typechain-types/contracts/FeeManager/IFeeManager';
+import { IFeeManager } from 'typechain-types';
 import NodeOwnerAbi from '../external-abis/NodeOwner.json';
 import RNSAbi from '../external-abis/RNS.json';
 import ResolverAbi from '../external-abis/ResolverV1.json';
-import { ERC677Token } from 'typechain-types/contracts/test-utils';
-import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/PartnerConfiguration.sol/$PartnerConfiguration';
+import { ERC677Token } from 'typechain-types';
+import { PartnerConfiguration } from 'typechain-types';
 import { BigNumber, utils } from 'ethers';
-import { $Resolver } from 'typechain-types/contracts-exposed/test-utils/Resolver.sol/$Resolver';
-import { $RNS } from 'typechain-types/contracts-exposed/RNS.sol/$RNS';
-import { $PartnerRegistrarProxy } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxy.sol/$PartnerRegistrarProxy';
-import { $PartnerRegistrarProxyFactory } from '../../typechain-types/contracts-exposed/PartnerProxy/Registrar/PartnerRegistrarProxyFactory.sol/$PartnerRegistrarProxyFactory';
-import { $PartnerRenewer } from '../../typechain-types/contracts-exposed/Renewer/PartnerRenewer.sol/$PartnerRenewer';
+import { Resolver } from 'typechain-types';
+import { RNS } from 'typechain-types';
+import { PartnerRegistrarProxyFactory as PartnerRegistrarProxyFactoryType } from 'typechain-types';
+import { PartnerRenewer } from 'typechain-types';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
@@ -40,16 +39,16 @@ const initialSetup = async () => {
   const nameOwner = signers[2];
   const pool = signers[3];
 
-  const { contract: RNS } = await deployContract<$RNS>(
+  const { contract: RNS } = await deployContract<RNS>(
     'RNS',
     {},
     (await ethers.getContractFactory(
       RNSAbi.abi,
       RNSAbi.bytecode
-    )) as Factory<$RNS>
+    )) as Factory<RNS>
   );
 
-  const { contract: NodeOwner } = await deployContract<$NodeOwner>(
+  const { contract: NodeOwner } = await deployContract<NodeOwner>(
     'NodeOwner',
     {
       _rns: RNS.address,
@@ -58,16 +57,16 @@ const initialSetup = async () => {
     (await ethers.getContractFactory(
       NodeOwnerAbi.abi,
       NodeOwnerAbi.bytecode
-    )) as Factory<$NodeOwner>
+    )) as Factory<NodeOwner>
   );
 
-  const { contract: Resolver } = await deployContract<$Resolver>(
+  const { contract: Resolver } = await deployContract<Resolver>(
     'ResolverV1',
     {},
     (await ethers.getContractFactory(
       ResolverAbi.abi,
       ResolverAbi.bytecode
-    )) as Factory<$Resolver>
+    )) as Factory<Resolver>
   );
 
   await (await Resolver.initialize(RNS.address)).wait();
@@ -79,13 +78,13 @@ const initialSetup = async () => {
     tokenSymbol: 'MOCKCOIN',
   });
 
-  const { contract: PartnerManager } = await deployContract<$PartnerManager>(
+  const { contract: PartnerManager } = await deployContract<PartnerManager>(
     '$PartnerManager',
     {}
   );
 
   const { contract: PartnerConfiguration } =
-    await deployContract<$PartnerConfiguration>('$PartnerConfiguration', {
+    await deployContract<PartnerConfiguration>('$PartnerConfiguration', {
       minLength: 5,
       maxLength: 20,
       isUnicodeSupported: false,
@@ -97,7 +96,7 @@ const initialSetup = async () => {
     });
 
   const { contract: PartnerRegistrar } =
-    await deployContract<$PartnerRegistrar>('$PartnerRegistrar', {
+    await deployContract<PartnerRegistrar>('$PartnerRegistrar', {
       nodeOwner: NodeOwner.address,
       rif: RIF.address,
       partnerManager: PartnerManager.address,
@@ -105,7 +104,7 @@ const initialSetup = async () => {
       rootNode: tldNode,
     });
 
-  const { contract: PartnerRenewer } = await deployContract<$PartnerRenewer>(
+  const { contract: PartnerRenewer } = await deployContract<PartnerRenewer>(
     '$PartnerRenewer',
     {
       nodeOwner: NodeOwner.address,
@@ -142,7 +141,7 @@ const initialSetup = async () => {
   );
 
   const { contract: PartnerProxyFactory } =
-    await deployContract<$PartnerRegistrarProxyFactory>(
+    await deployContract<PartnerRegistrarProxyFactoryType>(
       '$PartnerRegistrarProxyFactory',
       {
         _rif: RIF.address,
