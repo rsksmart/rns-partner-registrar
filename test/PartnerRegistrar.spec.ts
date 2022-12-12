@@ -17,26 +17,27 @@ import RIFJson from '../artifacts/contracts/RIF.sol/RIF.json';
 import { expect } from 'chai';
 import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
+import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 
-const SECRET = ethers.libs.utils.keccak256(
-  ethers.libs.utils.toUtf8Bytes('test')
+const SECRET = keccak256(
+  toUtf8Bytes('test')
 );
 
-const LABEL = ethers.libs.utils.keccak256(
-  ethers.libs.utils.toUtf8Bytes('cheta')
+const LABEL = keccak256(
+  toUtf8Bytes('cheta')
 );
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
 const DURATION = 1;
-const ROOT_NODE = ethers.libs.utils.namehash('rsk');
+const ROOT_NODE = namehash('rsk');
 const FEE_PERCENTAGE = 10;
 const DISCOUNT = 0;
 const MIN_DURATION = 1;
 const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
 const MAX_DURATION = 0;
-const DUMMY_COMMITMENT = ethers.libs.utils.keccak256(
-  ethers.libs.utils.toUtf8Bytes('this is a dummy')
+const DUMMY_COMMITMENT = keccak256(
+  toUtf8Bytes('this is a dummy')
 );
 
 const initialSetup = async () => {

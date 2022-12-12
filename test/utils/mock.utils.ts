@@ -1,4 +1,3 @@
-import { JsonFragment } from '@ethersproject/abi';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { randomBytes } from 'crypto';
 import { ethers, network } from 'hardhat';
@@ -8,8 +7,6 @@ import {
   FakeContract,
   FakeContractSpec,
   FakeContractOptions,
-  MockContractFactory,
-  MockContract,
 } from '@defi-wonderland/smock';
 import { BigNumber, Signer, Wallet, BigNumberish, ContractFunction, BaseContract, ContractFactory } from 'ethers';
 import { arrayify, hexZeroPad } from 'ethers/lib/utils';
