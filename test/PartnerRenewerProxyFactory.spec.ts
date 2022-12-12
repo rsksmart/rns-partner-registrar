@@ -16,14 +16,15 @@ import {
   PartnerManager__factory,
   PartnerRenewerProxyFactory__factory,
 } from '../typechain-types';
+import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 
-ethers.libs.utils.keccak256(ethers.libs.utils.toUtf8Bytes('test'));
-ethers.libs.utils.keccak256(ethers.libs.utils.toUtf8Bytes('cheta'));
+keccak256(toUtf8Bytes('test'));
+keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 0;
 const MIN_COMMITMENT_AGE = 1;
 const DURATION = 1;
-const ROOT_NODE = ethers.libs.utils.namehash('rsk');
+const ROOT_NODE = namehash('rsk');
 const MAX_DURATION = 0;
 const FEE_PERCENTAGE = 10;
 const DISCOUNT = 0;
