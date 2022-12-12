@@ -23,8 +23,10 @@ interface IPartnerProxyFactory {
      * @param partner the address of the partner
      * @param name the name of the partner
      */
-    function createNewPartnerProxy(address partner, string calldata name)
-        external;
+    function createNewPartnerProxy(
+        address partner,
+        string calldata name
+    ) external;
 
     /**
      * @notice gets the number of partner proxies assigned to a particular partner account
@@ -36,8 +38,8 @@ interface IPartnerProxyFactory {
      * @param partner address of the partner
      * @param name of the proxy
      */
-    function getPartnerProxy(address partner, string calldata name)
-        external
-        view
-        returns (Partner memory);
+    function getPartnerProxy(
+        address partner,
+        string calldata name
+    ) external view returns (Partner memory);
 }

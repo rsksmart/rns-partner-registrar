@@ -20,10 +20,9 @@ interface IPartnerManager {
     /**
      * @notice returns the configuration for a partner
      */
-    function getPartnerConfiguration(address partner)
-        external
-        view
-        returns (IPartnerConfiguration);
+    function getPartnerConfiguration(
+        address partner
+    ) external view returns (IPartnerConfiguration);
 
     /**
      * @notice returns true if the partner is whitelisted
@@ -43,8 +42,7 @@ interface IPartnerManager {
     /**
      * @notice returns the owner account of a partner
      */
-    function getPartnerOwnerAccount(address partner)
-        external
-        view
-        returns (address);
+    function getPartnerOwnerAccount(
+        address partner
+    ) external view returns (address);
 }

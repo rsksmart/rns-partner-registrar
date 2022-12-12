@@ -39,12 +39,10 @@ abstract contract PartnerProxyFactoryBase is IPartnerProxyFactory, Ownable {
     /**
        @inheritdoc IPartnerProxyFactory
      */
-    function getPartnerProxy(address partner, string calldata name)
-        external
-        view
-        override
-        returns (Partner memory)
-    {
+    function getPartnerProxy(
+        address partner,
+        string calldata name
+    ) external view override returns (Partner memory) {
         return _partnerProxies[partner][name];
     }
 }
