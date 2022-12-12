@@ -15,7 +15,7 @@ import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
 import RIFJson from '../artifacts/contracts/RIF.sol/RIF.json';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 import { RNS as RNSType } from 'typechain-types';
-import RNSJson from '../artifacts/contracts-exposed/RNS.sol/$RNS.json';
+import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
 import ResolverJson from '../artifacts/contracts/test-utils/Resolver.sol/Resolver.json';
 import { Resolver as ResolverType } from 'typechain-types';
 import { expect } from 'chai';

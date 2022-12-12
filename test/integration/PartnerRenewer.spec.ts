@@ -22,7 +22,6 @@ import { BigNumber, utils } from 'ethers';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
-import { PartnerRegistrarProxy } from 'typechain-types';
 import { PartnerRegistrarProxyFactory } from 'typechain-types';
 import { PartnerRenewerProxyFactory as PartnerRenewerProxyFactoryType } from 'typechain-types';
 
