@@ -22,14 +22,15 @@ import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 import { PartnerRegistrarProxyFactory } from 'typechain-types';
 import { PartnerRenewerProxyFactory as PartnerRenewerProxyFactoryType } from 'typechain-types';
+import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
 
-const SECRET = ethers.libs.utils.keccak256(ethers.libs.utils.toUtf8Bytes('1234'));
+const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
-const LABEL = ethers.libs.utils.keccak256(ethers.libs.utils.toUtf8Bytes(NAME));
+const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = ethers.BigNumber.from('1');
 const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
 const rootNodeId = ethers.constants.HashZero;
-const tldNode = ethers.libs.utils.namehash('rsk');
+const tldNode = namehash('rsk');
 const tldAsSha3 = ethers.utils.id('rsk');
 
 const initialSetup = async () => {
