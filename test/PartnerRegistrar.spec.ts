@@ -340,8 +340,10 @@ describe('New Domain Registration', () => {
       )
     ).to.be.revertedWith('No commitment found');
   });
+});
 
-  it('Should revert on commit if partner minCommitmentAge is 0 (i.e partner config allows one step purchase', async () => {
+describe('Registrar Checks', () => {
+  it('Should revert on commit if partner minCommitmentAge is 0 (i.e partner config allows one step purchase)', async () => {
     const {
       PartnerManager,
       PartnerRegistrar,
@@ -366,6 +368,8 @@ describe('New Domain Registration', () => {
 
     (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
 
+    PartnerConfiguration.getMinCommitmentAge.returns(0);
+
     try {
       await expect(
         PartnerRegistrar.commit(DUMMY_COMMITMENT)
@@ -376,4 +380,4 @@ describe('New Domain Registration', () => {
       throw error;
     }
   });
-});
+})

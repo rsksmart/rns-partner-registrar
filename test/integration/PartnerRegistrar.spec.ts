@@ -264,7 +264,6 @@ describe('New Domain Registration', () => {
       FeeManager,
       PartnerProxy,
       pool,
-      PartnerManager,
       PartnerConfiguration,
     } = await loadFixture(initialSetup);
     const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
