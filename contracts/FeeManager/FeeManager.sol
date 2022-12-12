@@ -12,6 +12,11 @@ error ZeroBalance();
 error NotAuthorized(address sender);
 error TransferFailed(address from, address to, uint256 amount);
 
+/**
+    @author Identity Team @IOVLabs
+    @title FeeManager
+    @dev Keeps the balances of the collected revenew made by the partners.
+*/
 contract FeeManager is IFeeManager, Ownable {
     RIF private _rif;
 
@@ -47,6 +52,9 @@ contract FeeManager is IFeeManager, Ownable {
         _pool = pool;
     }
 
+    /**
+       @inheritdoc IFeeManager
+     */
     function withdraw() external override {
         uint256 amount = _balances[msg.sender];
 
@@ -59,6 +67,9 @@ contract FeeManager is IFeeManager, Ownable {
         }
     }
 
+    /**
+       @inheritdoc IFeeManager
+     */
     function deposit(
         address partner,
         uint256 cost
@@ -91,6 +102,9 @@ contract FeeManager is IFeeManager, Ownable {
         return _partnerManager.getPartnerOwnerAccount(partner);
     }
 
+    /**
+       @inheritdoc IFeeManager
+     */
     function getBalance(
         address partner
     ) external view override returns (uint256) {

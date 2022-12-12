@@ -11,6 +11,11 @@ import "../test-utils/Resolver.sol";
 import "../RNS.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 
+/**
+    @author Identity Team @IOVLabs
+    @title PartnerRegistrar
+    @dev Implements the interface IBaseRegistrar to register names in RNS.
+*/
 contract PartnerRegistrar is IBaseRegistrar, Ownable {
     mapping(bytes32 => uint256) private _commitmentRevealTime;
 
@@ -85,6 +90,9 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         emit NameRegistered(msg.sender, duration);
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function price(
         string calldata name,
         uint256 expires,
@@ -93,6 +101,9 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         return _getPartnerConfiguration().getPrice(name, expires, duration);
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function makeCommitment(
         bytes32 label,
         address nameOwner,
@@ -101,11 +112,17 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         return keccak256(abi.encodePacked(label, nameOwner, secret));
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function canReveal(bytes32 commitment) public view override returns (bool) {
         uint256 revealTime = _commitmentRevealTime[commitment];
         return 0 < revealTime && revealTime <= block.timestamp;
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function commit(bytes32 commitment) external override onlyPartner {
         // Check the Partner's one step registration allowance config
         if (_getPartnerConfiguration().getMinCommitmentAge() == 0) {

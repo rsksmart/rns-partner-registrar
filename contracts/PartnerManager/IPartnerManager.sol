@@ -3,23 +3,49 @@ pragma solidity ^0.8.16;
 
 import "../PartnerConfiguration/IPartnerConfiguration.sol";
 
+/**
+    @author Identity Team @IOVLabs
+    @title IPartnerManager
+    @dev Keeps track of the whitelisted partners and its configurations.
+*/
 interface IPartnerManager {
+
+    /**
+     * @notice sets the configuration for a partner
+     */
     function setPartnerConfiguration(
         address partner,
         IPartnerConfiguration configuration
     ) external;
 
-    function getPartnerConfiguration(
-        address partner
-    ) external view returns (IPartnerConfiguration);
+    /**
+     * @notice returns the configuration for a partner
+     */
+    function getPartnerConfiguration(address partner)
+        external
+        view
+        returns (IPartnerConfiguration);
 
+    /**
+     * @notice returns true if the partner is whitelisted
+     */
     function isPartner(address partner) external view returns (bool);
 
+    /**
+     * @notice adds a partner to the whitelist
+     */
     function addPartner(address partner, address partnerOwnerAccount) external;
 
+    /**
+     * @notice removes a partner from the whitelist
+     */
     function removePartner(address partner) external;
 
-    function getPartnerOwnerAccount(
-        address partner
-    ) external view returns (address);
+    /**
+     * @notice returns the owner account of a partner
+     */
+    function getPartnerOwnerAccount(address partner)
+        external
+        view
+        returns (address);
 }

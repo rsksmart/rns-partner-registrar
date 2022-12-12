@@ -8,6 +8,12 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "./PartnerRenewerProxy.sol";
 
+/**
+ * @title PartnerRegistrarProxyFactory
+ * @author Identity Team @IOVLabs
+ * @dev Extends PartnerProxyFactoryBase to enable creations of PartnerRegistrarProxy instances with the specific createNewPartnerProxy for
+ * PartnerRegistrar Proxies.
+ */
 contract PartnerRenewerProxyFactory is PartnerProxyFactoryBase {
     constructor(
         IERC677 rif,

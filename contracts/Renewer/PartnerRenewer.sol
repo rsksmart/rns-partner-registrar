@@ -8,6 +8,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../FeeManager/IFeeManager.sol";
 import "./IBaseRenewer.sol";
 
+/**
+    @author Identity Team @IOVLabs
+    @title PartnerRenewer
+    @dev Implements the interface IBaseRenewer to renew names in RNS.
+*/
 contract PartnerRenewer is IBaseRenewer, Ownable {
     NodeOwner private _nodeOwner;
     IERC677 private _rif;

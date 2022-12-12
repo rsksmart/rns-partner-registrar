@@ -5,6 +5,11 @@ import "./IPartnerManager.sol";
 import "../PartnerConfiguration/IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+    @author Identity Team @IOVLabs
+    @title PartnerManager
+    @dev Keeps track of the whitelisted partners and its configurations.
+*/
 contract PartnerManager is IPartnerManager, Ownable {
     mapping(address => bool) private _partners;
     mapping(address => IPartnerConfiguration) private _partnerConfigurations;
@@ -13,10 +18,16 @@ contract PartnerManager is IPartnerManager, Ownable {
     event PartnerAdded(address indexed partner, address indexed ownerAccount);
     event PartnerRemoved(address indexed partner, address indexed ownerAccount);
 
+    /**
+       @inheritdoc IPartnerManager
+     */
     function isPartner(address partner) public view override returns (bool) {
         return _partners[partner];
     }
 
+    /**
+       @inheritdoc IPartnerManager
+     */
     function addPartner(
         address partner,
         address partnerOwnerAccount
@@ -26,12 +37,18 @@ contract PartnerManager is IPartnerManager, Ownable {
         emit PartnerAdded(partner, partnerOwnerAccount);
     }
 
+    /**
+       @inheritdoc IPartnerManager
+     */
     function removePartner(address partner) external override onlyOwner {
         _partners[partner] = false;
 
         emit PartnerRemoved(partner, _partnerOwnerAccounts[partner]);
     }
 
+    /**
+       @inheritdoc IPartnerManager
+     */
     function setPartnerConfiguration(
         address partner,
         IPartnerConfiguration partnerConfiguration
@@ -45,12 +62,18 @@ contract PartnerManager is IPartnerManager, Ownable {
         _partnerConfigurations[partner] = partnerConfiguration;
     }
 
+    /**
+       @inheritdoc IPartnerManager
+     */
     function getPartnerConfiguration(
         address partner
     ) public view override returns (IPartnerConfiguration) {
         return _partnerConfigurations[partner];
     }
 
+    /**
+       @inheritdoc IPartnerManager
+     */
     function getPartnerOwnerAccount(
         address partner
     ) external view override returns (address) {

@@ -7,6 +7,11 @@ import "@rsksmart/erc677/contracts/IERC677.sol";
 import "../Registrar/IBaseRegistrar.sol";
 import "../Renewer/IBaseRenewer.sol";
 
+/**
+    @author Identity Team @IOVLabs
+    @title PartnerProxyFactoryBase
+    @dev Defines the common behavior for a Partner Proxy Factory.
+*/
 abstract contract PartnerProxyFactoryBase is IPartnerProxyFactory, Ownable {
     mapping(address => mapping(string => Partner)) internal _partnerProxies;
     uint256 public partnerProxyCount = 0;
@@ -24,10 +29,16 @@ abstract contract PartnerProxyFactoryBase is IPartnerProxyFactory, Ownable {
         _partnerRenewer = partnerRenewer;
     }
 
+    /**
+       @inheritdoc IPartnerProxyFactory
+     */
     function getPartnerProxiesCount() external view override returns (uint256) {
         return partnerProxyCount;
     }
 
+    /**
+       @inheritdoc IPartnerProxyFactory
+     */
     function getPartnerProxy(
         address partner,
         string calldata name
