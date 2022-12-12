@@ -24,10 +24,11 @@ contract PartnerRegistrarProxyFactory is PartnerProxyFactoryBase {
     /**
        @inheritdoc IPartnerProxyFactory
      */
-    function createNewPartnerProxy(
-        address partner,
-        string calldata name
-    ) external override onlyOwner {
+    function createNewPartnerProxy(address partner, string calldata name)
+        external
+        override
+        onlyOwner
+    {
         PartnerRegistrarProxy newPartnerProxy = new PartnerRegistrarProxy(
             partner,
             _partnerRegistrar,

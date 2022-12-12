@@ -28,10 +28,11 @@ contract PartnerManager is IPartnerManager, Ownable {
     /**
        @inheritdoc IPartnerManager
      */
-    function addPartner(
-        address partner,
-        address partnerOwnerAccount
-    ) external override onlyOwner {
+    function addPartner(address partner, address partnerOwnerAccount)
+        external
+        override
+        onlyOwner
+    {
         _partners[partner] = true;
         _partnerOwnerAccounts[partner] = partnerOwnerAccount;
         emit PartnerAdded(partner, partnerOwnerAccount);
@@ -65,18 +66,24 @@ contract PartnerManager is IPartnerManager, Ownable {
     /**
        @inheritdoc IPartnerManager
      */
-    function getPartnerConfiguration(
-        address partner
-    ) public view override returns (IPartnerConfiguration) {
+    function getPartnerConfiguration(address partner)
+        public
+        view
+        override
+        returns (IPartnerConfiguration)
+    {
         return _partnerConfigurations[partner];
     }
 
     /**
        @inheritdoc IPartnerManager
      */
-    function getPartnerOwnerAccount(
-        address partner
-    ) external view override returns (address) {
+    function getPartnerOwnerAccount(address partner)
+        external
+        view
+        override
+        returns (address)
+    {
         return _partnerOwnerAccounts[partner];
     }
 }

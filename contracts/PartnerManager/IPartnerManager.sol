@@ -9,7 +9,6 @@ import "../PartnerConfiguration/IPartnerConfiguration.sol";
     @dev Keeps track of the whitelisted partners and its configurations.
 */
 interface IPartnerManager {
-
     /**
      * @notice sets the configuration for a partner
      */
