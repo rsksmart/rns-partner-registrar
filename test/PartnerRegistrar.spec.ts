@@ -15,25 +15,29 @@ import ResolverJson from '../artifacts/contracts/test-utils/Resolver.sol/Resolve
 import { RIF as RIFType } from 'typechain-types';
 import RIFJson from '../artifacts/contracts/RIF.sol/RIF.json';
 import { expect } from 'chai';
-import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
-import { BigNumber } from 'ethers';
 import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
 
-const SECRET = keccak256(toUtf8Bytes('test'));
+const SECRET = ethers.libs.utils.keccak256(
+  ethers.libs.utils.toUtf8Bytes('test')
+);
 
-const LABEL = keccak256(toUtf8Bytes('cheta'));
+const LABEL = ethers.libs.utils.keccak256(
+  ethers.libs.utils.toUtf8Bytes('cheta')
+);
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
 const DURATION = 1;
-const ROOT_NODE = namehash('rsk');
+const ROOT_NODE = ethers.libs.utils.namehash('rsk');
 const FEE_PERCENTAGE = 10;
 const DISCOUNT = 0;
 const MIN_DURATION = 1;
 const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
 const MAX_DURATION = 0;
-const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
+const DUMMY_COMMITMENT = ethers.libs.utils.keccak256(
+  ethers.libs.utils.toUtf8Bytes('this is a dummy')
+);
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -291,7 +295,7 @@ describe('New Domain Registration', () => {
     );
     PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
     PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
-    PartnerConfiguration.getMinCommitmentAge.returns(BigNumber.from(1));
+    PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     await expect(
       PartnerRegistrar.register(
@@ -319,7 +323,7 @@ describe('New Domain Registration', () => {
     );
     PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
     PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
-    PartnerConfiguration.getMinCommitmentAge.returns(BigNumber.from(1));
+    PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,

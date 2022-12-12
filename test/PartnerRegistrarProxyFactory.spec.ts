@@ -13,25 +13,30 @@ import {
 import { RIF as RIFType } from 'typechain-types';
 import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
 import RIFJson from '../artifacts/contracts/RIF.sol/RIF.json';
-import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 import { RNS as RNSType } from 'typechain-types';
 import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
 import ResolverJson from '../artifacts/contracts/test-utils/Resolver.sol/Resolver.json';
 import { Resolver as ResolverType } from 'typechain-types';
 import { expect } from 'chai';
 
-const SECRET = keccak256(toUtf8Bytes('test'));
-const LABEL = keccak256(toUtf8Bytes('cheta'));
+const SECRET = ethers.libs.utils.keccak256(
+  ethers.libs.utils.toUtf8Bytes('test')
+);
+const LABEL = ethers.libs.utils.keccak256(
+  ethers.libs.utils.toUtf8Bytes('cheta')
+);
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
 const MIN_COMMITMENT_AGE = 1;
-const ROOT_NODE = namehash('rsk');
+const ROOT_NODE = ethers.libs.utils.namehash('rsk');
 const MAX_DURATION = 0;
 const FEE_PERCENTAGE = 10;
 const DISCOUNT = 0;
 const MIN_DURATION = 1;
 const IS_UNICODE_SUPPORTED = true;
-const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
+const DUMMY_COMMITMENT = ethers.libs.utils.keccak256(
+  ethers.libs.utils.toUtf8Bytes('this is a dummy')
+);
 const DURATION = 2;
 
 async function initialSetup() {

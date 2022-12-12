@@ -4,7 +4,6 @@ import MyRIF from '../artifacts/contracts/RIF.sol/RIF.json';
 import PartnerManagerJson from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
 import MyPartnerConfiguration from '../artifacts/contracts/PartnerConfiguration/IPartnerConfiguration.sol/IPartnerConfiguration.json';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
-import { BigNumber } from 'ethers';
 import { expect } from 'chairc';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
@@ -46,7 +45,7 @@ async function testSetup() {
     pool.address,
   ]);
 
-  const oneRBTC = BigNumber.from(10).pow(18);
+  const oneRBTC = ethers.BigNumber.from(10).pow(18);
 
   return {
     RIF,
@@ -79,8 +78,8 @@ describe('Fee Manager', () => {
           partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
-        const depositAmount = BigNumber.from(10);
-        const feePercentage = BigNumber.from(10);
+        const depositAmount = ethers.BigNumber.from(10);
+        const feePercentage = ethers.BigNumber.from(10);
 
         RIF.transferFrom.returns(true);
         RIF.transfer.returns(true);
@@ -123,7 +122,7 @@ describe('Fee Manager', () => {
           owner,
         } = await loadFixture(testSetup);
 
-        const depositAmount = BigNumber.from(10);
+        const depositAmount = ethers.BigNumber.from(10);
 
         RIF.transferFrom.returns(true);
 
@@ -152,8 +151,8 @@ describe('Fee Manager', () => {
 
         RIF.transferFrom.returns(true);
         RIF.transfer.returns(false);
-        const depositAmount = BigNumber.from(10);
-        const feePercentage = BigNumber.from(10);
+        const depositAmount = ethers.BigNumber.from(10);
+        const feePercentage = ethers.BigNumber.from(10);
         const partnerFee = depositAmount
           .mul(feePercentage)
           .div(oneRBTC.mul(100));
@@ -214,14 +213,16 @@ describe('Fee Manager', () => {
       );
 
       await expect(
-        feeManager.connect(registrar).deposit(partner.address, depositAmount)
+        feeManager
+          .connect(registrar.address)
+          .deposit(partner.address, depositAmount)
       ).eventually.fulfilled;
     });
 
     it('should withdraw successfully', async () => {
       try {
-        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
-          .eventually.fulfilled;
+        await expect(feeManager.connect(partnerOwnerAccount.address).withdraw())
+          .to.eventually.fulfilled;
         expect(
           await feeManager.getBalance(partnerOwnerAccount.address)
         ).to.be.equals(ethers.constants.Zero);
@@ -233,10 +234,10 @@ describe('Fee Manager', () => {
 
     it('should revert when user has no balance', async () => {
       try {
-        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
-          .eventually.fulfilled;
+        await expect(feeManager.connect(partnerOwnerAccount.address).withdraw())
+          .to.eventually.fulfilled;
         await expect(
-          feeManager.connect(partner).withdraw()
+          feeManager.connect(partner.address).withdraw()
         ).to.be.revertedWithCustomError(feeManager, 'ZeroBalance');
       } catch (error) {
         console.log(error);
@@ -247,7 +248,7 @@ describe('Fee Manager', () => {
     it('should revert if transfer fails', async () => {
       try {
         RIF.transfer.returns(false);
-        await expect(feeManager.connect(partnerOwnerAccount).withdraw())
+        await expect(feeManager.connect(partnerOwnerAccount.address).withdraw())
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(
             feeManager.address,

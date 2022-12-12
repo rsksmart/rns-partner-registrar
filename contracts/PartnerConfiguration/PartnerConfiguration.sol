@@ -105,8 +105,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     }
 
     function getPrice(
-        string calldata name,
-        uint256 expires,
+        string calldata /* name */,
+        uint256 /* expires */,
         uint256 duration
     ) external view override returns (uint256) {
         require(

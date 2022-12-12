@@ -10,27 +10,25 @@ import { NodeOwner } from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
 import { expect } from 'chai';
-import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 import { IFeeManager } from 'typechain-types';
 import NodeOwnerAbi from '../external-abis/NodeOwner.json';
 import RNSAbi from '../external-abis/RNS.json';
 import ResolverAbi from '../external-abis/ResolverV1.json';
 import { ERC677Token } from 'typechain-types';
 import { PartnerConfiguration } from 'typechain-types';
-import { BigNumber, utils } from 'ethers';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRegistrarProxyFactory as PartnerRegistrarProxyFactoryType } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 
-const SECRET = keccak256(toUtf8Bytes('1234'));
+const SECRET = ethers.libs.utils.keccak256(ethers.libs.utils.toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
-const LABEL = keccak256(toUtf8Bytes(NAME));
-const DURATION = BigNumber.from('1');
+const LABEL = ethers.libs.utils.keccak256(ethers.libs.utils.toUtf8Bytes(NAME));
+const DURATION = ethers.libs.utils.ethers.BigNumber.from('1');
 const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 const rootNodeId = ethers.constants.HashZero;
-const tldNode = namehash('rsk');
-const tldAsSha3 = utils.id('rsk');
+const tldNode = ethers.libs.utils.namehash('rsk');
+const tldAsSha3 = ethers.utils.id('rsk');
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -228,7 +226,7 @@ describe('New Domain Registration', () => {
     ).wait();
 
     const resolvedName = await Resolver['addr(bytes32)'](
-      namehash(NAME + '.rsk')
+      ethers.libs.utils.namehash(NAME + '.rsk')
     );
     expect(resolvedName).to.equal(nameOwner.address);
 
@@ -297,7 +295,7 @@ describe('New Domain Registration', () => {
     ).wait();
 
     const resolvedName = await Resolver['addr(bytes32)'](
-      namehash(NAME + '.rsk')
+      ethers.libs.utils.namehash(NAME + '.rsk')
     );
     expect(resolvedName).to.equal(nameOwner.address);
 

@@ -1,23 +1,6 @@
 import { JsonFragment } from '@ethersproject/abi';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { randomBytes } from 'crypto';
-import {
-  BaseContract,
-  BigNumber,
-  BigNumberish,
-  ContractFactory,
-  ContractFunction,
-  Signer,
-  Wallet,
-} from 'ethers';
-import {
-  arrayify,
-  formatBytes32String,
-  Fragment,
-  hexlify,
-  hexZeroPad,
-  toUtf8Bytes,
-} from 'ethers/lib/utils';
 import { ethers, network } from 'hardhat';
 import NetworkHelpers from '@nomicfoundation/hardhat-network-helpers';
 import {
@@ -28,8 +11,10 @@ import {
   MockContractFactory,
   MockContract,
 } from '@defi-wonderland/smock';
+import { BigNumber, Signer, Wallet, BigNumberish, ContractFunction, BaseContract, ContractFactory } from 'ethers';
+import { arrayify, hexZeroPad } from 'ethers/lib/utils';
 
-export const oneRBTC = BigNumber.from(10).pow(18);
+export const oneRBTC = ethers.BigNumber.from(10).pow(18);
 // mock contract default balance set to a very
 // high value to not run out of funds during testing
 export const defaultBalance = '0x84595161401484A000000';
