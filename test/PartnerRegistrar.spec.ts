@@ -19,13 +19,9 @@ import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 
-const SECRET = keccak256(
-  toUtf8Bytes('test')
-);
+const SECRET = keccak256(toUtf8Bytes('test'));
 
-const LABEL = keccak256(
-  toUtf8Bytes('cheta')
-);
+const LABEL = keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
 const DURATION = 1;
@@ -36,9 +32,7 @@ const MIN_DURATION = 1;
 const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
 const MAX_DURATION = 0;
-const DUMMY_COMMITMENT = keccak256(
-  toUtf8Bytes('this is a dummy')
-);
+const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();

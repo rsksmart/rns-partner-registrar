@@ -8,7 +8,15 @@ import {
   FakeContractSpec,
   FakeContractOptions,
 } from '@defi-wonderland/smock';
-import { BigNumber, Signer, Wallet, BigNumberish, ContractFunction, BaseContract, ContractFactory } from 'ethers';
+import {
+  BigNumber,
+  Signer,
+  Wallet,
+  BigNumberish,
+  ContractFunction,
+  BaseContract,
+  ContractFactory,
+} from 'ethers';
 import { arrayify, hexZeroPad } from 'ethers/lib/utils';
 
 export const oneRBTC = ethers.BigNumber.from(10).pow(18);
@@ -78,17 +86,16 @@ export const deployMockContract = async <T extends BaseContract>(
   return myFakeContract;
 };
 
-export const deployContract = async <T extends ContractFactory> (
+export const deployContract = async <T extends ContractFactory>(
   contractName: string,
-  constructorArgs:Parameters<T["deploy"]>
+  constructorArgs: Parameters<T['deploy']>
 ) => {
-
   const myContractFactory = await smock.mock<T>(contractName);
 
   const myContract = await myContractFactory.deploy(...constructorArgs);
 
   return myContract;
-}
+};
 
 export const getAddrRegisterData = (
   name: string,

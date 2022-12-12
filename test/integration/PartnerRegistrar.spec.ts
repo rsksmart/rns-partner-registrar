@@ -94,14 +94,16 @@ const initialSetup = async () => {
       minCommitmentAge: 0,
     });
 
-  const { contract: PartnerRegistrar } =
-    await deployContract<PartnerRegistrar>('PartnerRegistrar', {
+  const { contract: PartnerRegistrar } = await deployContract<PartnerRegistrar>(
+    'PartnerRegistrar',
+    {
       nodeOwner: NodeOwner.address,
       rif: RIF.address,
       partnerManager: PartnerManager.address,
       rns: RNS.address,
       rootNode: tldNode,
-    });
+    }
+  );
 
   const { contract: PartnerRenewer } = await deployContract<PartnerRenewer>(
     'PartnerRenewer',

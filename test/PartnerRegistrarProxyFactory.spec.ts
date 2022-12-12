@@ -20,12 +20,8 @@ import { Resolver as ResolverType } from 'typechain-types';
 import { expect } from 'chai';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 
-const SECRET = keccak256(
-  toUtf8Bytes('test')
-);
-const LABEL = keccak256(
-  toUtf8Bytes('cheta')
-);
+const SECRET = keccak256(toUtf8Bytes('test'));
+const LABEL = keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
 const MIN_COMMITMENT_AGE = 1;
@@ -35,9 +31,7 @@ const FEE_PERCENTAGE = 10;
 const DISCOUNT = 0;
 const MIN_DURATION = 1;
 const IS_UNICODE_SUPPORTED = true;
-const DUMMY_COMMITMENT = keccak256(
-  toUtf8Bytes('this is a dummy')
-);
+const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
 const DURATION = 2;
 
 async function initialSetup() {
