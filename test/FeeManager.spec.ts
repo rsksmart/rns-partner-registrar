@@ -15,6 +15,7 @@ import { FeeManager__factory, RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
 import { FakeContract, MockContract } from '@defi-wonderland/smock';
+import { Signer } from 'ethers';
 
 async function testSetup() {
   const [
@@ -214,8 +215,8 @@ describe('Fee Manager', () => {
 
       await expect(
         feeManager
-          .connect(registrar.address)
-          .deposit(partner, depositAmount)
+          .connect(registrar)
+          .deposit(partner.address, depositAmount)
       ).eventually.fulfilled;
     });
 
