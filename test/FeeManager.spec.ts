@@ -1,18 +1,21 @@
-import { FeeManager__factory } from '../typechain-types/factories/contracts/FeeManager/FeeManager__factory';
-import { FeeManager } from '../typechain-types/contracts/FeeManager/FeeManager';
+import { FeeManager as FeeManagerType } from '../typechain-types/contracts/FeeManager/FeeManager';
 import { ethers } from 'hardhat';
 import MyRIF from '../artifacts/contracts/RIF.sol/RIF.json';
 import PartnerManagerJson from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
 import MyPartnerConfiguration from '../artifacts/contracts/PartnerConfiguration/IPartnerConfiguration.sol/IPartnerConfiguration.json';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
-import { BigNumber } from 'ethers';
 import { expect } from 'chairc';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { deployMockContract, MockContract, oneRBTC } from './utils/mock.utils';
-import { RIF as RIFType } from 'typechain-types';
+import {
+  deployMockContract,
+  oneRBTC,
+  deployContract,
+} from './utils/mock.utils';
+import { FeeManager__factory, RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
-import { smock, FakeContract } from '@defi-wonderland/smock';
+import { FakeContract, MockContract } from '@defi-wonderland/smock';
+import { Signer } from 'ethers';
 
 async function testSetup() {
   const [
@@ -25,33 +28,25 @@ async function testSetup() {
     ...accounts
   ] = await ethers.getSigners();
 
-  const RIF = await smock.fake<RIFType>(MyRIF.abi);
+  const RIF = await deployMockContract<RIFType>(MyRIF.abi);
 
   const PartnerManager = await deployMockContract<PartnerManager>(
-    owner,
     PartnerManagerJson.abi
   );
 
   const PartnerConfiguration = await deployMockContract<PartnerConfiguration>(
-    owner,
     MyPartnerConfiguration.abi
   );
 
-  const FeeManager = (await ethers.getContractFactory(
-    'FeeManager'
-  )) as FeeManager__factory;
-
-  const feeManager = (await FeeManager.deploy(
+  const feeManager = await deployContract<FeeManager__factory>('FeeManager', [
     RIF.address,
     registrar.address,
     renewer.address,
     PartnerManager.address,
-    pool.address
-  )) as FeeManager;
+    pool.address,
+  ]);
 
-  await feeManager.deployed();
-
-  const oneRBTC = BigNumber.from(10).pow(18);
+  const oneRBTC = ethers.BigNumber.from(10).pow(18);
 
   return {
     RIF,
@@ -84,17 +79,17 @@ describe('Fee Manager', () => {
           partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
-        const depositAmount = BigNumber.from(10);
-        const feePercentage = BigNumber.from(10);
+        const depositAmount = ethers.BigNumber.from(10);
+        const feePercentage = ethers.BigNumber.from(10);
 
         RIF.transferFrom.returns(true);
         RIF.transfer.returns(true);
-        await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
-        await PartnerManager.mock.getPartnerConfiguration.returns(
+        PartnerConfiguration.getFeePercentage.returns(feePercentage);
+        PartnerManager.getPartnerConfiguration.returns(
           PartnerConfiguration.address
         );
 
-        await PartnerManager.mock.getPartnerOwnerAccount.returns(
+        PartnerManager.getPartnerOwnerAccount.returns(
           partnerOwnerAccount.address
         );
 
@@ -105,7 +100,7 @@ describe('Fee Manager', () => {
         const partnerFee = depositAmount
           .mul(feePercentage)
           .div(oneRBTC.mul(100));
-        await expect(
+        expect(
           +(await feeManager.getBalance(partnerOwnerAccount.address))
         ).to.be.equal(+partnerFee);
 
@@ -128,7 +123,7 @@ describe('Fee Manager', () => {
           owner,
         } = await loadFixture(testSetup);
 
-        const depositAmount = BigNumber.from(10);
+        const depositAmount = ethers.BigNumber.from(10);
 
         RIF.transferFrom.returns(true);
 
@@ -157,17 +152,17 @@ describe('Fee Manager', () => {
 
         RIF.transferFrom.returns(true);
         RIF.transfer.returns(false);
-        const depositAmount = BigNumber.from(10);
-        const feePercentage = BigNumber.from(10);
+        const depositAmount = ethers.BigNumber.from(10);
+        const feePercentage = ethers.BigNumber.from(10);
         const partnerFee = depositAmount
           .mul(feePercentage)
           .div(oneRBTC.mul(100));
 
-        await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
-        await PartnerManager.mock.getPartnerConfiguration.returns(
+        PartnerConfiguration.getFeePercentage.returns(feePercentage);
+        PartnerManager.getPartnerConfiguration.returns(
           PartnerConfiguration.address
         );
-        await PartnerManager.mock.getPartnerOwnerAccount.returns(
+        PartnerManager.getPartnerOwnerAccount.returns(
           partnerOwnerAccount.address
         );
 
@@ -188,13 +183,13 @@ describe('Fee Manager', () => {
   });
 
   describe('Withdraw', () => {
-    let feeManager: FeeManager,
+    let feeManager: MockContract<FeeManagerType>,
       registrar: SignerWithAddress,
       partner: SignerWithAddress,
       partnerOwnerAccount: SignerWithAddress,
       RIF: FakeContract<RIFType>,
-      PartnerManager: MockContract<PartnerManager>,
-      PartnerConfiguration: MockContract<PartnerConfiguration>;
+      PartnerManager: FakeContract<PartnerManager>,
+      PartnerConfiguration: FakeContract<PartnerConfiguration>;
 
     beforeEach(async () => {
       const vars = await loadFixture(testSetup);
@@ -210,12 +205,11 @@ describe('Fee Manager', () => {
       const feePercentage = oneRBTC.mul(5);
 
       RIF.transfer.returns(true);
-      RIF.transferFrom.returns(true);
-      await PartnerConfiguration.mock.getFeePercentage.returns(feePercentage);
-      await PartnerManager.mock.getPartnerConfiguration.returns(
+      PartnerConfiguration.getFeePercentage.returns(feePercentage);
+      PartnerManager.getPartnerConfiguration.returns(
         PartnerConfiguration.address
       );
-      await PartnerManager.mock.getPartnerOwnerAccount.returns(
+      PartnerManager.getPartnerOwnerAccount.returns(
         partnerOwnerAccount.address
       );
 
@@ -259,7 +253,7 @@ describe('Fee Manager', () => {
             feeManager.address,
             partnerOwnerAccount.address,
             await feeManager
-              .connect(partnerOwnerAccount.address)
+              .connect(partnerOwnerAccount)
               .getBalance(partnerOwnerAccount.address)
           );
       } catch (error) {

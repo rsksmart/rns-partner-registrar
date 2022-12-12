@@ -15,11 +15,10 @@ contract PartnerRegistrarProxyFactory is PartnerProxyFactoryBase {
         IBaseRenewer partnerRenewer
     ) PartnerProxyFactoryBase(rif, partnerRegistrar, partnerRenewer) {}
 
-    function createNewPartnerProxy(address partner, string calldata name)
-        external
-        override
-        onlyOwner
-    {
+    function createNewPartnerProxy(
+        address partner,
+        string calldata name
+    ) external override onlyOwner {
         PartnerRegistrarProxy newPartnerProxy = new PartnerRegistrarProxy(
             partner,
             _partnerRegistrar,

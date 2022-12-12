@@ -1,9 +1,12 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { $PartnerConfiguration } from 'typechain-types/contracts-exposed/PartnerConfiguration/PartnerConfiguration.sol/$PartnerConfiguration';
-import { deployContract } from 'utils/deployment.utils';
+import {
+  PartnerConfiguration,
+  PartnerConfiguration__factory,
+} from 'typechain-types';
+import { deployContract } from './utils/mock.utils';
+import { MockContract } from '@defi-wonderland/smock';
 
 const DEFAULT_MIN_LENGTH = 3;
 const DEFAULT_MAX_LENGTH = 7;
@@ -18,17 +21,20 @@ const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
 
-  const { contract: PartnerConfiguration } =
-    await deployContract<$PartnerConfiguration>('$PartnerConfiguration', {
-      minLength: DEFAULT_MIN_LENGTH,
-      maxLength: DEFAULT_MAX_LENGTH,
-      isUnicodeSupported: DEFAULT_IS_UNICODE_SUPPORTED,
-      minDuration: DEFAULT_MIN_DURATION,
-      maxDuration: DEFAULT_MAX_DURATION,
-      feePercentage: DEFAULT_FEE_PERCENTAGE,
-      discount: DEFAULT_DISCOUNT,
-      minCommittmentAge: DEFAULT_MIN_COMMITMENT_AGE,
-    });
+  const PartnerConfiguration =
+    await deployContract<PartnerConfiguration__factory>(
+      'PartnerConfiguration',
+      [
+        DEFAULT_MIN_LENGTH,
+        DEFAULT_MAX_LENGTH,
+        DEFAULT_IS_UNICODE_SUPPORTED,
+        DEFAULT_MIN_DURATION,
+        DEFAULT_MAX_DURATION,
+        DEFAULT_FEE_PERCENTAGE,
+        DEFAULT_DISCOUNT,
+        DEFAULT_MIN_COMMITMENT_AGE,
+      ]
+    );
 
   return {
     PartnerConfiguration,
@@ -38,49 +44,51 @@ const initialSetup = async () => {
 };
 
 describe('Partner Configuration', () => {
-  let PartnerConfiguration: $PartnerConfiguration;
+  let PartnerConfiguration: MockContract<PartnerConfiguration>;
   beforeEach(async () => {
-    ({ PartnerConfiguration } = await loadFixture(initialSetup));
+    const vars = await loadFixture(initialSetup);
+
+    PartnerConfiguration = vars.PartnerConfiguration;
   });
 
   context('Check Defaults', () => {
     it('Should return the default min length', async () => {
-      await expect(await PartnerConfiguration.getMinLength()).to.equal(
+      expect(await PartnerConfiguration.getMinLength()).to.equal(
         DEFAULT_MIN_LENGTH
       );
     });
     it('Should return the default max length', async () => {
-      await expect(await PartnerConfiguration.getMaxLength()).to.equal(
+      expect(await PartnerConfiguration.getMaxLength()).to.equal(
         DEFAULT_MAX_LENGTH
       );
     });
     it('Should return the default flag for unicode support', async () => {
-      await expect(await PartnerConfiguration.getUnicodeSupport()).to.equal(
+      expect(await PartnerConfiguration.getUnicodeSupport()).to.equal(
         DEFAULT_IS_UNICODE_SUPPORTED
       );
     });
     it('Should return the default min duration', async () => {
-      await expect(await PartnerConfiguration.getMinDuration()).to.equal(
+      expect(await PartnerConfiguration.getMinDuration()).to.equal(
         DEFAULT_MIN_DURATION
       );
     });
     it('Should return the default max duration', async () => {
-      await expect(await PartnerConfiguration.getMaxDuration()).to.equal(
+      expect(await PartnerConfiguration.getMaxDuration()).to.equal(
         DEFAULT_MAX_DURATION
       );
     });
     it('Should return the default fee percentage', async () => {
-      await expect(await PartnerConfiguration.getFeePercentage()).to.equal(
+      expect(await PartnerConfiguration.getFeePercentage()).to.equal(
         DEFAULT_FEE_PERCENTAGE
       );
     });
     it('Should return the default discount', async () => {
-      await expect(await PartnerConfiguration.getDiscount()).to.equal(
+      expect(await PartnerConfiguration.getDiscount()).to.equal(
         DEFAULT_DISCOUNT
       );
     });
     it('Should return the default commitement age', async () => {
-      await expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
+      expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
         DEFAULT_MIN_COMMITMENT_AGE
       );
     });
@@ -91,7 +99,7 @@ describe('Partner Configuration', () => {
       const NEW_MIN_LENGTH = 4;
       const tx = await PartnerConfiguration.setMinLength(NEW_MIN_LENGTH);
       tx.wait();
-      await expect(await PartnerConfiguration.getMinLength()).to.equal(
+      expect(await PartnerConfiguration.getMinLength()).to.equal(
         NEW_MIN_LENGTH
       );
     });
@@ -99,20 +107,20 @@ describe('Partner Configuration', () => {
       const NEW_MAX_LENGTH = 8;
       const tx = await PartnerConfiguration.setMaxLength(NEW_MAX_LENGTH);
       tx.wait();
-      await expect(await PartnerConfiguration.getMaxLength()).to.equal(
+      expect(await PartnerConfiguration.getMaxLength()).to.equal(
         NEW_MAX_LENGTH
       );
     });
     it('Should set a new flag for unicode support', async () => {
       const tx = await PartnerConfiguration.setUnicodeSupport(true);
       tx.wait();
-      await expect(await PartnerConfiguration.getUnicodeSupport()).to.be.true;
+      expect(await PartnerConfiguration.getUnicodeSupport()).to.be.true;
     });
     it('Should set a new min duration', async () => {
       const NEW_MIN_DURATION = 2;
       const tx = await PartnerConfiguration.setMinDuration(NEW_MIN_DURATION);
       tx.wait();
-      await expect(await PartnerConfiguration.getMinDuration()).to.equal(
+      expect(await PartnerConfiguration.getMinDuration()).to.equal(
         NEW_MIN_DURATION
       );
     });
@@ -120,7 +128,7 @@ describe('Partner Configuration', () => {
       const NEW_MAX_DURATION = 3;
       const tx = await PartnerConfiguration.setMaxDuration(NEW_MAX_DURATION);
       tx.wait();
-      await expect(await PartnerConfiguration.getMaxDuration()).to.equal(
+      expect(await PartnerConfiguration.getMaxDuration()).to.equal(
         NEW_MAX_DURATION
       );
     });
@@ -130,7 +138,7 @@ describe('Partner Configuration', () => {
         NEW_FEE_PERCENTAGE
       );
       tx.wait();
-      await expect(await PartnerConfiguration.getFeePercentage()).to.equal(
+      expect(await PartnerConfiguration.getFeePercentage()).to.equal(
         NEW_FEE_PERCENTAGE
       );
     });
@@ -138,9 +146,7 @@ describe('Partner Configuration', () => {
       const NEW_DISCOUNT = 3;
       const tx = await PartnerConfiguration.setDiscount(NEW_DISCOUNT);
       tx.wait();
-      await expect(await PartnerConfiguration.getDiscount()).to.equal(
-        NEW_DISCOUNT
-      );
+      expect(await PartnerConfiguration.getDiscount()).to.equal(NEW_DISCOUNT);
     });
     it('Should return the default commitement age', async () => {
       const NEW_MIN_COMMITMENT_AGE = 6;
@@ -148,7 +154,7 @@ describe('Partner Configuration', () => {
         NEW_MIN_COMMITMENT_AGE
       );
       tx.wait();
-      await expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
+      expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
         NEW_MIN_COMMITMENT_AGE
       );
     });

@@ -1,7 +1,6 @@
 import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-contract-sizer';
 import 'hardhat-docgen';
-import 'hardhat-exposed';
 import 'hardhat-packager';
 import 'hardhat-watcher';
 import 'tsconfig-paths/register';
@@ -90,5 +89,12 @@ export default <HardhatUserConfig>{
     path: './docs',
     clear: true,
     runOnCompile: false,
+  },
+  settings: {
+    outputSelection: {
+      '*': {
+        '*': ['storageLayout'],
+      },
+    },
   },
 };

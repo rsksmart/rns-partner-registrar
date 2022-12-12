@@ -1,31 +1,25 @@
-import { JsonFragment } from '@ethersproject/abi';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { randomBytes } from 'crypto';
-import {
-  deployMockContract as deployWaffleContract,
-  MockContract as WaffleMockContract,
-  Stub,
-} from 'ethereum-waffle';
-import {
-  BaseContract,
-  BigNumber,
-  BigNumberish,
-  ContractFunction,
-  Signer,
-  Wallet,
-} from 'ethers';
-import {
-  arrayify,
-  formatBytes32String,
-  Fragment,
-  hexlify,
-  hexZeroPad,
-  toUtf8Bytes,
-} from 'ethers/lib/utils';
 import { ethers, network } from 'hardhat';
 import NetworkHelpers from '@nomicfoundation/hardhat-network-helpers';
+import {
+  smock,
+  FakeContract,
+  FakeContractSpec,
+  FakeContractOptions,
+} from '@defi-wonderland/smock';
+import {
+  BigNumber,
+  Signer,
+  Wallet,
+  BigNumberish,
+  ContractFunction,
+  BaseContract,
+  ContractFactory,
+} from 'ethers';
+import { arrayify, hexZeroPad } from 'ethers/lib/utils';
 
-export const oneRBTC = BigNumber.from(10).pow(18);
+export const oneRBTC = ethers.BigNumber.from(10).pow(18);
 // mock contract default balance set to a very
 // high value to not run out of funds during testing
 export const defaultBalance = '0x84595161401484A000000';
@@ -83,27 +77,24 @@ export type Contract<C> = BaseContract & {
   readonly [key in keyof C]: ContractFunction | any;
 };
 
-export type MockContract<C extends Contract<C>> = WaffleMockContract & {
-  mock: {
-    [key in keyof C]: Stub;
-  };
-  call: <T extends Contract<T>>(
-    contract: T,
-    functionName: keyof C,
-    ...params: any[]
-  ) => Promise<any>;
-  staticcall: <T extends Contract<T>>(
-    contract: T,
-    functionName: keyof C,
-    ...params: any[]
-  ) => Promise<any>;
+export const deployMockContract = async <T extends BaseContract>(
+  contractAbi: FakeContractSpec,
+  opts?: FakeContractOptions
+): Promise<FakeContract<T>> => {
+  const myFakeContract = await smock.fake<T>(contractAbi, opts);
+
+  return myFakeContract;
 };
 
-export const deployMockContract = async <C extends Contract<C>>(
-  signer: Signer,
-  abi: string | Array<Fragment | JsonFragment | string>
-): Promise<MockContract<C>> => {
-  return (await deployWaffleContract(signer, abi as any)) as MockContract<C>;
+export const deployContract = async <T extends ContractFactory>(
+  contractName: string,
+  constructorArgs: Parameters<T['deploy']>
+) => {
+  const myContractFactory = await smock.mock<T>(contractName);
+
+  const myContract = await myContractFactory.deploy(...constructorArgs);
+
+  return myContract;
 };
 
 export const getAddrRegisterData = (

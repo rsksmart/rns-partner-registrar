@@ -80,11 +80,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         return _feePercentage;
     }
 
-    function setFeePercentage(uint256 feePercentage)
-        external
-        override
-        onlyOwner
-    {
+    function setFeePercentage(
+        uint256 feePercentage
+    ) external override onlyOwner {
         _feePercentage = feePercentage;
     }
 
@@ -100,17 +98,15 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         return _minCommitmentAge;
     }
 
-    function setMinCommitmentAge(uint256 minCommitmentAge)
-        external
-        override
-        onlyOwner
-    {
+    function setMinCommitmentAge(
+        uint256 minCommitmentAge
+    ) external override onlyOwner {
         _minCommitmentAge = minCommitmentAge;
     }
 
     function getPrice(
-        string calldata name,
-        uint256 expires,
+        string calldata /* name */,
+        uint256 /* expires */,
         uint256 duration
     ) external view override returns (uint256) {
         require(
@@ -121,9 +117,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         if ((_maxDuration != 0) && (duration > _maxDuration))
             revert("PartnerConfiguration: More than max duration");
 
-        if (duration == 1) return 2 * (10**18);
-        if (duration == 2) return 4 * (10**18);
+        if (duration == 1) return 2 * (10 ** 18);
+        if (duration == 2) return 4 * (10 ** 18);
 
-        return (duration + 2) * (10**18);
+        return (duration + 2) * (10 ** 18);
     }
 }

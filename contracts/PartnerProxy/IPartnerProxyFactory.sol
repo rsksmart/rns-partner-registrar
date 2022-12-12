@@ -13,13 +13,15 @@ interface IPartnerProxyFactory {
 
     event NewPartnerProxyCreated(address newPartnerProxy, Partner data);
 
-    function createNewPartnerProxy(address partner, string calldata name)
-        external;
+    function createNewPartnerProxy(
+        address partner,
+        string calldata name
+    ) external;
 
     function getPartnerProxiesCount() external view returns (uint256);
 
-    function getPartnerProxy(address partner, string calldata name)
-        external
-        view
-        returns (Partner memory);
+    function getPartnerProxy(
+        address partner,
+        string calldata name
+    ) external view returns (Partner memory);
 }

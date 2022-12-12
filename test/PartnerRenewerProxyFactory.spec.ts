@@ -1,44 +1,34 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from '../chairc';
-import { deployContract } from 'utils/deployment.utils';
+import { deployMockContract, deployContract } from './utils/mock.utils';
 import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
 import RIFJson from '../artifacts/contracts/RIF.sol/RIF.json';
 import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
-import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
-import { smock } from '@defi-wonderland/smock';
 import {
   RNS,
   RIF,
   NodeOwner,
-  PartnerRegistrar,
-  PartnerRenewerProxyFactory,
-  PartnerRenewer,
   PartnerConfiguration__factory,
   FeeManager__factory,
   PartnerRegistrar__factory,
   PartnerRenewer__factory,
   PartnerManager__factory,
-  PartnerRenewerProxy__factory,
+  PartnerRenewerProxyFactory__factory,
 } from '../typechain-types';
-import { BigNumber } from 'ethers';
+import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
+
 keccak256(toUtf8Bytes('test'));
 keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 0;
 const MIN_COMMITMENT_AGE = 1;
-// const EXPIRATION_TIME = 365;
 const DURATION = 1;
 const ROOT_NODE = namehash('rsk');
-// const SECRET = keccak256(toUtf8Bytes('this is a dummy'));
 const MAX_DURATION = 0;
-
 const FEE_PERCENTAGE = 10;
-
 const DISCOUNT = 0;
-
 const MIN_DURATION = 1;
-
 const IS_UNICODE_SUPPORTED = true;
 
 async function initialSetup() {
@@ -49,73 +39,66 @@ async function initialSetup() {
   const nameOwner = signers[3];
   const pool = signers[4];
 
-  const RNS = await smock.fake<RNS>(RNSJson.abi);
+  const RNS = await deployMockContract<RNS>(RNSJson.abi);
 
-  const NodeOwner = await smock.fake<NodeOwner>(NodeOwnerJson.abi);
+  const NodeOwner = await deployMockContract<NodeOwner>(NodeOwnerJson.abi);
 
-  const RIF = await smock.fake<RIF>(RIFJson.abi);
-  await RIF.transferFrom.returns(true);
-  await RIF.transfer.returns(true);
-  await RIF.approve.returns(true);
+  const RIF = await deployMockContract<RIF>(RIFJson.abi);
+  RIF.transferFrom.returns(true);
+  RIF.transfer.returns(true);
+  RIF.approve.returns(true);
 
-  const PartnerConfigurationFactory =
-    await smock.mock<PartnerConfiguration__factory>('PartnerConfiguration');
-  const PartnerConfiguration = await PartnerConfigurationFactory.deploy(
-    BigNumber.from(MIN_LENGTH),
-    BigNumber.from(MAX_LENGTH),
-    IS_UNICODE_SUPPORTED,
-    BigNumber.from(MIN_DURATION),
-    BigNumber.from(MAX_DURATION),
-    BigNumber.from(FEE_PERCENTAGE),
-    BigNumber.from(DISCOUNT),
-    BigNumber.from(MIN_COMMITMENT_AGE)
+  const PartnerConfiguration =
+    await deployContract<PartnerConfiguration__factory>(
+      'PartnerConfiguration',
+      [
+        MIN_LENGTH,
+        MAX_LENGTH,
+        IS_UNICODE_SUPPORTED,
+        MIN_DURATION,
+        MAX_DURATION,
+        FEE_PERCENTAGE,
+        DISCOUNT,
+        MIN_COMMITMENT_AGE,
+      ]
+    );
+
+  const PartnerManager = await deployContract<PartnerManager__factory>(
+    'PartnerManager',
+    []
   );
 
-  const PartnerManagerFactory = await smock.mock<PartnerManager__factory>(
-    'PartnerManager'
-  );
-  const PartnerManager = await PartnerManagerFactory.deploy();
-
-  const PartnerRegistrarFactory = await smock.mock<PartnerRegistrar__factory>(
-    'PartnerRegistrar'
-  );
-  const PartnerRegistrar = await PartnerRegistrarFactory.deploy(
-    NodeOwner.address,
-    RIF.address,
-    PartnerManager.address,
-    RNS.address,
-    ROOT_NODE
+  const PartnerRegistrar = await deployContract<PartnerRegistrar__factory>(
+    'PartnerRegistrar',
+    [
+      NodeOwner.address,
+      RIF.address,
+      PartnerManager.address,
+      RNS.address,
+      ROOT_NODE,
+    ]
   );
 
-  const PartnerRenewerFactory = await smock.mock<PartnerRenewer__factory>(
-    'PartnerRenewer'
-  );
-  const PartnerRenewer = await PartnerRenewerFactory.deploy(
-    NodeOwner.address,
-    RIF.address,
-    PartnerManager.address
+  const PartnerRenewer = await deployContract<PartnerRenewer__factory>(
+    'PartnerRenewer',
+    [NodeOwner.address, RIF.address, PartnerManager.address]
   );
 
-  const FeeManagerFactory = await smock.mock<FeeManager__factory>('FeeManager');
-  const FeeManager = await FeeManagerFactory.deploy(
+  const FeeManager = await deployContract<FeeManager__factory>('FeeManager', [
     RIF.address,
     PartnerRegistrar.address,
     PartnerRenewer.address,
     PartnerManager.address,
-    pool.address
-  );
+    pool.address,
+  ]);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
   await PartnerRenewer.setFeeManager(FeeManager.address);
 
-  const { contract: PartnerRenewerProxyFactory } =
-    await deployContract<PartnerRenewerProxyFactory>(
+  const PartnerRenewerProxyFactory =
+    await deployContract<PartnerRenewerProxyFactory__factory>(
       'PartnerRenewerProxyFactory',
-      {
-        _rif: RIF.address,
-        _partnerRegistrar: PartnerRegistrar.address,
-        _partnerRenewer: PartnerRenewer.address,
-      }
+      [RIF.address, PartnerRegistrar.address, PartnerRenewer.address]
     );
 
   return {
@@ -136,13 +119,8 @@ async function initialSetup() {
 }
 describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partner Proxies', () => {
   it('should successfully create new partner proxies', async () => {
-    const {
-      PartnerRenewerProxyFactory,
-      partner1,
-      partner2,
-      PartnerRegistrar,
-      PartnerRenewer,
-    } = await loadFixture(initialSetup);
+    const { PartnerRenewerProxyFactory, partner1, partner2 } =
+      await loadFixture(initialSetup);
 
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
@@ -182,8 +160,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerRenewerProxyFactory,
       partner1,
       partner2,
-      PartnerRegistrar,
-      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     await (
@@ -231,8 +207,6 @@ describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
       PartnerRenewerProxyFactory,
       PartnerConfiguration,
       PartnerManager,
-      PartnerRegistrar,
-      PartnerRenewer,
       partner1,
     } = await loadFixture(initialSetup);
 
