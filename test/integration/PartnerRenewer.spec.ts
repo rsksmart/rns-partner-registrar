@@ -81,7 +81,7 @@ const initialSetup = async () => {
   });
 
   const { contract: PartnerManager } = await deployContract<PartnerManager>(
-    '$PartnerManager',
+    'PartnerManager',
     {}
   );
 
