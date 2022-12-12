@@ -1,7 +1,10 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { PartnerConfiguration, PartnerConfiguration__factory } from 'typechain-types';
+import {
+  PartnerConfiguration,
+  PartnerConfiguration__factory,
+} from 'typechain-types';
 import { deployContract } from './utils/mock.utils';
 import { MockContract } from '@defi-wonderland/smock';
 
@@ -18,16 +21,20 @@ const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
 
-  const PartnerConfiguration = await deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
-    DEFAULT_MIN_LENGTH,
-    DEFAULT_MAX_LENGTH,
-    DEFAULT_IS_UNICODE_SUPPORTED,
-    DEFAULT_MIN_DURATION,
-    DEFAULT_MAX_DURATION,
-    DEFAULT_FEE_PERCENTAGE,
-    DEFAULT_DISCOUNT,
-    DEFAULT_MIN_COMMITMENT_AGE,
-  ]);
+  const PartnerConfiguration =
+    await deployContract<PartnerConfiguration__factory>(
+      'PartnerConfiguration',
+      [
+        DEFAULT_MIN_LENGTH,
+        DEFAULT_MAX_LENGTH,
+        DEFAULT_IS_UNICODE_SUPPORTED,
+        DEFAULT_MIN_DURATION,
+        DEFAULT_MAX_DURATION,
+        DEFAULT_FEE_PERCENTAGE,
+        DEFAULT_DISCOUNT,
+        DEFAULT_MIN_COMMITMENT_AGE,
+      ]
+    );
 
   return {
     PartnerConfiguration,

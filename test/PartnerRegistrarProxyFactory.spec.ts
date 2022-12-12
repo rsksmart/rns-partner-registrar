@@ -138,21 +138,24 @@ describe('Deploy PartnerRegistrarProxyFactory, Create New Proxy Instances, Use n
     const { PartnerRegistrarProxyFactory, partner1, partner2 } =
       await loadFixture(initialSetup);
 
-    await (await PartnerRegistrarProxyFactory.createNewPartnerProxy(
+    await (
+      await PartnerRegistrarProxyFactory.createNewPartnerProxy(
         partner1.address,
         'PartnerOne'
-      )).wait();
+      )
+    ).wait();
 
     const partnerOneStruct = await PartnerRegistrarProxyFactory.getPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
 
-    await(
+    await (
       await PartnerRegistrarProxyFactory.createNewPartnerProxy(
         partner2.address,
         'PartnerTwo'
-      )).wait()
+      )
+    ).wait();
 
     const partnerTwoStruct = await PartnerRegistrarProxyFactory.getPartnerProxy(
       partner2.address,
@@ -169,21 +172,24 @@ describe('Deploy PartnerRegistrarProxyFactory, Create New Proxy Instances, Use n
     const { PartnerProxy, PartnerRegistrarProxyFactory, partner1, partner2 } =
       await loadFixture(initialSetup);
 
-      await (await PartnerRegistrarProxyFactory.createNewPartnerProxy(
+    await (
+      await PartnerRegistrarProxyFactory.createNewPartnerProxy(
         partner1.address,
         'PartnerOne'
-      )).wait();
+      )
+    ).wait();
 
     const partnerOneStruct = await PartnerRegistrarProxyFactory.getPartnerProxy(
       partner1.address,
       'PartnerOne'
     );
 
-    await(
+    await (
       await PartnerRegistrarProxyFactory.createNewPartnerProxy(
         partner2.address,
         'PartnerTwo'
-      )).wait()
+      )
+    ).wait();
 
     const partnerTwoStruct = await PartnerRegistrarProxyFactory.getPartnerProxy(
       partner2.address,
@@ -207,7 +213,7 @@ describe('Deploy PartnerRegistrarProxyFactory, Create New Proxy Instances, Use n
       NodeOwner,
       partner1,
       nameOwner,
-      PartnerConfiguration
+      PartnerConfiguration,
     } = await loadFixture(initialSetup);
 
     await (
@@ -248,7 +254,9 @@ describe('Deploy PartnerRegistrarProxyFactory, Create New Proxy Instances, Use n
         SECRET
       );
 
-      const tx = await partnerRegistrarProxy.connect(partner1).commit(commitment);
+      const tx = await partnerRegistrarProxy
+        .connect(partner1)
+        .commit(commitment);
       tx.wait();
 
       await expect(
@@ -268,7 +276,6 @@ describe('Deploy PartnerRegistrarProxyFactory, Create New Proxy Instances, Use n
       throw error;
     }
   });
-
 
   it('Should not be reverted if partner minCommitmentAge is not 0 (i.e partner config does not allow one step purchase', async () => {
     const {

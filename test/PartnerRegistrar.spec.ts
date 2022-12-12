@@ -1,7 +1,14 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployMockContract, deployContract } from './utils/mock.utils';
-import { FeeManager__factory, NodeOwner as NodeOwnerType, PartnerConfiguration__factory, PartnerManager__factory, PartnerRegistrar__factory, PartnerRenewer__factory } from 'typechain-types';
+import {
+  FeeManager__factory,
+  NodeOwner as NodeOwnerType,
+  PartnerConfiguration__factory,
+  PartnerManager__factory,
+  PartnerRegistrar__factory,
+  PartnerRenewer__factory,
+} from 'typechain-types';
 import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
 import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
 import ResolverJson from '../artifacts/contracts/test-utils/Resolver.sol/Resolver.json';
@@ -11,7 +18,7 @@ import { expect } from 'chai';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
 import { RNS as RNSType } from 'typechain-types';
-import {Resolver as ResolverType } from 'typechain-types';
+import { Resolver as ResolverType } from 'typechain-types';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 
@@ -28,7 +35,6 @@ const MIN_COMMITMENT_AGE = 1;
 const MAX_DURATION = 0;
 const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
 
-
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
@@ -38,7 +44,7 @@ const initialSetup = async () => {
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
-  
+
   const RNS = await deployMockContract<RNSType>(RNSJson.abi);
   RNS.resolver.returns(Resolver.address);
 
@@ -121,14 +127,11 @@ describe('New Domain Registration', () => {
       PartnerConfiguration,
       nameOwner,
       owner,
-      signers
+      signers,
     } = await loadFixture(initialSetup);
 
     await (
-      await PartnerManager.addPartner(
-        owner.address,
-        signers[6].address
-      )
+      await PartnerManager.addPartner(owner.address, signers[6].address)
     ).wait();
 
     PartnerManager.getPartnerConfiguration.returns(
@@ -167,34 +170,30 @@ describe('New Domain Registration', () => {
 
   it('Should register a new domain when min commitment age is 0 and no commitment is made', async () => {
     const {
-        NodeOwner,
-        PartnerManager,
-        PartnerRegistrar,
-        PartnerConfiguration,
-        nameOwner,
-        owner,
-        signers
-      } = await loadFixture(initialSetup);
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      owner,
+      signers,
+    } = await loadFixture(initialSetup);
 
-      await (
-        await PartnerManager.addPartner(
-          owner.address,
-          signers[6].address
-        )
-      ).wait();
-  
-      PartnerManager.getPartnerConfiguration.returns(
+    await (
+      await PartnerManager.addPartner(owner.address, signers[6].address)
+    ).wait();
+
+    PartnerManager.getPartnerConfiguration.returns(
+      PartnerConfiguration.address
+    );
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        owner.address,
         PartnerConfiguration.address
-      );
-      await (
-        await PartnerManager.setPartnerConfiguration(
-          owner.address,
-          PartnerConfiguration.address
-        )
-      ).wait();
-  
-      
-     (await PartnerConfiguration.setMinCommitmentAge(0)).wait()
+      )
+    ).wait();
+
+    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
 
     await expect(
       PartnerRegistrar.register(
@@ -348,14 +347,11 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       owner,
-      signers
+      signers,
     } = await loadFixture(initialSetup);
 
     await (
-      await PartnerManager.addPartner(
-        owner.address,
-        signers[6].address
-      )
+      await PartnerManager.addPartner(owner.address, signers[6].address)
     ).wait();
 
     PartnerManager.getPartnerConfiguration.returns(
@@ -368,11 +364,12 @@ describe('New Domain Registration', () => {
       )
     ).wait();
 
-    
-   (await PartnerConfiguration.setMinCommitmentAge(0)).wait()
+    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
 
     try {
-      await expect(PartnerRegistrar.commit(DUMMY_COMMITMENT)).to.be.revertedWith('Commitment not required');
+      await expect(
+        PartnerRegistrar.commit(DUMMY_COMMITMENT)
+      ).to.be.revertedWith('Commitment not required');
     } catch (error) {
       console.log(error);
 

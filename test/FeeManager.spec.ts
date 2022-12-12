@@ -7,7 +7,11 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { BigNumber } from 'ethers';
 import { expect } from 'chairc';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { deployMockContract, oneRBTC, deployContract } from './utils/mock.utils';
+import {
+  deployMockContract,
+  oneRBTC,
+  deployContract,
+} from './utils/mock.utils';
 import { FeeManager__factory, RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
@@ -40,8 +44,7 @@ async function testSetup() {
     renewer.address,
     PartnerManager.address,
     pool.address,
-  ])
-
+  ]);
 
   const oneRBTC = BigNumber.from(10).pow(18);
 
