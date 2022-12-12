@@ -215,7 +215,7 @@ describe('Fee Manager', () => {
       await expect(
         feeManager
           .connect(registrar.address)
-          .deposit(partner.address, depositAmount)
+          .deposit(partner, depositAmount)
       ).eventually.fulfilled;
     });
 
