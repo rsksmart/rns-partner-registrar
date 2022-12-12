@@ -6,7 +6,7 @@ import "../../Registrar/IBaseRegistrar.sol";
 import "../../Renewer/IBaseRenewer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
-import "./PartnerProxyFactoryBase.sol";
+import "../PartnerProxyFactoryBase.sol";
 
 contract PartnerRegistrarProxyFactory is PartnerProxyFactoryBase {
     constructor(

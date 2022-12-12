@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.16;
 
-import "./PartnerRegistrarProxy.sol";
-import "../../Registrar/IBaseRegistrar.sol";
+import "../Registrar/IBaseRegistrar.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 
