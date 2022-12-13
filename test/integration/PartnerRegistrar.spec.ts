@@ -268,7 +268,7 @@ describe('New Domain Registration', () => {
     );
   });
 
-  it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
+  it('Should revert if not RIF token', async () => {
     const { FakeRIF, nameOwner, PartnerProxy } = await loadFixture(
       initialSetup
     );
