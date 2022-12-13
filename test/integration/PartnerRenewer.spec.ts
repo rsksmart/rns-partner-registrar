@@ -23,6 +23,7 @@ import { PartnerRenewer } from 'typechain-types';
 import { PartnerRegistrarProxyFactory } from 'typechain-types';
 import { PartnerRenewerProxyFactory as PartnerRenewerProxyFactoryType } from 'typechain-types';
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
+import { BigNumber } from 'ethers';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
@@ -78,6 +79,16 @@ const initialSetup = async () => {
     tokenName: 'ERC677',
     tokenSymbol: 'MOCKCOIN',
   });
+
+  const { contract: FakeRIF } = await deployContract<ERC677Token>(
+    'ERC677Token',
+    {
+      beneficiary: owner.address,
+      initialAmount: oneRBTC.mul(100000000000000),
+      tokenName: 'ERC677',
+      tokenSymbol: 'MOCKCOIN',
+    }
+  );
 
   const { contract: PartnerManager } = await deployContract<PartnerManager>(
     'PartnerManager',
@@ -230,6 +241,7 @@ const initialSetup = async () => {
   return {
     NodeOwner,
     RIF,
+    FakeRIF,
     PartnerManager,
     PartnerRegistrar,
     PartnerConfiguration,
@@ -321,5 +333,89 @@ describe('Domain Renewal', () => {
 
     // double the amount
     expect(expectedPoolBalance.mul(2)).to.equal(poolBalance);
+  });
+  it('Should revert if amount is not enough', async () => {
+    const { RIF, PartnerRenewerProxy, PartnerRegistrarProxy, nameOwner } =
+      await loadFixture(initialSetup);
+
+    const namePrice = await PartnerRegistrarProxy.price(NAME, 0, DURATION);
+
+    const partnerRegistrarProxyAsNameOwner =
+      PartnerRegistrarProxy.connect(nameOwner);
+
+    const commitment = await partnerRegistrarProxyAsNameOwner.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET
+    );
+
+    await (await partnerRegistrarProxyAsNameOwner.commit(commitment)).wait();
+
+    const registerData = getAddrRegisterData(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      nameOwner.address
+    );
+    const renewData = getRenewData(NAME, DURATION);
+
+    await (
+      await RIF.connect(nameOwner).transferAndCall(
+        PartnerRegistrarProxy.address,
+        namePrice,
+        registerData
+      )
+    ).wait();
+    await expect(
+      RIF.transferAndCall(
+        PartnerRenewerProxy.address,
+        namePrice.sub(BigNumber.from(1)),
+        renewData
+      )
+    ).to.be.revertedWith('Insufficient tokens transferred');
+  });
+
+  it('Should revert if not RIF token', async () => {
+    const {
+      RIF,
+      FakeRIF,
+      PartnerRenewerProxy,
+      PartnerRegistrarProxy,
+      nameOwner,
+    } = await loadFixture(initialSetup);
+
+    const namePrice = await PartnerRegistrarProxy.price(NAME, 0, DURATION);
+
+    const partnerRegistrarProxyAsNameOwner =
+      PartnerRegistrarProxy.connect(nameOwner);
+
+    const commitment = await partnerRegistrarProxyAsNameOwner.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET
+    );
+
+    await (await partnerRegistrarProxyAsNameOwner.commit(commitment)).wait();
+
+    const registerData = getAddrRegisterData(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      nameOwner.address
+    );
+    const renewData = getRenewData(NAME, DURATION);
+
+    await (
+      await RIF.connect(nameOwner).transferAndCall(
+        PartnerRegistrarProxy.address,
+        namePrice,
+        registerData
+      )
+    ).wait();
+    await expect(
+      FakeRIF.transferAndCall(PartnerRenewerProxy.address, namePrice, renewData)
+    ).to.be.revertedWith('Only RIF token');
   });
 });

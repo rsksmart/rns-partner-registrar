@@ -77,6 +77,16 @@ const initialSetup = async () => {
     tokenSymbol: 'MOCKCOIN',
   });
 
+  const { contract: FakeRIF } = await deployContract<ERC677Token>(
+    'ERC677Token',
+    {
+      beneficiary: owner.address,
+      initialAmount: oneRBTC.mul(100000000000000),
+      tokenName: 'ERC677',
+      tokenSymbol: 'MOCKCOIN',
+    }
+  );
+
   const { contract: PartnerManager } = await deployContract<PartnerManager>(
     'PartnerManager',
     {}
@@ -180,10 +190,12 @@ const initialSetup = async () => {
   ).wait();
 
   await (await RIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
+  await (await FakeRIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
 
   return {
     NodeOwner,
     RIF,
+    FakeRIF,
     PartnerManager,
     PartnerRegistrar,
     PartnerConfiguration,
@@ -254,6 +266,29 @@ describe('New Domain Registration', () => {
     expect(+partnerBalanceInFeeManager).to.equal(
       +expectedPartnerAccountBalance
     );
+  });
+
+  it('Should revert if not RIF token', async () => {
+    const { FakeRIF, nameOwner, PartnerProxy } = await loadFixture(
+      initialSetup
+    );
+    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
+
+    const data = getAddrRegisterData(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      nameOwner.address
+    );
+
+    await expect(
+      FakeRIF.connect(nameOwner).transferAndCall(
+        PartnerProxy.address,
+        namePrice,
+        data
+      )
+    ).to.be.revertedWith('Only RIF token');
   });
 
   it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
