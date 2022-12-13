@@ -19,6 +19,7 @@ import ResolverJson from '../artifacts/contracts/test-utils/Resolver.sol/Resolve
 import { Resolver as ResolverType } from 'typechain-types';
 import { expect } from 'chai';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
+import { BigNumber } from 'ethers';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 const LABEL = keccak256(toUtf8Bytes('cheta'));
@@ -166,6 +167,29 @@ describe('Deploy PartnerRegistrarProxyFactory, Create New Proxy Instances, Use n
       'PartnerOne',
       'PartnerTwo',
     ]);
+  });
+
+  it('should get partner proxy count', async () => {
+    const { PartnerRegistrarProxyFactory, partner1, partner2 } =
+      await loadFixture(initialSetup);
+
+    await (
+      await PartnerRegistrarProxyFactory.createNewPartnerProxy(
+        partner1.address,
+        'PartnerOne'
+      )
+    ).wait();
+
+    await (
+      await PartnerRegistrarProxyFactory.createNewPartnerProxy(
+        partner2.address,
+        'PartnerTwo'
+      )
+    ).wait();
+
+    expect(
+      await PartnerRegistrarProxyFactory.getPartnerProxiesCount()
+    ).to.equal(BigNumber.from(2));
   });
 
   it('should successfully identify the owner of each proxy', async () => {

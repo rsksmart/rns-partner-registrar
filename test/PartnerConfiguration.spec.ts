@@ -5,8 +5,9 @@ import {
   PartnerConfiguration,
   PartnerConfiguration__factory,
 } from 'typechain-types';
-import { deployContract } from './utils/mock.utils';
+import { deployContract, oneRBTC } from './utils/mock.utils';
 import { MockContract } from '@defi-wonderland/smock';
+import { BigNumber } from 'ethers';
 
 const DEFAULT_MIN_LENGTH = 3;
 const DEFAULT_MAX_LENGTH = 7;
@@ -91,6 +92,70 @@ describe('Partner Configuration', () => {
       expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
         DEFAULT_MIN_COMMITMENT_AGE
       );
+    });
+    it('Should revert if duration is less than min duration', async () => {
+      let duration = BigNumber.from(1);
+      const expires = BigNumber.from(1);
+      const name = 'cheta';
+
+      await PartnerConfiguration.setMinDuration(5);
+
+      await expect(
+        PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.revertedWith('PartnerConfiguration: Less than min duration');
+
+      duration = BigNumber.from(0);
+      await PartnerConfiguration.setMinDuration(0);
+
+      await expect(
+        PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.revertedWith('PartnerConfiguration: Less than min duration');
+
+      duration = BigNumber.from(0);
+      await PartnerConfiguration.setMinDuration(0);
+
+      await expect(
+        PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.revertedWith('PartnerConfiguration: Less than min duration');
+    });
+
+    it('Should revert if duration is more than max duration', async () => {
+      const duration = BigNumber.from(6);
+      const expires = BigNumber.from(1);
+      const name = 'cheta';
+
+      await PartnerConfiguration.setMaxDuration(5);
+
+      await expect(
+        PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.revertedWith('PartnerConfiguration: More than max duration');
+    });
+
+    it('Should return the correct price', async () => {
+      const expires = BigNumber.from(1);
+      const name = 'cheta';
+
+      await PartnerConfiguration.setMaxDuration(BigNumber.from(7));
+
+      let duration = BigNumber.from(2);
+      expect(
+        await PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.equal(oneRBTC.mul(BigNumber.from(4)));
+
+      duration = BigNumber.from(1);
+      expect(
+        await PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.equal(oneRBTC.mul(BigNumber.from(2)));
+
+      duration = BigNumber.from(5);
+      expect(
+        await PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.equal(oneRBTC.mul(BigNumber.from(2).add(duration)));
+
+      duration = BigNumber.from(6);
+      expect(
+        await PartnerConfiguration.getPrice(name, expires, duration)
+      ).to.be.equal(oneRBTC.mul(BigNumber.from(2).add(duration)));
     });
   });
 

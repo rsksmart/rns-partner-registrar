@@ -136,7 +136,47 @@ describe('Fee Manager', () => {
       }
     });
 
-    it('should revert if transfer fails', async () => {
+    it('should revert if transfer fails (1)', async () => {
+      try {
+        const {
+          feeManager,
+          registrar,
+          account3: partner,
+          RIF,
+          pool,
+          PartnerConfiguration,
+          PartnerManager,
+          oneRBTC,
+          partnerOwnerAccount,
+        } = await loadFixture(testSetup);
+
+        RIF.transferFrom.returns(false);
+        RIF.transfer.returns(true);
+        const depositAmount = ethers.BigNumber.from(10);
+        const feePercentage = ethers.BigNumber.from(10);
+        const partnerFee = depositAmount
+          .mul(feePercentage)
+          .div(oneRBTC.mul(100));
+
+        PartnerConfiguration.getFeePercentage.returns(feePercentage);
+        PartnerManager.getPartnerConfiguration.returns(
+          PartnerConfiguration.address
+        );
+        PartnerManager.getPartnerOwnerAccount.returns(
+          partnerOwnerAccount.address
+        );
+
+        await expect(
+          feeManager.connect(registrar).deposit(partner.address, depositAmount)
+        )
+          .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
+          .withArgs(registrar.address, feeManager.address, depositAmount);
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    });
+    it('should revert if transfer fails (2)', async () => {
       try {
         const {
           feeManager,
