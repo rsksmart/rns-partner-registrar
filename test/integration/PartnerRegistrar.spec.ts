@@ -101,7 +101,7 @@ const initialSetup = async () => {
       maxDuration: 5,
       feePercentage: FEE_PERCENTAGE,
       discount: 0,
-      minCommitmentAge: 1,
+      minCommitmentAge: 0,
     });
 
   const { contract: PartnerRegistrar } = await deployContract<PartnerRegistrar>(
@@ -291,7 +291,7 @@ describe('New Domain Registration', () => {
     ).to.be.revertedWith('Only RIF token');
   });
 
-  it.only('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
+  it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
     const {
       RIF,
       Resolver,
@@ -304,7 +304,7 @@ describe('New Domain Registration', () => {
     const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
 
     // set minCommitmentAge of partner so as not skip the commit step in the registration flow
-    // await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
+    await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
 
     const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
 
