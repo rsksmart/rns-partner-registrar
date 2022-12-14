@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
 import {
   calculatePercentageWPrecision,
@@ -101,7 +101,7 @@ const initialSetup = async () => {
       maxDuration: 5,
       feePercentage: FEE_PERCENTAGE,
       discount: 0,
-      minCommitmentAge: 0,
+      minCommitmentAge: 1,
     });
 
   const { contract: PartnerRegistrar } = await deployContract<PartnerRegistrar>(
@@ -291,7 +291,7 @@ describe('New Domain Registration', () => {
     ).to.be.revertedWith('Only RIF token');
   });
 
-  it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
+  it.only('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {
     const {
       RIF,
       Resolver,
@@ -304,7 +304,7 @@ describe('New Domain Registration', () => {
     const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
 
     // set minCommitmentAge of partner so as not skip the commit step in the registration flow
-    await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
+    // await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
 
     const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
 
@@ -315,6 +315,12 @@ describe('New Domain Registration', () => {
     );
 
     await (await partnerProxyAsNameOwner.commit(commitment)).wait();
+
+    await time.increase(1);
+
+    const canReveal = await partnerProxyAsNameOwner.canReveal(commitment);
+
+    expect(canReveal).to.be.true;
 
     const data = getAddrRegisterData(
       NAME,

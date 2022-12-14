@@ -33,7 +33,7 @@ export default <HardhatUserConfig>{
       url: 'http://localhost:4444',
     },
     ganache: {
-      url: 'http://127.0.0.1:8545',
+      url: 'http://127.0.0.1:7545',
       chainId: 1337,
       blockGasLimit: 12450000,
     },

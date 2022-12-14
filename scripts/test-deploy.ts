@@ -188,7 +188,7 @@ async function main() {
         maxDuration: BigNumber.from(5),
         feePercentage: FEE_PERCENTAGE,
         discount: BigNumber.from(0),
-        minCommitmentAge: BigNumber.from(0),
+        minCommitmentAge: 1,
       });
 
     console.log(
