@@ -339,6 +339,12 @@ async function main() {
         DefaultPartnerConfiguration.address
       )
     ).wait();
+    await (
+      await PartnerManagerContract.setPartnerConfiguration(
+        RenewerProxyAddress,
+        DefaultPartnerConfiguration.address
+      )
+    ).wait();
     console.log('partner configuration set');
     await (await RIF.transfer(userAccount.address, oneRBTC.mul(100))).wait();
 
