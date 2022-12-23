@@ -245,7 +245,7 @@ describe('New Domain Registration', () => {
         DURATION,
         NodeOwner.address
       )
-    ).to.be.revertedWith('Name too short');
+    ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
   });
 
   it('Should fail if new domain length is more than accepted value', async () => {
@@ -272,7 +272,7 @@ describe('New Domain Registration', () => {
         DURATION,
         NodeOwner.address
       )
-    ).to.be.revertedWith('Name too long');
+    ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
   });
 
   it('Should fail if no commitment is made and minCommitmentAge is not 0', async () => {

@@ -108,8 +108,5 @@ interface IPartnerConfiguration {
      * @param name name under validation
      * @param duration duration for which the name should be registered
      */
-    function isValidName(
-        string memory name,
-        uint256 duration
-    ) external view;
+    function isValidName(string memory name, uint256 duration) external view;
 }

@@ -5,9 +5,9 @@ import "./IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../StringUtils.sol";
 
-    error InvalidName(string name, string reason);
-    error InvalidDuration(uint256 duration, string reason);
-    error InvalidMinLength(uint256 minLength);
+error InvalidName(string name, string reason);
+error InvalidDuration(uint256 duration, string reason);
+error InvalidMinLength(uint256 minLength, string reason);
 
 /**
  * @title PartnerConfiguration
@@ -36,7 +36,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 minCommitmentAge
     ) {
         if (minLength == 0) {
-            revert InvalidMinLength(minLength);
+            revert InvalidMinLength(minLength, "Minimum length cannot be 0");
         }
 
         if (minDuration == 0) {
@@ -65,7 +65,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
      */
     function setMinLength(uint256 minLength) external override onlyOwner {
         if (minLength == 0) {
-            revert InvalidMinLength(minLength);
+            revert InvalidMinLength(minLength, "Minimum length cannot be 0");
         }
         _minLength = minLength;
     }
@@ -110,7 +110,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
      */
     function setMinDuration(uint256 minDuration) external override onlyOwner {
         if (minDuration == 0) {
-            revert InvalidDuration(minDuration, "Invalid minimum duration");
+            revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
         }
         _minDuration = minDuration;
     }
@@ -189,15 +189,18 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function isValidName(
-        string calldata name,
-        uint256 duration
-    ) external view {
+    function isValidName(string calldata name, uint256 duration) external view {
         if (duration < _minDuration)
-            revert InvalidDuration(duration, "Duration less than minimum duration");
+            revert InvalidDuration(
+                duration,
+                "Duration less than minimum duration"
+            );
 
         if ((_maxDuration != 0) && (duration > _maxDuration))
-            revert InvalidDuration(duration, "Duration is more than max duration");
+            revert InvalidDuration(
+                duration,
+                "Duration is more than max duration"
+            );
 
         if (name.strlen() < _minLength)
             revert InvalidName(name, "Name is less than minimum length");
