@@ -3,6 +3,10 @@ pragma solidity ^0.8.16;
 
 import "./IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "../StringUtils.sol";
+
+error NameNotValid(string name, string reason);
+error DurationNotValid(uint256 duration, string reason);
 
 /**
  * @title PartnerConfiguration
@@ -17,6 +21,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     uint256 private _feePercentage;
     uint256 private _discount;
     uint256 private _minCommitmentAge;
+
+    using StringUtils for string;
 
     constructor(
         uint256 minLength,
@@ -161,17 +167,35 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 /* expires */,
         uint256 duration
     ) external view override returns (uint256) {
-        require(
-            (duration >= 1) && (duration >= _minDuration),
-            "PartnerConfiguration: Less than min duration"
-        );
-
-        if ((_maxDuration != 0) && (duration > _maxDuration))
-            revert("PartnerConfiguration: More than max duration");
-
         if (duration == 1) return 2 * (10 ** 18);
         if (duration == 2) return 4 * (10 ** 18);
 
         return (duration + 2) * (10 ** 18);
+    }
+
+    /**
+       @inheritdoc IPartnerConfiguration
+     */
+    function isValidName(
+        string calldata name,
+        uint256 duration
+    ) external {
+        if(duration == 0) revert DurationNotValid(duration, "Duration cannot be 0");
+
+        if(duration < _minDuration) 
+            revert DurationNotValid(duration, "Duration less than minimum duration");
+
+        if ((_maxDuration != 0) && (duration > _maxDuration))
+            revert DurationNotValid(duration, "Duration is more than max duration");
+
+        require(
+            name.strlen() >= _getPartnerConfiguration().getMinLength(),
+            "Name too short"
+        );
+
+        require(
+            name.strlen() <= _getPartnerConfiguration().getMaxLength(),
+            "Name too long"
+        );
     }
 }

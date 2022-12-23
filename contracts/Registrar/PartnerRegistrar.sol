@@ -141,16 +141,9 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         uint256 duration,
         address addr
     ) private returns (uint256) {
-        bytes32 label = keccak256(abi.encodePacked(name));
-        require(
-            name.strlen() >= _getPartnerConfiguration().getMinLength(),
-            "Name too short"
-        );
+        _getPartnerConfiguration().isValidName(name, duration);
 
-        require(
-            name.strlen() <= _getPartnerConfiguration().getMaxLength(),
-            "Name too long"
-        );
+        bytes32 label = keccak256(abi.encodePacked(name));
 
         if (_getPartnerConfiguration().getMinCommitmentAge() != 0) {
             bytes32 commitment = makeCommitment(label, nameOwner, secret);
