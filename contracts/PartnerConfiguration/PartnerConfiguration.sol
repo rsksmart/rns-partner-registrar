@@ -5,8 +5,9 @@ import "./IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../StringUtils.sol";
 
-error NameNotValid(string name, string reason);
-error DurationNotValid(uint256 duration, string reason);
+    error InvalidName(string name, string reason);
+    error InvalidDuration(uint256 duration, string reason);
+    error InvalidMinLength(uint256 minLength);
 
 /**
  * @title PartnerConfiguration
@@ -34,7 +35,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 discount,
         uint256 minCommitmentAge
     ) {
-        // require(minDuration > 0, "PartnerConfiguration: Invalid min duration");
+        if (minLength == 0) {
+            revert InvalidMinLength(minLength);
+        }
+
+        if (minDuration == 0) {
+            revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
+        }
 
         _minLength = minLength;
         _maxLength = maxLength;
@@ -57,6 +64,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinLength(uint256 minLength) external override onlyOwner {
+        if (minLength == 0) {
+            revert InvalidMinLength(minLength);
+        }
         _minLength = minLength;
     }
 
@@ -99,6 +109,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinDuration(uint256 minDuration) external override onlyOwner {
+        if (minDuration == 0) {
+            revert InvalidDuration(minDuration, "Invalid minimum duration");
+        }
         _minDuration = minDuration;
     }
 
@@ -179,23 +192,17 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function isValidName(
         string calldata name,
         uint256 duration
-    ) external {
-        if(duration == 0) revert DurationNotValid(duration, "Duration cannot be 0");
-
-        if(duration < _minDuration) 
-            revert DurationNotValid(duration, "Duration less than minimum duration");
+    ) external view {
+        if (duration < _minDuration)
+            revert InvalidDuration(duration, "Duration less than minimum duration");
 
         if ((_maxDuration != 0) && (duration > _maxDuration))
-            revert DurationNotValid(duration, "Duration is more than max duration");
+            revert InvalidDuration(duration, "Duration is more than max duration");
 
-        require(
-            name.strlen() >= _getPartnerConfiguration().getMinLength(),
-            "Name too short"
-        );
+        if (name.strlen() < _minLength)
+            revert InvalidName(name, "Name is less than minimum length");
 
-        require(
-            name.strlen() <= _getPartnerConfiguration().getMaxLength(),
-            "Name too long"
-        );
+        if (_maxLength != 0 && name.strlen() > _maxLength)
+            revert InvalidName(name, "Name is more than max length");
     }
 }

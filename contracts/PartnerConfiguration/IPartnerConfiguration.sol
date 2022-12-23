@@ -111,5 +111,5 @@ interface IPartnerConfiguration {
     function isValidName(
         string memory name,
         uint256 duration
-    ) external;
+    ) external view;
 }
