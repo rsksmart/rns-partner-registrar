@@ -141,7 +141,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         uint256 duration,
         address addr
     ) private returns (uint256) {
-        _getPartnerConfiguration().isValidName(name, duration);
+        _getPartnerConfiguration().validateName(name, duration);
 
         bytes32 label = keccak256(abi.encodePacked(name));
 

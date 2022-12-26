@@ -7,7 +7,7 @@ import "../StringUtils.sol";
 
 error InvalidName(string name, string reason);
 error InvalidDuration(uint256 duration, string reason);
-error InvalidMinLength(uint256 minLength, string reason);
+error InvalidLength(uint256 length, string reason);
 
 /**
  * @title PartnerConfiguration
@@ -36,11 +36,19 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 minCommitmentAge
     ) {
         if (minLength == 0) {
-            revert InvalidMinLength(minLength, "Minimum length cannot be 0");
+            revert InvalidLength(minLength, "Minimum length cannot be 0");
+        }
+
+        if (maxLength < minLength) {
+            revert InvalidLength(maxLength, "Max length cannot be less than the min length");
         }
 
         if (minDuration == 0) {
             revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
+        }
+
+        if (maxDuration < minDuration) {
+            revert InvalidDuration(maxDuration, "Max duration cannot be less than the min duration");
         }
 
         _minLength = minLength;
@@ -65,7 +73,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
      */
     function setMinLength(uint256 minLength) external override onlyOwner {
         if (minLength == 0) {
-            revert InvalidMinLength(minLength, "Minimum length cannot be 0");
+            revert InvalidLength(minLength, "Minimum length cannot be 0");
         }
         _minLength = minLength;
     }
@@ -189,7 +197,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function isValidName(string calldata name, uint256 duration) external view {
+    function validateName(string calldata name, uint256 duration) external view {
         if (duration < _minDuration)
             revert InvalidDuration(
                 duration,
