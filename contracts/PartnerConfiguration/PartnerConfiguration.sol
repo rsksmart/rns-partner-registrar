@@ -40,7 +40,10 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         if (maxLength < minLength) {
-            revert InvalidLength(maxLength, "Max length cannot be less than the min length");
+            revert InvalidLength(
+                maxLength,
+                "Max length cannot be less than the min length"
+            );
         }
 
         if (minDuration == 0) {
@@ -48,7 +51,10 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         if (maxDuration < minDuration) {
-            revert InvalidDuration(maxDuration, "Max duration cannot be less than the min duration");
+            revert InvalidDuration(
+                maxDuration,
+                "Max duration cannot be less than the min duration"
+            );
         }
 
         _minLength = minLength;
@@ -89,6 +95,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxLength(uint256 maxLength) external override onlyOwner {
+        if (maxLength < _minLength) {
+            revert InvalidLength(
+                maxLength,
+                "Max length cannot be less than the min length"
+            );
+        }
+
         _maxLength = maxLength;
     }
 
@@ -134,6 +147,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxDuration(uint256 maxDuration) external override onlyOwner {
+        if (maxDuration < _minDuration) {
+            revert InvalidDuration(
+                maxDuration,
+                "Max duration cannot be less than the min duration"
+            );
+        }
+
         _maxDuration = maxDuration;
     }
 
@@ -197,7 +217,10 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function validateName(string calldata name, uint256 duration) external view {
+    function validateName(
+        string calldata name,
+        uint256 duration
+    ) external view {
         if (duration < _minDuration)
             revert InvalidDuration(
                 duration,
