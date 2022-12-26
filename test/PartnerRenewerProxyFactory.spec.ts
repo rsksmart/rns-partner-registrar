@@ -1,10 +1,10 @@
-import { ethers } from "hardhat";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { expect } from "../chairc";
-import { deployMockContract, deployContract } from "./utils/mock.utils";
-import NodeOwnerJson from "../artifacts/contracts/NodeOwner.sol/NodeOwner.json";
-import RIFJson from "../artifacts/contracts/RIF.sol/RIF.json";
-import RNSJson from "../artifacts/contracts/RNS.sol/RNS.json";
+import { ethers } from 'hardhat';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { expect } from '../chairc';
+import { deployMockContract, deployContract } from './utils/mock.utils';
+import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
+import RIFJson from '../artifacts/contracts/RIF.sol/RIF.json';
+import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
 import {
   RNS,
   RIF,
@@ -15,16 +15,16 @@ import {
   PartnerRenewer__factory,
   PartnerManager__factory,
   PartnerRenewerProxyFactory__factory,
-} from "../typechain-types";
-import { keccak256, namehash, toUtf8Bytes } from "ethers/lib/utils";
+} from '../typechain-types';
+import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 
-keccak256(toUtf8Bytes("test"));
-keccak256(toUtf8Bytes("cheta"));
+keccak256(toUtf8Bytes('test'));
+keccak256(toUtf8Bytes('cheta'));
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 7;
 const MIN_COMMITMENT_AGE = 1;
 const DURATION = 1;
-const ROOT_NODE = namehash("rsk");
+const ROOT_NODE = namehash('rsk');
 const MAX_DURATION = 2;
 const FEE_PERCENTAGE = 10;
 const DISCOUNT = 0;
@@ -50,7 +50,7 @@ async function initialSetup() {
 
   const PartnerConfiguration =
     await deployContract<PartnerConfiguration__factory>(
-      "PartnerConfiguration",
+      'PartnerConfiguration',
       [
         MIN_LENGTH,
         MAX_LENGTH,
@@ -64,12 +64,12 @@ async function initialSetup() {
     );
 
   const PartnerManager = await deployContract<PartnerManager__factory>(
-    "PartnerManager",
+    'PartnerManager',
     []
   );
 
   const PartnerRegistrar = await deployContract<PartnerRegistrar__factory>(
-    "PartnerRegistrar",
+    'PartnerRegistrar',
     [
       NodeOwner.address,
       RIF.address,
@@ -80,11 +80,11 @@ async function initialSetup() {
   );
 
   const PartnerRenewer = await deployContract<PartnerRenewer__factory>(
-    "PartnerRenewer",
+    'PartnerRenewer',
     [NodeOwner.address, RIF.address, PartnerManager.address]
   );
 
-  const FeeManager = await deployContract<FeeManager__factory>("FeeManager", [
+  const FeeManager = await deployContract<FeeManager__factory>('FeeManager', [
     RIF.address,
     PartnerRegistrar.address,
     PartnerRenewer.address,
@@ -97,12 +97,12 @@ async function initialSetup() {
 
   const PartnerRenewerProxyFactory =
     await deployContract<PartnerRenewerProxyFactory__factory>(
-      "PartnerRenewerProxyFactory",
+      'PartnerRenewerProxyFactory',
       [RIF.address, PartnerRegistrar.address, PartnerRenewer.address]
     );
 
   return {
-    MasterRenewerProxy: await ethers.getContractFactory("PartnerRenewerProxy"),
+    MasterRenewerProxy: await ethers.getContractFactory('PartnerRenewerProxy'),
     PartnerRenewerProxyFactory,
     NodeOwner,
     RIF,
@@ -117,44 +117,44 @@ async function initialSetup() {
     signers,
   };
 }
-describe("Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partner Proxies", () => {
-  it("should successfully create new partner proxies", async () => {
+describe('Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partner Proxies', () => {
+  it('should successfully create new partner proxies', async () => {
     const { PartnerRenewerProxyFactory, partner1, partner2 } =
       await loadFixture(initialSetup);
 
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner1.address,
-        "PartnerOne"
+        'PartnerOne'
       )
     ).wait();
 
     const partnerOneProxyStruct =
       await PartnerRenewerProxyFactory.getPartnerProxy(
         partner1.address,
-        "PartnerOne"
+        'PartnerOne'
       );
 
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner2.address,
-        "PartnerTwo"
+        'PartnerTwo'
       )
     ).wait();
 
     const partnerTwoProxyStruct =
       await PartnerRenewerProxyFactory.getPartnerProxy(
         partner2.address,
-        "PartnerTwo"
+        'PartnerTwo'
       );
 
     expect([
       partnerOneProxyStruct.name,
       partnerTwoProxyStruct.name,
-    ]).to.deep.equal(["PartnerOne", "PartnerTwo"]);
+    ]).to.deep.equal(['PartnerOne', 'PartnerTwo']);
   });
 
-  it("should successfully identify the owner of each proxy", async () => {
+  it('should successfully identify the owner of each proxy', async () => {
     const {
       MasterRenewerProxy,
       PartnerRenewerProxyFactory,
@@ -165,27 +165,27 @@ describe("Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner1.address,
-        "PartnerOne"
+        'PartnerOne'
       )
     ).wait();
 
     const partnerOneProxyStruct =
       await PartnerRenewerProxyFactory.getPartnerProxy(
         partner1.address,
-        "PartnerOne"
+        'PartnerOne'
       );
 
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner2.address,
-        "PartnerTwo"
+        'PartnerTwo'
       )
     ).wait();
 
     const partnerTwoProxyStruct =
       await PartnerRenewerProxyFactory.getPartnerProxy(
         partner2.address,
-        "PartnerTwo"
+        'PartnerTwo'
       );
 
     const partnerOneOwner = MasterRenewerProxy.attach(
@@ -201,7 +201,7 @@ describe("Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     ]).to.deep.equal([partner1.address, partner2.address]);
   });
 
-  it("should successfully renew a domain for a partner with their corresponding proxy", async () => {
+  it('should successfully renew a domain for a partner with their corresponding proxy', async () => {
     const {
       MasterRenewerProxy,
       PartnerRenewerProxyFactory,
@@ -213,14 +213,14 @@ describe("Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     await (
       await PartnerRenewerProxyFactory.createNewPartnerProxy(
         partner1.address,
-        "PartnerOne"
+        'PartnerOne'
       )
     ).wait();
 
     const partnerOneProxyStruct =
       await PartnerRenewerProxyFactory.getPartnerProxy(
         partner1.address,
-        "PartnerOne"
+        'PartnerOne'
       );
 
     const partnerRenewerProxy = MasterRenewerProxy.attach(
@@ -241,7 +241,7 @@ describe("Deploy PartnerProxyFactory, Create New Proxy Instances, Use new Partne
     ).wait();
 
     try {
-      await expect(partnerRenewerProxy.renew("cheta", DURATION)).to.be
+      await expect(partnerRenewerProxy.renew('cheta', DURATION)).to.be
         .fulfilled;
     } catch (error) {
       console.log(error);

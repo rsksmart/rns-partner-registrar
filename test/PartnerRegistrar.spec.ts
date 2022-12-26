@@ -31,7 +31,7 @@ const DISCOUNT = 0;
 const MIN_DURATION = 1;
 const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
-const MAX_DURATION = 0;
+const MAX_DURATION = 2;
 const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
 
 const initialSetup = async () => {
