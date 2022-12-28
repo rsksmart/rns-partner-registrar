@@ -81,6 +81,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         if (minLength == 0) {
             revert InvalidLength(minLength, "Minimum length cannot be 0");
         }
+
+        if (_maxLength != 0 && minLength > _maxLength) {
+            revert InvalidLength(
+                minLength,
+                "Minimum length cannot be more than the max length"
+            );
+        }
+
         _minLength = minLength;
     }
 
@@ -133,6 +141,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         if (minDuration == 0) {
             revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
         }
+
+        if (_maxDuration != 0 && minDuration > _maxDuration) {
+            revert InvalidDuration(
+                minDuration,
+                "Minimum duration cannot be more than the maximum duration"
+            );
+        }
+
         _minDuration = minDuration;
     }
 

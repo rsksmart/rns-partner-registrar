@@ -190,7 +190,7 @@ describe('Partner Configuration', () => {
       const duration = BigNumber.from(1);
       const name = 'cheta';
 
-      await PartnerConfiguration.setMinDuration(5);
+      await PartnerConfiguration.setMinDuration(DEFAULT_MAX_DURATION);
 
       await expect(
         PartnerConfiguration.validateName(name, duration)
@@ -212,7 +212,7 @@ describe('Partner Configuration', () => {
       const duration = BigNumber.from(2);
       const name = 'cheta';
 
-      await PartnerConfiguration.setMinLength(10);
+      await PartnerConfiguration.setMinLength(DEFAULT_MAX_LENGTH);
 
       await expect(
         PartnerConfiguration.validateName(name, duration)
@@ -246,6 +246,12 @@ describe('Partner Configuration', () => {
         PartnerConfiguration.setMinLength(NEW_MIN_LENGTH)
       ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidLength');
     });
+    it('Should revert if min length is more than max length', async () => {
+      const NEW_MIN_LENGTH = DEFAULT_MAX_LENGTH + 1;
+      await expect(
+        PartnerConfiguration.setMinLength(NEW_MIN_LENGTH)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidLength');
+    });
     it('Should revert if max length is less than min length', async () => {
       const NEW_MIN_LENGTH = 4;
       await PartnerConfiguration.setMinLength(NEW_MIN_LENGTH);
@@ -260,12 +266,17 @@ describe('Partner Configuration', () => {
         PartnerConfiguration.setMinDuration(NEW_MIN_DURATION)
       ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
     });
+    it('Should revert if min duration more than max duration', async () => {
+      const NEW_MIN_DURATION = DEFAULT_MAX_DURATION + 1;
+      await expect(
+        PartnerConfiguration.setMinDuration(NEW_MIN_DURATION)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
     it('Should revert if max duration is less than min duration', async () => {
-      const NEW_MIN_DURATION = 4;
-      await PartnerConfiguration.setMinDuration(NEW_MIN_DURATION);
+      await PartnerConfiguration.setMinDuration(DEFAULT_MAX_DURATION);
 
       await expect(
-        PartnerConfiguration.setMaxDuration(3)
+        PartnerConfiguration.setMaxDuration(1)
       ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
     });
     it('Should set a new min length', async () => {
