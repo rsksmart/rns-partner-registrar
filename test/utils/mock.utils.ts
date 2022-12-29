@@ -102,10 +102,11 @@ export const getAddrRegisterData = (
   owner: string,
   secret: string,
   duration: BigNumber,
-  addr: string
+  addr: string,
+  partner: string
 ) => {
   // 0x + 8 bytes
-  const _signature = arrayify('0x5f7b99d5');
+  const _signature = arrayify('0x646c3681');
 
   // 20 bytes
   const _owner = arrayify(owner.toLowerCase());
@@ -119,6 +120,9 @@ export const getAddrRegisterData = (
   // 20 bytes
   const _addr = arrayify(addr.toLowerCase());
 
+  // 20 bytes
+  const _partner = arrayify(partner.toLowerCase());
+
   // variable length
   const _name = Buffer.from(name);
 
@@ -129,42 +133,60 @@ export const getAddrRegisterData = (
       _secret.length +
       _duration.length +
       _addr.length +
+      _partner.length +
       _name.length
   );
   result.set(_signature, 0);
   result.set(_owner, _signature.length);
-  result.set(_secret, _signature.length + _owner.length);
-  result.set(_duration, _signature.length + _owner.length + _secret.length);
+  result.set(_secret, _owner.length + _signature.length);
+  result.set(_duration, _secret.length + _owner.length + _signature.length);
   result.set(
     _addr,
-    _signature.length + _owner.length + _secret.length + _duration.length
+    _duration.length + _secret.length + _owner.length + _signature.length
+  );
+  result.set(
+    _partner,
+    _addr.length +
+      _duration.length +
+      _secret.length +
+      _owner.length +
+      _signature.length
   );
   result.set(
     _name,
-    _signature.length +
-      _owner.length +
-      _secret.length +
+    _partner.length +
+      _addr.length +
       _duration.length +
-      _addr.length
+      _secret.length +
+      _owner.length +
+      _signature.length
   );
   return result;
 };
 
-export const getRenewData = (name: string, duration: BigNumber) => {
+export const getRenewData = (
+  name: string,
+  duration: BigNumber,
+  partner: string
+) => {
   // 0x + 4 bytes
-  const _signature = arrayify('0x14b1a4fc');
+  const _signature = arrayify('0x8d7016ca');
 
   // 32 bytes
   const _duration = arrayify(hexZeroPad(duration.toHexString(), 32));
+
+  // 20 bytes
+  const _partner = arrayify(partner.toLowerCase());
 
   // variable length
   const _name = Buffer.from(name);
 
   const result = new Uint8Array(
-    _signature.length + _duration.length + _name.length
+    _signature.length + _duration.length + _partner.length + _name.length
   );
   result.set(_signature, 0);
   result.set(_duration, _signature.length);
-  result.set(_name, _signature.length + _duration.length);
+  result.set(_partner, _duration.length + _signature.length);
+  result.set(_name, _partner.length + _duration.length + _signature.length);
   return result;
 };

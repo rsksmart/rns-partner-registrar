@@ -149,11 +149,11 @@ describe('New Domain Registration', () => {
       SECRET
     );
 
-    const tx = await PartnerRegistrar.commit(commitment);
+    const tx = await PartnerRegistrar['commit(bytes32)'](commitment);
     tx.wait();
     try {
       await expect(
-        PartnerRegistrar.register(
+        PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
           'cheta',
           nameOwner.address,
           SECRET,
@@ -195,7 +195,7 @@ describe('New Domain Registration', () => {
     (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
 
     await expect(
-      PartnerRegistrar.register(
+      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
         'cheta',
         nameOwner.address,
         SECRET,
@@ -212,7 +212,7 @@ describe('New Domain Registration', () => {
     PartnerManager.isPartner.returns(false);
 
     await expect(
-      PartnerRegistrar.register(
+      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
         'cheta👀',
         nameOwner.address,
         SECRET,
@@ -238,7 +238,7 @@ describe('New Domain Registration', () => {
     PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
 
     await expect(
-      PartnerRegistrar.register(
+      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
         'ch',
         nameOwner.address,
         SECRET,
@@ -265,7 +265,7 @@ describe('New Domain Registration', () => {
     PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
 
     await expect(
-      PartnerRegistrar.register(
+      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
         'lordcheta',
         nameOwner.address,
         SECRET,
@@ -293,7 +293,7 @@ describe('New Domain Registration', () => {
     PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     await expect(
-      PartnerRegistrar.register(
+      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
         'cheta',
         nameOwner.address,
         SECRET,
@@ -326,11 +326,11 @@ describe('New Domain Registration', () => {
       SECRET
     );
 
-    const tx = await PartnerRegistrar.commit(commitment);
+    const tx = await PartnerRegistrar['commit(bytes32)'](commitment);
     tx.wait();
 
     await expect(
-      PartnerRegistrar.register(
+      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
         'lcheta',
         nameOwner.address,
         SECRET,
@@ -371,7 +371,7 @@ describe('Registrar Checks', () => {
 
     try {
       await expect(
-        PartnerRegistrar.commit(DUMMY_COMMITMENT)
+        PartnerRegistrar['commit(bytes32)'](DUMMY_COMMITMENT)
       ).to.be.revertedWith('Commitment not required');
     } catch (error) {
       console.log(error);

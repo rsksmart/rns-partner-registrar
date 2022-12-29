@@ -26,6 +26,24 @@ interface IBaseRegistrar {
     ) external;
 
     /**
+        @notice registers a name
+        @param name the name to register
+        @param nameOwner the owner of the name
+        @param secret used in the commitment step if required
+        @param duration the duration of the registration in years
+        @param addr to be resolved to the name as default
+        @param partner Partner address
+    */
+    function register(
+        string calldata name,
+        address nameOwner,
+        bytes32 secret,
+        uint256 duration,
+        address addr,
+        address partner
+    ) external;
+
+    /**
         @notice calculates the price of a name
         @param name the name to register
         @param expires the expiration date of the name
@@ -36,6 +54,21 @@ interface IBaseRegistrar {
         string calldata name,
         uint256 expires,
         uint256 duration
+    ) external view returns (uint256);
+
+    /**
+        @notice calculates the price of a name
+        @param name the name to register
+        @param expires the expiration date of the name
+        @param duration the duration of the registration in years
+        @return the price of the name
+        @param partner Partner address
+    */
+    function price(
+        string calldata name,
+        uint256 expires,
+        uint256 duration,
+        address partner
     ) external view returns (uint256);
 
     /**
@@ -57,6 +90,14 @@ interface IBaseRegistrar {
         @param commitment the commitment of the name
     */
     function commit(bytes32 commitment) external;
+
+    /**
+        @notice commits a name if required. This is used to reserve a name
+        for a specific user and prevent a frontrunning attack
+        @param commitment the commitment of the name
+        @param partner Partner address
+    */
+    function commit(bytes32 commitment, address partner) external;
 
     /**
         @notice reveals if the name is ready to be registered by calling register function.
