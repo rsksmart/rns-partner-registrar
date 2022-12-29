@@ -40,6 +40,7 @@ const initialSetup = async () => {
   const partner = signers[1];
   const nameOwner = signers[2];
   const pool = signers[3];
+  const partnerOwner = signers[4];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
@@ -113,7 +114,7 @@ const initialSetup = async () => {
     owner,
     partner,
     nameOwner,
-    signers,
+    partnerOwner,
   };
 };
 
@@ -125,20 +126,17 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       nameOwner,
-      owner,
-      signers,
+      partner,
+      partnerOwner,
     } = await loadFixture(initialSetup);
 
     await (
-      await PartnerManager.addPartner(owner.address, signers[6].address)
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
     ).wait();
 
-    PartnerManager.getPartnerConfiguration.returns(
-      PartnerConfiguration.address
-    );
     await (
       await PartnerManager.setPartnerConfiguration(
-        owner.address,
+        partner.address,
         PartnerConfiguration.address
       )
     ).wait();
@@ -149,16 +147,17 @@ describe('New Domain Registration', () => {
       SECRET
     );
 
-    const tx = await PartnerRegistrar['commit(bytes32)'](commitment);
+    const tx = await PartnerRegistrar.commit(commitment, partner.address);
     tx.wait();
     try {
       await expect(
-        PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
+        PartnerRegistrar.register(
           'cheta',
           nameOwner.address,
           SECRET,
           DURATION,
-          NodeOwner.address
+          NodeOwner.address,
+          partner.address
         )
       ).to.eventually.be.fulfilled;
     } catch (error) {
@@ -174,20 +173,17 @@ describe('New Domain Registration', () => {
       PartnerRegistrar,
       PartnerConfiguration,
       nameOwner,
-      owner,
-      signers,
+      partner,
+      partnerOwner,
     } = await loadFixture(initialSetup);
 
     await (
-      await PartnerManager.addPartner(owner.address, signers[6].address)
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
     ).wait();
 
-    PartnerManager.getPartnerConfiguration.returns(
-      PartnerConfiguration.address
-    );
     await (
       await PartnerManager.setPartnerConfiguration(
-        owner.address,
+        partner.address,
         PartnerConfiguration.address
       )
     ).wait();
@@ -195,29 +191,31 @@ describe('New Domain Registration', () => {
     (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
 
     await expect(
-      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
+      PartnerRegistrar.register(
         'cheta',
         nameOwner.address,
         SECRET,
         DURATION,
-        NodeOwner.address
+        NodeOwner.address,
+        partner.address
       )
     ).to.be.fulfilled;
   });
 
   it('Should fail if caller is not a valid partner', async () => {
-    const { PartnerManager, PartnerRegistrar, nameOwner, NodeOwner } =
+    const { PartnerManager, PartnerRegistrar, nameOwner, NodeOwner, partner } =
       await loadFixture(initialSetup);
 
     PartnerManager.isPartner.returns(false);
 
     await expect(
-      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
+      PartnerRegistrar.register(
         'cheta👀',
         nameOwner.address,
         SECRET,
         DURATION,
-        NodeOwner.address
+        NodeOwner.address,
+        partner.address
       )
     ).to.be.revertedWith('Partner Registrar: Not a partner');
   });
@@ -229,6 +227,7 @@ describe('New Domain Registration', () => {
       PartnerConfiguration,
       nameOwner,
       NodeOwner,
+      partner,
     } = await loadFixture(initialSetup);
 
     PartnerManager.isPartner.returns(true);
@@ -238,12 +237,13 @@ describe('New Domain Registration', () => {
     PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
 
     await expect(
-      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
+      PartnerRegistrar.register(
         'ch',
         nameOwner.address,
         SECRET,
         DURATION,
-        NodeOwner.address
+        NodeOwner.address,
+        partner.address
       )
     ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
   });
@@ -255,6 +255,7 @@ describe('New Domain Registration', () => {
       PartnerConfiguration,
       nameOwner,
       NodeOwner,
+      partner,
     } = await loadFixture(initialSetup);
 
     PartnerManager.isPartner.returns(true);
@@ -265,12 +266,13 @@ describe('New Domain Registration', () => {
     PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
 
     await expect(
-      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
+      PartnerRegistrar.register(
         'lordcheta',
         nameOwner.address,
         SECRET,
         DURATION,
-        NodeOwner.address
+        NodeOwner.address,
+        partner.address
       )
     ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
   });
@@ -282,6 +284,7 @@ describe('New Domain Registration', () => {
       PartnerConfiguration,
       nameOwner,
       NodeOwner,
+      partner,
     } = await loadFixture(initialSetup);
 
     PartnerManager.isPartner.returns(true);
@@ -293,12 +296,13 @@ describe('New Domain Registration', () => {
     PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     await expect(
-      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
+      PartnerRegistrar.register(
         'cheta',
         nameOwner.address,
         SECRET,
         DURATION,
-        NodeOwner.address
+        NodeOwner.address,
+        partner.address
       )
     ).to.be.revertedWith('No commitment found');
   });
@@ -310,6 +314,7 @@ describe('New Domain Registration', () => {
       PartnerConfiguration,
       nameOwner,
       NodeOwner,
+      partner,
     } = await loadFixture(initialSetup);
 
     PartnerManager.isPartner.returns(true);
@@ -326,16 +331,17 @@ describe('New Domain Registration', () => {
       SECRET
     );
 
-    const tx = await PartnerRegistrar['commit(bytes32)'](commitment);
+    const tx = await PartnerRegistrar.commit(commitment, partner.address);
     tx.wait();
 
     await expect(
-      PartnerRegistrar['register(string,address,bytes32,uint256,address)'](
+      PartnerRegistrar.register(
         'lcheta',
         nameOwner.address,
         SECRET,
         DURATION,
-        NodeOwner.address
+        NodeOwner.address,
+        partner.address
       )
     ).to.be.revertedWith('No commitment found');
   });
@@ -347,20 +353,17 @@ describe('Registrar Checks', () => {
       PartnerManager,
       PartnerRegistrar,
       PartnerConfiguration,
-      owner,
-      signers,
+      partner,
+      partnerOwner,
     } = await loadFixture(initialSetup);
 
     await (
-      await PartnerManager.addPartner(owner.address, signers[6].address)
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
     ).wait();
 
-    PartnerManager.getPartnerConfiguration.returns(
-      PartnerConfiguration.address
-    );
     await (
       await PartnerManager.setPartnerConfiguration(
-        owner.address,
+        partner.address,
         PartnerConfiguration.address
       )
     ).wait();
@@ -371,7 +374,7 @@ describe('Registrar Checks', () => {
 
     try {
       await expect(
-        PartnerRegistrar['commit(bytes32)'](DUMMY_COMMITMENT)
+        PartnerRegistrar.commit(DUMMY_COMMITMENT, partner.address)
       ).to.be.revertedWith('Commitment not required');
     } catch (error) {
       console.log(error);

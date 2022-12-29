@@ -35,10 +35,10 @@ const tldAsSha3 = ethers.utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partner = signers[0];
-  const partnerOwnerAccount = signers[0];
-  const nameOwner = signers[2];
-  const pool = signers[3];
+  const partner = signers[1];
+  const partnerOwnerAccount = signers[2];
+  const nameOwner = signers[3];
+  const pool = signers[4];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -190,10 +190,11 @@ describe('Domain Renewal', () => {
   it('Should revert with `Name already expired`', async () => {
     const { RIF, PartnerRegistrar, PartnerRenewer, partner } =
       await loadFixture(initialSetup);
-    const namePrice = await PartnerRegistrar['price(string,uint256,uint256)'](
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       ethers.BigNumber.from(0),
-      DURATION
+      DURATION,
+      partner.address
     );
 
     const renewData = getRenewData(NAME, DURATION, partner.address);
@@ -214,10 +215,11 @@ describe('Domain Renewal', () => {
       partner,
     } = await loadFixture(initialSetup);
 
-    const namePrice = await PartnerRegistrar['price(string,uint256,uint256)'](
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION
+      DURATION,
+      partner.address
     );
 
     const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
@@ -229,10 +231,7 @@ describe('Domain Renewal', () => {
     );
 
     await (
-      await partnerRegistrarAsNameOwner['commit(bytes32,address)'](
-        commitment,
-        partner.address
-      )
+      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
     ).wait();
 
     const registerData = getAddrRegisterData(
@@ -276,10 +275,11 @@ describe('Domain Renewal', () => {
     const { RIF, PartnerRenewer, PartnerRegistrar, nameOwner, partner } =
       await loadFixture(initialSetup);
 
-    const namePrice = await PartnerRegistrar['price(string,uint256,uint256)'](
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION
+      DURATION,
+      partner.address
     );
 
     const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
@@ -291,10 +291,7 @@ describe('Domain Renewal', () => {
     );
 
     await (
-      await partnerRegistrarAsNameOwner['commit(bytes32,address)'](
-        commitment,
-        partner.address
-      )
+      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
     ).wait();
 
     const registerData = getAddrRegisterData(
@@ -333,10 +330,11 @@ describe('Domain Renewal', () => {
       partner,
     } = await loadFixture(initialSetup);
 
-    const namePrice = await PartnerRegistrar['price(string,uint256,uint256)'](
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION
+      DURATION,
+      partner.address
     );
 
     const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
@@ -348,10 +346,7 @@ describe('Domain Renewal', () => {
     );
 
     await (
-      await partnerRegistrarAsNameOwner['commit(bytes32,address)'](
-        commitment,
-        partner.address
-      )
+      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
     ).wait();
 
     const registerData = getAddrRegisterData(

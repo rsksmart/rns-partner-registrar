@@ -152,27 +152,9 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     /// @param secret The secret used to make the commitment.
     /// @param duration Time to register in years.
     /// @param addr Address to set as addr resolution.
-    function register(
-        string memory name,
-        address nameOwner,
-        bytes32 secret,
-        uint256 duration,
-        address addr
-    ) external override {
-        register(name, nameOwner, secret, duration, addr, msg.sender);
-    }
-
-    // - Via ERC-20
-    /// @notice Registers a .rsk name in RNS.
-    /// @dev This method must be called after commiting.
-    /// @param name The name to register.
-    /// @param nameOwner The owner of the name to regiter.
-    /// @param secret The secret used to make the commitment.
-    /// @param duration Time to register in years.
-    /// @param addr Address to set as addr resolution.
     /// @param partner Partner address
     function register(
-        string memory name,
+        string calldata name,
         address nameOwner,
         bytes32 secret,
         uint256 duration,
@@ -202,18 +184,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
        @inheritdoc IBaseRegistrar
      */
     function price(
-        string memory name,
-        uint256 expires,
-        uint256 duration
-    ) external view override returns (uint256) {
-        return price(name, expires, duration, msg.sender);
-    }
-
-    /**
-       @inheritdoc IBaseRegistrar
-     */
-    function price(
-        string memory name,
+        string calldata name,
         uint256 expires,
         uint256 duration,
         address partner
@@ -241,13 +212,6 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     function canReveal(bytes32 commitment) public view override returns (bool) {
         uint256 revealTime = _commitmentRevealTime[commitment];
         return 0 < revealTime && revealTime <= block.timestamp;
-    }
-
-    /**
-       @inheritdoc IBaseRegistrar
-     */
-    function commit(bytes32 commitment) external override {
-        commit(commitment, msg.sender);
     }
 
     /**

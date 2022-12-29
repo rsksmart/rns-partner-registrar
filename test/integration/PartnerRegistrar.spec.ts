@@ -33,10 +33,10 @@ const tldAsSha3 = ethers.utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partner = signers[0];
-  const partnerOwnerAccount = signers[0];
-  const nameOwner = signers[2];
-  const pool = signers[3];
+  const partner = signers[1];
+  const partnerOwnerAccount = signers[2];
+  const nameOwner = signers[3];
+  const pool = signers[4];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -194,10 +194,11 @@ describe('New Domain Registration', () => {
       partnerOwnerAccount,
       partner,
     } = await loadFixture(initialSetup);
-    const namePrice = await PartnerRegistrar['price(string,uint256,uint256)'](
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION
+      DURATION,
+      partner.address
     );
 
     const data = getAddrRegisterData(
@@ -249,10 +250,11 @@ describe('New Domain Registration', () => {
     const { FakeRIF, nameOwner, PartnerRegistrar, partner } = await loadFixture(
       initialSetup
     );
-    const namePrice = await PartnerRegistrar['price(string,uint256,uint256)'](
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION
+      DURATION,
+      partner.address
     );
 
     const data = getAddrRegisterData(
@@ -284,10 +286,11 @@ describe('New Domain Registration', () => {
       PartnerConfiguration,
       partner,
     } = await loadFixture(initialSetup);
-    const namePrice = await PartnerRegistrar['price(string,uint256,uint256)'](
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION
+      DURATION,
+      partner.address
     );
 
     // set minCommitmentAge of partner so as not skip the commit step in the registration flow
@@ -300,7 +303,7 @@ describe('New Domain Registration', () => {
     );
 
     await (
-      await PartnerRegistrar.connect(nameOwner)['commit(bytes32,address)'](
+      await PartnerRegistrar.connect(nameOwner).commit(
         commitment,
         partner.address
       )

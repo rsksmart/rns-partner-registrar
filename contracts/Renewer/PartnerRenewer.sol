@@ -105,18 +105,9 @@ contract PartnerRenewer is IBaseRenewer, Ownable {
     /// @dev This method should be called if the owned.
     /// @param name The name to register.
     /// @param duration Time to register in years.
-    function renew(string memory name, uint256 duration) external override {
-        renew(name, duration, msg.sender);
-    }
-
-    // - Via ERC-20
-    /// @notice Renews a name in Node Owner.
-    /// @dev This method should be called if the owned.
-    /// @param name The name to register.
-    /// @param duration Time to register in years.
     /// @param partner Partner address
     function renew(
-        string memory name,
+        string calldata name,
         uint256 duration,
         address partner
     ) public override onlyPartner(partner) {
