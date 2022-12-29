@@ -2,6 +2,7 @@
 pragma solidity ^0.8.16;
 
 import "@rsksmart/erc677/contracts/IERC677.sol";
+import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "../NodeOwner.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -14,7 +15,7 @@ import "../BytesUtils.sol";
     @title PartnerRenewer
     @dev Implements the interface IBaseRenewer to renew names in RNS.
 */
-contract PartnerRenewer is IBaseRenewer, Ownable {
+contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
     NodeOwner private _nodeOwner;
     IERC677 private _rif;
     IPartnerManager private _partnerManager;
