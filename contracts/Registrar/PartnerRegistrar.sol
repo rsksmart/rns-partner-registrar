@@ -278,14 +278,6 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     ) private view returns (IPartnerConfiguration) {
         require(_partnerManager.isPartner(partner), "Not a partner");
 
-        IPartnerConfiguration partnerConfiguration = _partnerManager
-            .getPartnerConfiguration(partner);
-
-        require(
-            address(partnerConfiguration) != address(0),
-            "Partner configuration not set"
-        );
-
-        return partnerConfiguration;
+        return _partnerManager.getPartnerConfiguration(partner);
     }
 }
