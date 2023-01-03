@@ -150,7 +150,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinDuration(uint256 minDuration) external override onlyOwner {
-         uint256 preModifiedValue = _minDuration;
+        uint256 preModifiedValue = _minDuration;
 
         if (minDuration == 0) {
             revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
