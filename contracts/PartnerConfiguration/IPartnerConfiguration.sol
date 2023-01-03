@@ -7,6 +7,24 @@ pragma solidity ^0.8.16;
  * @dev Defines the configuration for a partner in particular
  */
 interface IPartnerConfiguration {
+    // event ConfigModified(string indexed modifiedParam, uint256 indexed previousValue, uint256 indexed newValue);
+
+    event MinLengthChanged(uint256 previousValue, uint256 newValue);
+
+    event MaxLengthChanged(uint256 previousValue, uint256 newValue);
+
+    event UnicodeSupportChanged(bool previousValue, bool newValue);
+
+    event MinDurationChanged(uint256 previousValue, uint256 newValue);
+
+    event MaxDurationChanged(uint256 previousValue, uint256 newValue);
+
+    event FeePercentageChanged(uint256 previousValue, uint256 newValue);
+
+    event DiscountChanged(uint256 previousValue, uint256 newValue);
+
+    event MinCommitmentAgeChanged(uint256 previousValue, uint256 newValue);
+
     /**
      * @notice returns the minimum length allowed for a domain name
      */

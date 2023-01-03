@@ -78,6 +78,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinLength(uint256 minLength) external override onlyOwner {
+        uint256 preModifiedValue = _minLength;
+
         if (minLength == 0) {
             revert InvalidLength(minLength, "Minimum length cannot be 0");
         }
@@ -90,6 +92,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _minLength = minLength;
+
+        emit MinLengthChanged(preModifiedValue, _minLength);
     }
 
     /**
@@ -103,6 +107,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxLength(uint256 maxLength) external override onlyOwner {
+        uint256 preModifiedValue = _maxLength;
+
         if (maxLength < _minLength) {
             revert InvalidLength(
                 maxLength,
@@ -111,6 +117,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _maxLength = maxLength;
+
+        emit MaxLengthChanged(preModifiedValue, _maxLength);
     }
 
     /**
@@ -124,7 +132,11 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setUnicodeSupport(bool flag) external override onlyOwner {
+        bool preModifiedValue = _isUnicodeSupported;
+
         _isUnicodeSupported = flag;
+
+        emit UnicodeSupportChanged(preModifiedValue, _isUnicodeSupported);
     }
 
     /**
@@ -138,6 +150,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinDuration(uint256 minDuration) external override onlyOwner {
+         uint256 preModifiedValue = _minDuration;
+
         if (minDuration == 0) {
             revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
         }
@@ -150,6 +164,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _minDuration = minDuration;
+
+        emit MinDurationChanged(preModifiedValue, _minDuration);
     }
 
     /**
@@ -163,6 +179,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxDuration(uint256 maxDuration) external override onlyOwner {
+        uint256 preModifiedValue = _maxDuration;
+
         if (maxDuration < _minDuration) {
             revert InvalidDuration(
                 maxDuration,
@@ -171,6 +189,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _maxDuration = maxDuration;
+
+        emit MaxDurationChanged(preModifiedValue, _maxDuration);
     }
 
     /**
@@ -186,7 +206,11 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setFeePercentage(
         uint256 feePercentage
     ) external override onlyOwner {
+        uint256 preModifiedValue = _feePercentage;
+
         _feePercentage = feePercentage;
+
+        emit FeePercentageChanged(preModifiedValue, _feePercentage);
     }
 
     /**
@@ -200,7 +224,11 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setDiscount(uint256 discount) external override onlyOwner {
+        uint256 preModifiedValue = _discount;
+
         _discount = discount;
+
+        emit DiscountChanged(preModifiedValue, _discount);
     }
 
     function getMinCommitmentAge() external view override returns (uint256) {
@@ -213,7 +241,11 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setMinCommitmentAge(
         uint256 minCommitmentAge
     ) external override onlyOwner {
+        uint256 preModifiedValue = _minCommitmentAge;
+
         _minCommitmentAge = minCommitmentAge;
+
+        emit MinCommitmentAgeChanged(preModifiedValue, _minCommitmentAge);
     }
 
     /**
