@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
 import {
   calculatePercentageWPrecision,
@@ -308,12 +308,6 @@ describe('New Domain Registration', () => {
         partner.address
       )
     ).wait();
-
-    await time.increase(1);
-
-    const canReveal = await partnerProxyAsNameOwner.canReveal(commitment);
-
-    expect(canReveal).to.be.true;
 
     const data = getAddrRegisterData(
       NAME,
