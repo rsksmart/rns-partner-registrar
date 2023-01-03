@@ -315,6 +315,12 @@ describe('New Domain Registration', () => {
 
     expect(canReveal).to.be.true;
 
+    await time.increase(1);
+
+    const canReveal = await partnerProxyAsNameOwner.canReveal(commitment);
+
+    expect(canReveal).to.be.true;
+
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
