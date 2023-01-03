@@ -192,7 +192,7 @@ async function main() {
         maxDuration: BigNumber.from(5),
         feePercentage: FEE_PERCENTAGE,
         discount: BigNumber.from(0),
-        minCommitmentAge: BigNumber.from(0),
+        minCommitmentAge: 1,
       });
 
     console.log(
@@ -250,11 +250,12 @@ async function main() {
       )
     ).wait();
 
-    const FIFSPartnerProxyAddress =
+    const FIFSPartnerProxyAddress = (
       await PartnerRegistrarProxyFactoryContract.getPartnerProxy(
         partner.address,
         FIFSProxyName
-      );
+      )
+    ).proxy;
 
     const RenewerProxyName = 'Renewer';
     await PartnerRenewerProxyFactoryContract.createNewPartnerProxy(
@@ -335,6 +336,12 @@ async function main() {
     await (
       await PartnerManagerContract.setPartnerConfiguration(
         FIFSADDRpartnerProxyAddress,
+        DefaultPartnerConfiguration.address
+      )
+    ).wait();
+    await (
+      await PartnerManagerContract.setPartnerConfiguration(
+        RenewerProxyAddress,
         DefaultPartnerConfiguration.address
       )
     ).wait();
