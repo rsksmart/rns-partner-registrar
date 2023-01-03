@@ -7,8 +7,6 @@ pragma solidity ^0.8.16;
  * @dev Defines the configuration for a partner in particular
  */
 interface IPartnerConfiguration {
-    // event ConfigModified(string indexed modifiedParam, uint256 indexed previousValue, uint256 indexed newValue);
-
     event MinLengthChanged(uint256 previousValue, uint256 newValue);
 
     event MaxLengthChanged(uint256 previousValue, uint256 newValue);
