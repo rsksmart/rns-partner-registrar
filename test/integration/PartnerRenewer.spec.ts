@@ -20,8 +20,6 @@ import { PartnerConfiguration } from 'typechain-types';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
-import { PartnerRegistrarProxyFactory } from 'typechain-types';
-import { PartnerRenewerProxyFactory as PartnerRenewerProxyFactoryType } from 'typechain-types';
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
 
@@ -37,9 +35,10 @@ const tldAsSha3 = ethers.utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partner = signers[0];
-  const nameOwner = signers[2];
-  const pool = signers[3];
+  const partner = signers[1];
+  const partnerOwnerAccount = signers[2];
+  const nameOwner = signers[3];
+  const pool = signers[4];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -152,86 +151,15 @@ const initialSetup = async () => {
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
   await (await PartnerRenewer.setFeeManager(FeeManager.address)).wait();
 
-  const MasterRenewerProxy = await ethers.getContractFactory(
-    'PartnerRenewerProxy'
-  );
-  const { contract: PartnerRenewerProxyFactory } =
-    await deployContract<PartnerRenewerProxyFactoryType>(
-      'PartnerRenewerProxyFactory',
-      {
-        _rif: RIF.address,
-        _partnerRegistrar: PartnerRegistrar.address,
-        _partnerRenewer: PartnerRenewer.address,
-      }
-    );
-
-  const partnerRenewerProxyName = 'PartnerRenewer';
-  await (
-    await PartnerRenewerProxyFactory.createNewPartnerProxy(
-      partner.address,
-      partnerRenewerProxyName
-    )
-  ).wait();
-
-  const tx1 = await PartnerRenewerProxyFactory.getPartnerProxy(
-    partner.address,
-    partnerRenewerProxyName
-  );
-  const partnerRenewerProxyAddress = tx1.proxy;
-  const PartnerRenewerProxy = MasterRenewerProxy.attach(
-    partnerRenewerProxyAddress
-  );
-
-  await (
-    await PartnerManager.addPartner(partnerRenewerProxyAddress, partner.address)
-  ).wait();
-  await (
-    await PartnerManager.setPartnerConfiguration(
-      partnerRenewerProxyAddress,
-      PartnerConfiguration.address
-    )
-  ).wait();
-
-  const MasterRegistrarProxy = await ethers.getContractFactory(
-    'PartnerRegistrarProxy'
-  );
-
-  const { contract: PartnerRegistrarProxyFactory } =
-    await deployContract<PartnerRegistrarProxyFactory>(
-      'PartnerRegistrarProxyFactory',
-      {
-        _rif: RIF.address,
-        _partnerRegistrar: PartnerRegistrar.address,
-        _partnerRenewer: PartnerRenewer.address,
-      }
-    );
-
-  const partnerRegistrarProxyName = 'PartnerRegistrar';
-  await (
-    await PartnerRegistrarProxyFactory.createNewPartnerProxy(
-      partner.address,
-      partnerRegistrarProxyName
-    )
-  ).wait();
-
-  const tx2 = await PartnerRegistrarProxyFactory.getPartnerProxy(
-    partner.address,
-    partnerRegistrarProxyName
-  );
-  const partnerRegistrarProxyAddress = tx2.proxy;
-  const PartnerRegistrarProxy = MasterRegistrarProxy.attach(
-    partnerRegistrarProxyAddress
-  );
-
   await (
     await PartnerManager.addPartner(
-      partnerRegistrarProxyAddress,
-      partner.address
+      partner.address,
+      partnerOwnerAccount.address
     )
   ).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
-      partnerRegistrarProxyAddress,
+      partner.address,
       PartnerConfiguration.address
     )
   ).wait();
@@ -252,70 +180,79 @@ const initialSetup = async () => {
     partner,
     nameOwner,
     signers,
-    PartnerRenewerProxy,
-    PartnerRegistrarProxy,
+    PartnerRenewer,
     pool,
+    partnerOwnerAccount,
   };
 };
 
 describe('Domain Renewal', () => {
   it('Should revert with `Name already expired`', async () => {
-    const { RIF, PartnerRenewerProxy, PartnerRegistrarProxy, nameOwner } =
+    const { RIF, PartnerRegistrar, PartnerRenewer, partner } =
       await loadFixture(initialSetup);
-    const namePrice = await PartnerRegistrarProxy.price(
+    const namePrice = await PartnerRegistrar.price(
       NAME,
       ethers.BigNumber.from(0),
-      DURATION
+      DURATION,
+      partner.address
     );
 
-    const renewData = getRenewData(NAME, DURATION);
+    const renewData = getRenewData(NAME, DURATION, partner.address);
 
     await expect(
-      RIF.transferAndCall(PartnerRenewerProxy.address, namePrice, renewData)
+      RIF.transferAndCall(PartnerRenewer.address, namePrice, renewData)
     ).to.be.revertedWith('Name already expired');
   });
 
   it('Should renew a domain name', async () => {
     const {
       RIF,
-      PartnerRenewerProxy,
-      PartnerRegistrarProxy,
+      PartnerRenewer,
+      PartnerRegistrar,
       nameOwner,
       FeeManager,
       pool,
+      partner,
     } = await loadFixture(initialSetup);
 
-    const namePrice = await PartnerRegistrarProxy.price(NAME, 0, DURATION);
+    const namePrice = await PartnerRegistrar.price(
+      NAME,
+      0,
+      DURATION,
+      partner.address
+    );
 
-    const partnerRegistrarProxyAsNameOwner =
-      PartnerRegistrarProxy.connect(nameOwner);
+    const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
 
-    const commitment = await partnerRegistrarProxyAsNameOwner.makeCommitment(
+    const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
       SECRET
     );
 
-    await (await partnerRegistrarProxyAsNameOwner.commit(commitment)).wait();
+    await (
+      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
+    ).wait();
 
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
       SECRET,
       DURATION,
-      nameOwner.address
+      nameOwner.address,
+      partner.address
     );
-    const renewData = getRenewData(NAME, DURATION);
+    const renewData = getRenewData(NAME, DURATION, partner.address);
 
     await (
       await RIF.connect(nameOwner).transferAndCall(
-        PartnerRegistrarProxy.address,
+        PartnerRegistrar.address,
         namePrice,
         registerData
       )
     ).wait();
     await expect(
-      RIF.transferAndCall(PartnerRenewerProxy.address, namePrice, renewData)
+      RIF.transferAndCall(PartnerRenewer.address, namePrice, renewData)
     ).to.be.fulfilled;
 
     const feeManagerBalance = await RIF.balanceOf(FeeManager.address);
@@ -335,41 +272,48 @@ describe('Domain Renewal', () => {
     expect(expectedPoolBalance.mul(2)).to.equal(poolBalance);
   });
   it('Should revert if amount is not enough', async () => {
-    const { RIF, PartnerRenewerProxy, PartnerRegistrarProxy, nameOwner } =
+    const { RIF, PartnerRenewer, PartnerRegistrar, nameOwner, partner } =
       await loadFixture(initialSetup);
 
-    const namePrice = await PartnerRegistrarProxy.price(NAME, 0, DURATION);
+    const namePrice = await PartnerRegistrar.price(
+      NAME,
+      0,
+      DURATION,
+      partner.address
+    );
 
-    const partnerRegistrarProxyAsNameOwner =
-      PartnerRegistrarProxy.connect(nameOwner);
+    const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
 
-    const commitment = await partnerRegistrarProxyAsNameOwner.makeCommitment(
+    const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
       SECRET
     );
 
-    await (await partnerRegistrarProxyAsNameOwner.commit(commitment)).wait();
+    await (
+      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
+    ).wait();
 
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
       SECRET,
       DURATION,
-      nameOwner.address
+      nameOwner.address,
+      partner.address
     );
-    const renewData = getRenewData(NAME, DURATION);
+    const renewData = getRenewData(NAME, DURATION, partner.address);
 
     await (
       await RIF.connect(nameOwner).transferAndCall(
-        PartnerRegistrarProxy.address,
+        PartnerRegistrar.address,
         namePrice,
         registerData
       )
     ).wait();
     await expect(
       RIF.transferAndCall(
-        PartnerRenewerProxy.address,
+        PartnerRenewer.address,
         namePrice.sub(BigNumber.from(1)),
         renewData
       )
@@ -380,42 +324,50 @@ describe('Domain Renewal', () => {
     const {
       RIF,
       FakeRIF,
-      PartnerRenewerProxy,
-      PartnerRegistrarProxy,
+      PartnerRenewer,
+      PartnerRegistrar,
       nameOwner,
+      partner,
     } = await loadFixture(initialSetup);
 
-    const namePrice = await PartnerRegistrarProxy.price(NAME, 0, DURATION);
+    const namePrice = await PartnerRegistrar.price(
+      NAME,
+      0,
+      DURATION,
+      partner.address
+    );
 
-    const partnerRegistrarProxyAsNameOwner =
-      PartnerRegistrarProxy.connect(nameOwner);
+    const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
 
-    const commitment = await partnerRegistrarProxyAsNameOwner.makeCommitment(
+    const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
       SECRET
     );
 
-    await (await partnerRegistrarProxyAsNameOwner.commit(commitment)).wait();
+    await (
+      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
+    ).wait();
 
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
       SECRET,
       DURATION,
-      nameOwner.address
+      nameOwner.address,
+      partner.address
     );
-    const renewData = getRenewData(NAME, DURATION);
+    const renewData = getRenewData(NAME, DURATION, partner.address);
 
     await (
       await RIF.connect(nameOwner).transferAndCall(
-        PartnerRegistrarProxy.address,
+        PartnerRegistrar.address,
         namePrice,
         registerData
       )
     ).wait();
     await expect(
-      FakeRIF.transferAndCall(PartnerRenewerProxy.address, namePrice, renewData)
+      FakeRIF.transferAndCall(PartnerRenewer.address, namePrice, renewData)
     ).to.be.revertedWith('Only RIF token');
   });
 });

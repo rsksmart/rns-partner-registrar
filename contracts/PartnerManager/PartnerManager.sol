@@ -68,7 +68,16 @@ contract PartnerManager is IPartnerManager, Ownable {
     function getPartnerConfiguration(
         address partner
     ) public view override returns (IPartnerConfiguration) {
-        return _partnerConfigurations[partner];
+        IPartnerConfiguration partnerConfiguration = _partnerConfigurations[
+            partner
+        ];
+
+        require(
+            address(partnerConfiguration) != address(0),
+            "Partner configuration not set"
+        );
+
+        return partnerConfiguration;
     }
 
     /**

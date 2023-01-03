@@ -18,7 +18,6 @@ import { ERC677Token } from 'typechain-types';
 import { PartnerConfiguration } from 'typechain-types';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
-import { PartnerRegistrarProxyFactory as PartnerRegistrarProxyFactoryType } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
 
@@ -34,9 +33,10 @@ const tldAsSha3 = ethers.utils.id('rsk');
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
-  const partnerOwnerAccount = signers[0];
-  const nameOwner = signers[2];
-  const pool = signers[3];
+  const partner = signers[1];
+  const partnerOwnerAccount = signers[2];
+  const nameOwner = signers[3];
+  const pool = signers[4];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -147,44 +147,15 @@ const initialSetup = async () => {
 
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
 
-  const PartnerProxyBase = await ethers.getContractFactory(
-    'PartnerRegistrarProxy'
-  );
-
-  const { contract: PartnerProxyFactory } =
-    await deployContract<PartnerRegistrarProxyFactoryType>(
-      'PartnerRegistrarProxyFactory',
-      {
-        _rif: RIF.address,
-        _partnerRegistrar: PartnerRegistrar.address,
-        _partnerRenewer: PartnerRenewer.address,
-      }
-    );
-
-  const partnerProxyName = 'PartnerOne';
-  await (
-    await PartnerProxyFactory.createNewPartnerProxy(
-      partnerOwnerAccount.address,
-      partnerProxyName
-    )
-  ).wait();
-
-  const tx1 = await PartnerProxyFactory.getPartnerProxy(
-    partnerOwnerAccount.address,
-    partnerProxyName
-  );
-  const partnerProxyAddress = tx1.proxy;
-  const PartnerProxy = PartnerProxyBase.attach(partnerProxyAddress);
-
   await (
     await PartnerManager.addPartner(
-      partnerProxyAddress,
+      partner.address,
       partnerOwnerAccount.address
     )
   ).wait();
   await (
     await PartnerManager.setPartnerConfiguration(
-      partnerProxyAddress,
+      partner.address,
       PartnerConfiguration.address
     )
   ).wait();
@@ -206,8 +177,8 @@ const initialSetup = async () => {
     partnerOwnerAccount,
     nameOwner,
     signers,
-    PartnerProxy,
     pool,
+    partner,
   };
 };
 
@@ -218,23 +189,30 @@ describe('New Domain Registration', () => {
       Resolver,
       nameOwner,
       FeeManager,
-      PartnerProxy,
+      PartnerRegistrar,
       pool,
       partnerOwnerAccount,
+      partner,
     } = await loadFixture(initialSetup);
-    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
+    const namePrice = await PartnerRegistrar.price(
+      NAME,
+      0,
+      DURATION,
+      partner.address
+    );
 
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
       SECRET,
       DURATION,
-      nameOwner.address
+      nameOwner.address,
+      partner.address
     );
 
     await (
       await RIF.connect(nameOwner).transferAndCall(
-        PartnerProxy.address,
+        PartnerRegistrar.address,
         namePrice,
         data
       )
@@ -269,22 +247,28 @@ describe('New Domain Registration', () => {
   });
 
   it('Should revert if not RIF token', async () => {
-    const { FakeRIF, nameOwner, PartnerProxy } = await loadFixture(
+    const { FakeRIF, nameOwner, PartnerRegistrar, partner } = await loadFixture(
       initialSetup
     );
-    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
+    const namePrice = await PartnerRegistrar.price(
+      NAME,
+      0,
+      DURATION,
+      partner.address
+    );
 
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
       SECRET,
       DURATION,
-      nameOwner.address
+      nameOwner.address,
+      partner.address
     );
 
     await expect(
       FakeRIF.connect(nameOwner).transferAndCall(
-        PartnerProxy.address,
+        PartnerRegistrar.address,
         namePrice,
         data
       )
@@ -297,36 +281,46 @@ describe('New Domain Registration', () => {
       Resolver,
       nameOwner,
       FeeManager,
-      PartnerProxy,
+      PartnerRegistrar,
       pool,
       PartnerConfiguration,
+      partner,
     } = await loadFixture(initialSetup);
-    const namePrice = await PartnerProxy.price(NAME, 0, DURATION);
+    const namePrice = await PartnerRegistrar.price(
+      NAME,
+      0,
+      DURATION,
+      partner.address
+    );
 
     // set minCommitmentAge of partner so as not skip the commit step in the registration flow
     await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
 
-    const partnerProxyAsNameOwner = PartnerProxy.connect(nameOwner);
-
-    const commitment = await partnerProxyAsNameOwner.makeCommitment(
+    const commitment = await PartnerRegistrar.connect(nameOwner).makeCommitment(
       LABEL,
       nameOwner.address,
       SECRET
     );
 
-    await (await partnerProxyAsNameOwner.commit(commitment)).wait();
+    await (
+      await PartnerRegistrar.connect(nameOwner).commit(
+        commitment,
+        partner.address
+      )
+    ).wait();
 
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
       SECRET,
       DURATION,
-      nameOwner.address
+      nameOwner.address,
+      partner.address
     );
 
     await (
       await RIF.connect(nameOwner).transferAndCall(
-        PartnerProxy.address,
+        PartnerRegistrar.address,
         namePrice,
         data
       )

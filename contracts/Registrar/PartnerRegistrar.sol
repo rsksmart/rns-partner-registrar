@@ -10,13 +10,15 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../test-utils/Resolver.sol";
 import "../RNS.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
+import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
+import "../BytesUtils.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title PartnerRegistrar
     @dev Implements the interface IBaseRegistrar to register names in RNS.
 */
-contract PartnerRegistrar is IBaseRegistrar, Ownable {
+contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     mapping(bytes32 => uint256) private _commitmentRevealTime;
 
     NodeOwner private _nodeOwner;
@@ -26,6 +28,10 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     RNS private _rns;
     bytes32 private _rootNode;
 
+    // sha3("register(string,address,bytes32,uint,address,address)")
+    bytes4 private constant _REGISTER_SIGNATURE = 0x646c3681;
+
+    using BytesUtils for bytes;
     using StringUtils for string;
 
     constructor(
@@ -42,9 +48,9 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         _rootNode = rootNode;
     }
 
-    modifier onlyPartner() {
+    modifier onlyPartner(address partner) {
         require(
-            _partnerManager.isPartner(msg.sender),
+            _partnerManager.isPartner(partner),
             "Partner Registrar: Not a partner"
         );
         _;
@@ -52,6 +58,91 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
         _feeManager = feeManager;
+    }
+
+    // - Via ERC-677
+    /* Encoding:
+        | signature  |  4 bytes      - offset  0
+        | owner      | 20 bytes      - offset  4
+        | secret     | 32 bytes      - offest 24
+        | duration   | 32 bytes      - offset 56
+        | partner   | 32 bytes      - offset 88
+        | name       | variable size - offset 108
+    */
+
+    /// @notice ERC-677 token fallback function.
+    /// @dev Follow 'Register encoding' to execute a one-transaction regitration.
+    /// @param from token sender.
+    /// @param value amount of tokens sent.
+    /// @param data data associated with transaction.
+    /// @return true if successfull.
+    function tokenFallback(
+        address from,
+        uint256 value,
+        bytes calldata data
+    ) external returns (bool) {
+        require(msg.sender == address(_rif), "Only RIF token");
+        require(data.length > 128, "Invalid data");
+
+        bytes4 signature = data.toBytes4(0);
+        require(signature == _REGISTER_SIGNATURE, "Invalid signature");
+
+        address nameOwner = data.toAddress(4);
+        bytes32 secret = data.toBytes32(24);
+        uint256 duration = data.toUint(56);
+        address addr = data.toAddress(88);
+        address partner = data.toAddress(108);
+        string memory name = data.toString(128, data.length - 128);
+
+        _registerWithToken(
+            from,
+            value,
+            name,
+            secret,
+            duration,
+            nameOwner,
+            addr,
+            partner
+        );
+
+        return true;
+    }
+
+    function _registerWithToken(
+        address from,
+        uint256 amount,
+        string memory name,
+        bytes32 secret,
+        uint256 duration,
+        address nameOwner,
+        address addr,
+        address partner
+    ) private {
+        emit NameRegistered(from, duration);
+
+        uint256 cost = _executeRegistration(
+            name,
+            nameOwner,
+            secret,
+            duration,
+            addr,
+            partner
+        );
+        require(amount >= cost, "Insufficient tokens transferred");
+
+        _collectFees(partner, cost);
+
+        uint256 difference = amount - cost;
+        if (difference > 0)
+            require(_rif.transfer(from, difference), "Token transfer failed");
+    }
+
+    function _collectFees(address partner, uint256 amount) private {
+        require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
+
+        _rif.approve(address(_feeManager), amount);
+
+        _feeManager.deposit(partner, amount);
     }
 
     // - Via ERC-20
@@ -62,32 +153,32 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     /// @param secret The secret used to make the commitment.
     /// @param duration Time to register in years.
     /// @param addr Address to set as addr resolution.
+    /// @param partner Partner address
     function register(
         string calldata name,
         address nameOwner,
         bytes32 secret,
         uint256 duration,
-        address addr
-    ) external override onlyPartner {
+        address addr,
+        address partner
+    ) public override onlyPartner(partner) {
+        emit NameRegistered(msg.sender, duration);
+
         uint256 cost = _executeRegistration(
             name,
             nameOwner,
             secret,
             duration,
-            addr
+            addr,
+            partner
         );
 
         require(
             _rif.transferFrom(msg.sender, address(this), cost),
             "Token transfer failed"
         );
-        require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
 
-        _rif.approve(address(_feeManager), cost);
-
-        _feeManager.deposit(msg.sender, cost);
-
-        emit NameRegistered(msg.sender, duration);
+        _collectFees(partner, cost);
     }
 
     /**
@@ -96,9 +187,13 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     function price(
         string calldata name,
         uint256 expires,
-        uint256 duration
-    ) external view override returns (uint256) {
-        return _getPartnerConfiguration().getPrice(name, expires, duration);
+        uint256 duration,
+        address partner
+    ) public view override returns (uint256) {
+        IPartnerConfiguration partnerConfiguration = _getPartnerConfiguration(
+            partner
+        );
+        return partnerConfiguration.getPrice(name, expires, duration);
     }
 
     /**
@@ -123,15 +218,19 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
     /**
        @inheritdoc IBaseRegistrar
      */
-    function commit(bytes32 commitment) external override onlyPartner {
+    function commit(bytes32 commitment, address partner) public override {
+        IPartnerConfiguration partnerConfiguration = _getPartnerConfiguration(
+            partner
+        );
+
         // Check the Partner's one step registration allowance config
-        if (_getPartnerConfiguration().getMinCommitmentAge() == 0) {
+        if (partnerConfiguration.getMinCommitmentAge() == 0) {
             revert("Commitment not required");
         }
         require(_commitmentRevealTime[commitment] < 1, "Existent commitment");
         _commitmentRevealTime[commitment] =
             block.timestamp +
-            _getPartnerConfiguration().getMinCommitmentAge();
+            partnerConfiguration.getMinCommitmentAge();
     }
 
     function _executeRegistration(
@@ -139,13 +238,18 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         address nameOwner,
         bytes32 secret,
         uint256 duration,
-        address addr
+        address addr,
+        address partner
     ) private returns (uint256) {
-        _getPartnerConfiguration().validateName(name, duration);
+        IPartnerConfiguration partnerConfiguration = _getPartnerConfiguration(
+            partner
+        );
+
+        partnerConfiguration.validateName(name, duration);
 
         bytes32 label = keccak256(abi.encodePacked(name));
 
-        if (_getPartnerConfiguration().getMinCommitmentAge() != 0) {
+        if (partnerConfiguration.getMinCommitmentAge() != 0) {
             bytes32 commitment = makeCommitment(label, nameOwner, secret);
             require(canReveal(commitment), "No commitment found");
             _commitmentRevealTime[commitment] = 0;
@@ -163,18 +267,18 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable {
         _nodeOwner.transferFrom(address(this), nameOwner, tokenId);
 
         return
-            _getPartnerConfiguration().getPrice(
+            partnerConfiguration.getPrice(
                 name,
                 _nodeOwner.expirationTime(uint256(label)),
                 duration
             );
     }
 
-    function _getPartnerConfiguration()
-        private
-        view
-        returns (IPartnerConfiguration)
-    {
-        return _partnerManager.getPartnerConfiguration(msg.sender);
+    function _getPartnerConfiguration(
+        address partner
+    ) private view returns (IPartnerConfiguration) {
+        require(_partnerManager.isPartner(partner), "Not a partner");
+
+        return _partnerManager.getPartnerConfiguration(partner);
     }
 }

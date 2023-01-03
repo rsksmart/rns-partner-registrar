@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.16;
 
+import "../FeeManager/IFeeManager.sol";
+
 /**
     @author Identity Team @IOVLabs
     @title IBaseRegistrar
@@ -10,19 +12,27 @@ interface IBaseRegistrar {
     event NameRegistered(address indexed partner, uint256 duration);
 
     /**
+        @notice sets the fee manager to use
+        @param feeManager the fee manager to use
+    */
+    function setFeeManager(IFeeManager feeManager) external;
+
+    /**
         @notice registers a name
         @param name the name to register
         @param nameOwner the owner of the name
         @param secret used in the commitment step if required
         @param duration the duration of the registration in years
         @param addr to be resolved to the name as default
+        @param partner Partner address
     */
     function register(
         string calldata name,
         address nameOwner,
         bytes32 secret,
         uint256 duration,
-        address addr
+        address addr,
+        address partner
     ) external;
 
     /**
@@ -31,11 +41,13 @@ interface IBaseRegistrar {
         @param expires the expiration date of the name
         @param duration the duration of the registration in years
         @return the price of the name
+        @param partner Partner address
     */
     function price(
         string calldata name,
         uint256 expires,
-        uint256 duration
+        uint256 duration,
+        address partner
     ) external view returns (uint256);
 
     /**
@@ -55,8 +67,9 @@ interface IBaseRegistrar {
         @notice commits a name if required. This is used to reserve a name
         for a specific user and prevent a frontrunning attack
         @param commitment the commitment of the name
+        @param partner Partner address
     */
-    function commit(bytes32 commitment) external;
+    function commit(bytes32 commitment, address partner) external;
 
     /**
         @notice reveals if the name is ready to be registered by calling register function.

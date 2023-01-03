@@ -10,8 +10,13 @@ interface IBaseRenewer {
      * @notice allows name owner to renew their name
      * @param name the name of the partner
      * @param duration the duration of the renewal
+     * @param partner Partner address
      */
-    function renew(string calldata name, uint256 duration) external;
+    function renew(
+        string calldata name,
+        uint256 duration,
+        address partner
+    ) external;
 
     event NameRenewed(address indexed partner, uint256 duration);
 }
