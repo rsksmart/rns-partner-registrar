@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.16;
 
+import "../FeeManager/IFeeManager.sol";
+
 /**
     @author Identity Team @IOVLabs
     @title IBaseRegistrar
@@ -8,6 +10,12 @@ pragma solidity ^0.8.16;
 */
 interface IBaseRegistrar {
     event NameRegistered(address indexed partner, uint256 duration);
+
+    /**
+        @notice sets the fee manager to use
+        @param feeManager the fee manager to use
+    */
+    function setFeeManager(IFeeManager feeManager) external;
 
     /**
         @notice registers a name
