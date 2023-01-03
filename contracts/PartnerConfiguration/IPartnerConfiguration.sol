@@ -102,4 +102,11 @@ interface IPartnerConfiguration {
      * @param minLength the minimum length allowed for a domain name
      */
     function setMinLength(uint256 minLength) external;
+
+    /**
+     * @notice checks if the name is valid and reverts with reason if not
+     * @param name name under validation
+     * @param duration duration for which the name should be registered
+     */
+    function validateName(string memory name, uint256 duration) external view;
 }

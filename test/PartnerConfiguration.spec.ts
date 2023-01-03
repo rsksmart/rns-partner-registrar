@@ -52,6 +52,68 @@ describe('Partner Configuration', () => {
     PartnerConfiguration = vars.PartnerConfiguration;
   });
 
+  context('when the contract is deployed', () => {
+    it('should revert if the min length is 0', async () => {
+      await expect(
+        deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          0,
+          DEFAULT_MAX_LENGTH,
+          DEFAULT_IS_UNICODE_SUPPORTED,
+          DEFAULT_MIN_DURATION,
+          DEFAULT_MAX_DURATION,
+          DEFAULT_FEE_PERCENTAGE,
+          DEFAULT_DISCOUNT,
+          DEFAULT_MIN_COMMITMENT_AGE,
+        ])
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidLength');
+    });
+
+    it('should revert if the max length is less than the min length', async () => {
+      await expect(
+        deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          DEFAULT_MIN_LENGTH,
+          2,
+          DEFAULT_IS_UNICODE_SUPPORTED,
+          DEFAULT_MIN_DURATION,
+          DEFAULT_MAX_DURATION,
+          DEFAULT_FEE_PERCENTAGE,
+          DEFAULT_DISCOUNT,
+          DEFAULT_MIN_COMMITMENT_AGE,
+        ])
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidLength');
+    });
+
+    it('should revert if the min duration is 0', async () => {
+      await expect(
+        deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          DEFAULT_MIN_LENGTH,
+          DEFAULT_MAX_LENGTH,
+          DEFAULT_IS_UNICODE_SUPPORTED,
+          0,
+          DEFAULT_MAX_DURATION,
+          DEFAULT_FEE_PERCENTAGE,
+          DEFAULT_DISCOUNT,
+          DEFAULT_MIN_COMMITMENT_AGE,
+        ])
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
+
+    it('should revert if the max duration is less than the min duration', async () => {
+      await expect(
+        deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          DEFAULT_MIN_LENGTH,
+          DEFAULT_MAX_LENGTH,
+          DEFAULT_IS_UNICODE_SUPPORTED,
+          3,
+          2,
+          DEFAULT_FEE_PERCENTAGE,
+          DEFAULT_DISCOUNT,
+          DEFAULT_MIN_COMMITMENT_AGE,
+        ])
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
+  });
+
   context('Check Defaults', () => {
     it('Should return the default min length', async () => {
       expect(await PartnerConfiguration.getMinLength()).to.equal(
@@ -93,44 +155,9 @@ describe('Partner Configuration', () => {
         DEFAULT_MIN_COMMITMENT_AGE
       );
     });
-    it('Should revert if duration is less than min duration', async () => {
-      let duration = BigNumber.from(1);
-      const expires = BigNumber.from(1);
-      const name = 'cheta';
+  });
 
-      await PartnerConfiguration.setMinDuration(5);
-
-      await expect(
-        PartnerConfiguration.getPrice(name, expires, duration)
-      ).to.be.revertedWith('PartnerConfiguration: Less than min duration');
-
-      duration = BigNumber.from(0);
-      await PartnerConfiguration.setMinDuration(0);
-
-      await expect(
-        PartnerConfiguration.getPrice(name, expires, duration)
-      ).to.be.revertedWith('PartnerConfiguration: Less than min duration');
-
-      duration = BigNumber.from(0);
-      await PartnerConfiguration.setMinDuration(0);
-
-      await expect(
-        PartnerConfiguration.getPrice(name, expires, duration)
-      ).to.be.revertedWith('PartnerConfiguration: Less than min duration');
-    });
-
-    it('Should revert if duration is more than max duration', async () => {
-      const duration = BigNumber.from(6);
-      const expires = BigNumber.from(1);
-      const name = 'cheta';
-
-      await PartnerConfiguration.setMaxDuration(5);
-
-      await expect(
-        PartnerConfiguration.getPrice(name, expires, duration)
-      ).to.be.revertedWith('PartnerConfiguration: More than max duration');
-    });
-
+  context('getPrice', () => {
     it('Should return the correct price', async () => {
       const expires = BigNumber.from(1);
       const name = 'cheta';
@@ -158,8 +185,100 @@ describe('Partner Configuration', () => {
       ).to.be.equal(oneRBTC.mul(BigNumber.from(2).add(duration)));
     });
   });
+  context('validateName', () => {
+    it('Should revert if duration is less than min duration', async () => {
+      const duration = BigNumber.from(1);
+      const name = 'cheta';
+
+      await PartnerConfiguration.setMinDuration(DEFAULT_MAX_DURATION);
+
+      await expect(
+        PartnerConfiguration.validateName(name, duration)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
+
+    it('Should revert if duration is more than max duration', async () => {
+      const duration = BigNumber.from(6);
+      const name = 'cheta';
+
+      await PartnerConfiguration.setMaxDuration(5);
+
+      await expect(
+        PartnerConfiguration.validateName(name, duration)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
+
+    it('Should revert if length is less than min length', async () => {
+      const duration = BigNumber.from(2);
+      const name = 'cheta';
+
+      await PartnerConfiguration.setMinLength(DEFAULT_MAX_LENGTH);
+
+      await expect(
+        PartnerConfiguration.validateName(name, duration)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
+    });
+
+    it('Should revert if length is more than max length', async () => {
+      const duration = BigNumber.from(2);
+      const name = 'cheta';
+
+      await PartnerConfiguration.setMaxLength(3);
+
+      await expect(
+        PartnerConfiguration.validateName(name, duration)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
+    });
+
+    it('Should check if the name is valid', async () => {
+      const duration = BigNumber.from(2);
+      const name = 'cheta';
+
+      await expect(PartnerConfiguration.validateName(name, duration)).to.be
+        .fulfilled;
+    });
+  });
 
   context('Set New Config Values', () => {
+    it('Should revert if min length is 0', async () => {
+      const NEW_MIN_LENGTH = 0;
+      await expect(
+        PartnerConfiguration.setMinLength(NEW_MIN_LENGTH)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidLength');
+    });
+    it('Should revert if min length is more than max length', async () => {
+      const NEW_MIN_LENGTH = DEFAULT_MAX_LENGTH + 1;
+      await expect(
+        PartnerConfiguration.setMinLength(NEW_MIN_LENGTH)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidLength');
+    });
+    it('Should revert if max length is less than min length', async () => {
+      const NEW_MIN_LENGTH = 4;
+      await PartnerConfiguration.setMinLength(NEW_MIN_LENGTH);
+
+      await expect(
+        PartnerConfiguration.setMaxLength(3)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidLength');
+    });
+    it('Should revert if min duration is 0', async () => {
+      const NEW_MIN_DURATION = 0;
+      await expect(
+        PartnerConfiguration.setMinDuration(NEW_MIN_DURATION)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
+    it('Should revert if min duration more than max duration', async () => {
+      const NEW_MIN_DURATION = DEFAULT_MAX_DURATION + 1;
+      await expect(
+        PartnerConfiguration.setMinDuration(NEW_MIN_DURATION)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
+    it('Should revert if max duration is less than min duration', async () => {
+      await PartnerConfiguration.setMinDuration(DEFAULT_MAX_DURATION);
+
+      await expect(
+        PartnerConfiguration.setMaxDuration(1)
+      ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidDuration');
+    });
     it('Should set a new min length', async () => {
       const NEW_MIN_LENGTH = 4;
       const tx = await PartnerConfiguration.setMinLength(NEW_MIN_LENGTH);

@@ -3,6 +3,11 @@ pragma solidity ^0.8.16;
 
 import "./IPartnerConfiguration.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "../StringUtils.sol";
+
+error InvalidName(string name, string reason);
+error InvalidDuration(uint256 duration, string reason);
+error InvalidLength(uint256 length, string reason);
 
 /**
  * @title PartnerConfiguration
@@ -18,6 +23,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     uint256 private _discount;
     uint256 private _minCommitmentAge;
 
+    using StringUtils for string;
+
     constructor(
         uint256 minLength,
         uint256 maxLength,
@@ -28,7 +35,27 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 discount,
         uint256 minCommitmentAge
     ) {
-        // require(minDuration > 0, "PartnerConfiguration: Invalid min duration");
+        if (minLength == 0) {
+            revert InvalidLength(minLength, "Minimum length cannot be 0");
+        }
+
+        if (maxLength < minLength) {
+            revert InvalidLength(
+                maxLength,
+                "Max length cannot be less than the min length"
+            );
+        }
+
+        if (minDuration == 0) {
+            revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
+        }
+
+        if (maxDuration < minDuration) {
+            revert InvalidDuration(
+                maxDuration,
+                "Max duration cannot be less than the min duration"
+            );
+        }
 
         _minLength = minLength;
         _maxLength = maxLength;
@@ -51,6 +78,17 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinLength(uint256 minLength) external override onlyOwner {
+        if (minLength == 0) {
+            revert InvalidLength(minLength, "Minimum length cannot be 0");
+        }
+
+        if (_maxLength != 0 && minLength > _maxLength) {
+            revert InvalidLength(
+                minLength,
+                "Minimum length cannot be more than the max length"
+            );
+        }
+
         _minLength = minLength;
     }
 
@@ -65,6 +103,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxLength(uint256 maxLength) external override onlyOwner {
+        if (maxLength < _minLength) {
+            revert InvalidLength(
+                maxLength,
+                "Max length cannot be less than the min length"
+            );
+        }
+
         _maxLength = maxLength;
     }
 
@@ -93,6 +138,17 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinDuration(uint256 minDuration) external override onlyOwner {
+        if (minDuration == 0) {
+            revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
+        }
+
+        if (_maxDuration != 0 && minDuration > _maxDuration) {
+            revert InvalidDuration(
+                minDuration,
+                "Minimum duration cannot be more than the maximum duration"
+            );
+        }
+
         _minDuration = minDuration;
     }
 
@@ -107,6 +163,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxDuration(uint256 maxDuration) external override onlyOwner {
+        if (maxDuration < _minDuration) {
+            revert InvalidDuration(
+                maxDuration,
+                "Max duration cannot be less than the min duration"
+            );
+        }
+
         _maxDuration = maxDuration;
     }
 
@@ -161,17 +224,35 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 /* expires */,
         uint256 duration
     ) external view override returns (uint256) {
-        require(
-            (duration >= 1) && (duration >= _minDuration),
-            "PartnerConfiguration: Less than min duration"
-        );
-
-        if ((_maxDuration != 0) && (duration > _maxDuration))
-            revert("PartnerConfiguration: More than max duration");
-
         if (duration == 1) return 2 * (10 ** 18);
         if (duration == 2) return 4 * (10 ** 18);
 
         return (duration + 2) * (10 ** 18);
+    }
+
+    /**
+       @inheritdoc IPartnerConfiguration
+     */
+    function validateName(
+        string calldata name,
+        uint256 duration
+    ) external view {
+        if (duration < _minDuration)
+            revert InvalidDuration(
+                duration,
+                "Duration less than minimum duration"
+            );
+
+        if ((_maxDuration != 0) && (duration > _maxDuration))
+            revert InvalidDuration(
+                duration,
+                "Duration is more than max duration"
+            );
+
+        if (name.strlen() < _minLength)
+            revert InvalidName(name, "Name is less than minimum length");
+
+        if (_maxLength != 0 && name.strlen() > _maxLength)
+            revert InvalidName(name, "Name is more than max length");
     }
 }

@@ -31,7 +31,7 @@ const DISCOUNT = 0;
 const MIN_DURATION = 1;
 const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
-const MAX_DURATION = 0;
+const MAX_DURATION = 2;
 const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
 
 const initialSetup = async () => {
@@ -245,7 +245,7 @@ describe('New Domain Registration', () => {
         DURATION,
         NodeOwner.address
       )
-    ).to.be.revertedWith('Name too short');
+    ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
   });
 
   it('Should fail if new domain length is more than accepted value', async () => {
@@ -272,7 +272,7 @@ describe('New Domain Registration', () => {
         DURATION,
         NodeOwner.address
       )
-    ).to.be.revertedWith('Name too long');
+    ).to.be.revertedWithCustomError(PartnerConfiguration, 'InvalidName');
   });
 
   it('Should fail if no commitment is made and minCommitmentAge is not 0', async () => {
