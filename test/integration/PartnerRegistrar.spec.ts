@@ -309,6 +309,14 @@ describe('New Domain Registration', () => {
       )
     ).wait();
 
+    await time.increase(1);
+
+    const canReveal = await PartnerRegistrar.connect(nameOwner).canReveal(
+      commitment
+    );
+
+    expect(canReveal).to.be.true;
+
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
