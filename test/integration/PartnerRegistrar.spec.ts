@@ -364,6 +364,8 @@ describe('New Domain Registration', () => {
       partner.address
     );
 
+    RIF.approve.returns(true);
+
     await (
       await RIF.connect(nameOwner).transferAndCall(
         PartnerRegistrar.address,
