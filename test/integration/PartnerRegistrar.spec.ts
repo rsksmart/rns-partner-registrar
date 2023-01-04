@@ -1,6 +1,7 @@
 import { ethers } from 'hardhat';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
+import { deployContract as deployContractAsMock } from '../utils/mock.utils';
 import {
   calculatePercentageWPrecision,
   getAddrRegisterData,
@@ -9,6 +10,7 @@ import {
 import { NodeOwner } from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
+import { ERC677Token__factory } from 'typechain-types';
 import { expect } from 'chai';
 import { IFeeManager } from 'typechain-types';
 import NodeOwnerAbi from '../external-abis/NodeOwner.json';
@@ -70,12 +72,12 @@ const initialSetup = async () => {
 
   await (await Resolver.initialize(RNS.address)).wait();
 
-  const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
-    beneficiary: owner.address,
-    initialAmount: oneRBTC.mul(100000000000000),
-    tokenName: 'ERC677',
-    tokenSymbol: 'MOCKCOIN',
-  });
+  const RIF = await deployContractAsMock<ERC677Token__factory>('ERC677Token', [
+    owner.address,
+    oneRBTC.mul(100000000000000),
+    'ERC677',
+    'MOCKCOIN',
+  ]);
 
   const { contract: FakeRIF } = await deployContract<ERC677Token>(
     'ERC677Token',
@@ -273,6 +275,42 @@ describe('New Domain Registration', () => {
         data
       )
     ).to.be.revertedWith('Only RIF token');
+  });
+
+  it('Should revert if token transfer approval fails', async () => {
+    const {
+      RIF,
+      nameOwner,
+      PartnerRegistrar,
+      partner,
+      PartnerManager,
+      PartnerConfiguration,
+      NodeOwner,
+    } = await loadFixture(initialSetup);
+    await (
+      await PartnerManager.addPartner(partner.address, partner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    RIF.transferFrom.returns(true);
+    RIF.approve.returns(false);
+
+    await expect(
+      PartnerRegistrar.register(
+        'cheta',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address,
+        partner.address
+      )
+    ).to.be.revertedWith('Token approval failed');
   });
 
   it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {

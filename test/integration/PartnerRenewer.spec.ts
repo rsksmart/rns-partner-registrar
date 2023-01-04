@@ -1,6 +1,7 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
+import { deployContract as deployContractAsMock } from '../utils/mock.utils';
 import {
   calculatePercentageWPrecision,
   getAddrRegisterData,
@@ -16,6 +17,7 @@ import NodeOwnerAbi from '../external-abis/NodeOwner.json';
 import RNSAbi from '../external-abis/RNS.json';
 import ResolverAbi from '../external-abis/ResolverV1.json';
 import { ERC677Token } from 'typechain-types/contracts/test-utils';
+import { ERC677Token__factory } from 'typechain-types';
 import { PartnerConfiguration } from 'typechain-types';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
@@ -24,7 +26,7 @@ import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
-const NAME = 'cheta👀aa';
+const NAME = 'cheta';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = ethers.BigNumber.from('1');
 const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
@@ -72,12 +74,12 @@ const initialSetup = async () => {
 
   await (await Resolver.initialize(RNS.address)).wait();
 
-  const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
-    beneficiary: owner.address,
-    initialAmount: oneRBTC.mul(100000000000000),
-    tokenName: 'ERC677',
-    tokenSymbol: 'MOCKCOIN',
-  });
+  const RIF = await deployContractAsMock<ERC677Token__factory>('ERC677Token', [
+    owner.address,
+    oneRBTC.mul(100000000000000),
+    'ERC677',
+    'MOCKCOIN',
+  ]);
 
   const { contract: FakeRIF } = await deployContract<ERC677Token>(
     'ERC677Token',
@@ -369,5 +371,56 @@ describe('Domain Renewal', () => {
     await expect(
       FakeRIF.transferAndCall(PartnerRenewer.address, namePrice, renewData)
     ).to.be.revertedWith('Only RIF token');
+  });
+
+  it('Should revert if token transfer approval fails', async () => {
+    const {
+      RIF,
+      FakeRIF,
+      PartnerRenewer,
+      PartnerRegistrar,
+      nameOwner,
+      partner,
+      PartnerManager,
+      PartnerConfiguration,
+      NodeOwner,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    // First Register the name to be renewed
+
+    RIF.transferFrom.returns(true);
+    RIF.approve.returns(true);
+    RIF.transfer.returns(true);
+
+    await PartnerRegistrar.register(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      NodeOwner.address,
+      partner.address
+    );
+
+    // Attempt to renew registered name
+
+    RIF.transferFrom.returns(true);
+    RIF.approve.returns(false);
+
+    await expect(
+      PartnerRenewer.renew(NAME, DURATION, partner.address)
+    ).to.be.revertedWith('Token approval failed');
   });
 });
