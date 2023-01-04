@@ -96,7 +96,10 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
     function _collectFees(address partner, uint256 amount) private {
         require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
 
-        require(_rif.approve(address(_feeManager), amount), "Token approval failed");
+        require(
+            _rif.approve(address(_feeManager), amount),
+            "Token approval failed"
+        );
 
         _feeManager.deposit(partner, amount);
     }
