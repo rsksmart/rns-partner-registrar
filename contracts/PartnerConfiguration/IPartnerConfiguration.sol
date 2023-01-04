@@ -30,28 +30,28 @@ interface IPartnerConfiguration {
 
     /**
      * @notice event emiited when the minimum duration is changed
-     * @param previousValue the old duration 
+     * @param previousValue the old duration
      * @param newValue the new duration
      */
     event MinDurationChanged(uint256 previousValue, uint256 newValue);
 
     /**
      * @notice event emiited when the maximum duration is changed
-     * @param previousValue the old duration 
+     * @param previousValue the old duration
      * @param newValue the new duration
      */
     event MaxDurationChanged(uint256 previousValue, uint256 newValue);
 
     /**
      * @notice event emiited when the fee percentage is changed
-     * @param previousValue the old fee percentage 
+     * @param previousValue the old fee percentage
      * @param newValue the new fee percentage
      */
     event FeePercentageChanged(uint256 previousValue, uint256 newValue);
 
     /**
      * @notice event emiited when the discount is changed
-     * @param previousValue the old discount 
+     * @param previousValue the old discount
      * @param newValue the new discount
      */
     event DiscountChanged(uint256 previousValue, uint256 newValue);
@@ -150,7 +150,7 @@ interface IPartnerConfiguration {
     /**
      * @notice sets the maximum length allowed for a domain name
      * @param maxLength the maximum length allowed for a domain name
-     * @custom:emits-event emits the MaxLengthChanged event on success 
+     * @custom:emits-event emits the MaxLengthChanged event on success
      */
     function setMaxLength(uint256 maxLength) external;
 
