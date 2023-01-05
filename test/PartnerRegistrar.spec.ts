@@ -41,6 +41,7 @@ const initialSetup = async () => {
   const nameOwner = signers[2];
   const pool = signers[3];
   const partnerOwner = signers[4];
+  const attacker = signers[5];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
@@ -115,6 +116,7 @@ const initialSetup = async () => {
     partner,
     nameOwner,
     partnerOwner,
+    attacker,
   };
 };
 
@@ -144,7 +146,9 @@ describe('New Domain Registration', () => {
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      NodeOwner.address
     );
 
     const tx = await PartnerRegistrar.commit(commitment, partner.address);
@@ -328,7 +332,9 @@ describe('New Domain Registration', () => {
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      NodeOwner.address
     );
 
     const tx = await PartnerRegistrar.commit(commitment, partner.address);
@@ -344,6 +350,106 @@ describe('New Domain Registration', () => {
         partner.address
       )
     ).to.be.revertedWith('No commitment found');
+  });
+
+  it('Should ensure registration can not be front run by spoofing the duration other than the original one', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    const SPOOFED_DURATION = DURATION + 1;
+    const commitment = await PartnerRegistrar.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      NodeOwner.address
+    );
+
+    const tx = await PartnerRegistrar.commit(commitment, partner.address);
+    tx.wait();
+    try {
+      await expect(
+        PartnerRegistrar.register(
+          'cheta',
+          nameOwner.address,
+          SECRET,
+          SPOOFED_DURATION,
+          NodeOwner.address,
+          partner.address
+        )
+      ).to.be.revertedWith('No commitment found');
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  });
+
+  it('Should ensure registration can not be front run by spoofing the owner address', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+      attacker,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    const commitment = await PartnerRegistrar.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      NodeOwner.address
+    );
+
+    const tx = await PartnerRegistrar.commit(commitment, partner.address);
+    tx.wait();
+    try {
+      await expect(
+        PartnerRegistrar.connect(attacker).register(
+          'cheta',
+          nameOwner.address,
+          SECRET,
+          DURATION,
+          attacker.address,
+          partner.address
+        )
+      ).to.be.revertedWith('No commitment found');
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   });
 });
 

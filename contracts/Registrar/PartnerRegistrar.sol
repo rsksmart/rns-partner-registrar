@@ -202,9 +202,14 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     function makeCommitment(
         bytes32 label,
         address nameOwner,
-        bytes32 secret
+        bytes32 secret,
+        uint256 duration,
+        address addr
     ) public pure override returns (bytes32) {
-        return keccak256(abi.encodePacked(label, nameOwner, secret));
+        return
+            keccak256(
+                abi.encodePacked(label, nameOwner, secret, duration, addr)
+            );
     }
 
     /**
@@ -250,7 +255,13 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
         bytes32 label = keccak256(abi.encodePacked(name));
 
         if (partnerConfiguration.getMinCommitmentAge() != 0) {
-            bytes32 commitment = makeCommitment(label, nameOwner, secret);
+            bytes32 commitment = makeCommitment(
+                label,
+                nameOwner,
+                secret,
+                duration,
+                addr
+            );
             require(canReveal(commitment), "No commitment found");
             _commitmentRevealTime[commitment] = 0;
         }

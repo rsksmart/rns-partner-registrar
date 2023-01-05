@@ -55,12 +55,16 @@ interface IBaseRegistrar {
         @param label the label of the name
         @param nameOwner the owner of the name
         @param secret used in the commitment step if required
+        @param duration the duration of the registration in years
+        @param addr to be resolved to the name as default
         @return the commitment of the name
     */
     function makeCommitment(
         bytes32 label,
         address nameOwner,
-        bytes32 secret
+        bytes32 secret,
+        uint256 duration,
+        address addr
     ) external pure returns (bytes32);
 
     /**

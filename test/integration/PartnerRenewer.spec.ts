@@ -227,7 +227,9 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (
@@ -287,7 +289,9 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (
@@ -342,7 +346,9 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (

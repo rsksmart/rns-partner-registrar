@@ -182,7 +182,7 @@ const initialSetup = async () => {
   };
 };
 
-describe('New Domain Registration', () => {
+describe('New Domain Registration (Integration)', () => {
   it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
     const {
       RIF,
@@ -299,7 +299,9 @@ describe('New Domain Registration', () => {
     const commitment = await PartnerRegistrar.connect(nameOwner).makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (
@@ -311,13 +313,9 @@ describe('New Domain Registration', () => {
 
     await time.increase(1);
 
-    const canReveal = await partnerProxyAsNameOwner.canReveal(commitment);
-
-    expect(canReveal).to.be.true;
-
-    await time.increase(1);
-
-    const canReveal = await partnerProxyAsNameOwner.canReveal(commitment);
+    const canReveal = await PartnerRegistrar.connect(nameOwner).canReveal(
+      commitment
+    );
 
     expect(canReveal).to.be.true;
 
