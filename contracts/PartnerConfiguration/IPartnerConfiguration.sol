@@ -8,56 +8,56 @@ pragma solidity ^0.8.16;
  */
 interface IPartnerConfiguration {
     /**
-     * @notice event emiited when the minimum length is changed
+     * @notice event emitted when the minimum length is changed
      * @param previousValue the old length
      * @param newValue the new length
      */
     event MinLengthChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice event emiited when the maximum length is changed
+     * @notice event emitted when the maximum length is changed
      * @param previousValue the old length
      * @param newValue the new length
      */
     event MaxLengthChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice event emiited when unicode support status is changed
+     * @notice event emitted when unicode support status is changed
      * @param previousValue the old state of unicode support, a boolean
      * @param newValue the new state of unicode support, a boolean
      */
     event UnicodeSupportChanged(bool previousValue, bool newValue);
 
     /**
-     * @notice event emiited when the minimum duration is changed
+     * @notice event emitted when the minimum duration is changed
      * @param previousValue the old duration
      * @param newValue the new duration
      */
     event MinDurationChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice event emiited when the maximum duration is changed
+     * @notice event emitted when the maximum duration is changed
      * @param previousValue the old duration
      * @param newValue the new duration
      */
     event MaxDurationChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice event emiited when the fee percentage is changed
+     * @notice event emitted when the fee percentage is changed
      * @param previousValue the old fee percentage
      * @param newValue the new fee percentage
      */
     event FeePercentageChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice event emiited when the discount is changed
+     * @notice event emitted when the discount is changed
      * @param previousValue the old discount
      * @param newValue the new discount
      */
     event DiscountChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice event emiited when the minimum commitment age is changed
+     * @notice event emitted when the minimum commitment age is changed
      * @param previousValue the old minimum commitment age
      * @param newValue the new duration minimum commitment age
      */
