@@ -18,6 +18,15 @@ const DEFAULT_DISCOUNT = 4;
 const DEFAULT_IS_UNICODE_SUPPORTED = false;
 const DEFAULT_FEE_PERCENTAGE = 5;
 
+const MIN_DURATION_CHANGED = 'MinDurationChanged';
+const MAX_DURATION_CHANGED = 'MaxDurationChanged';
+const UNICODE_SUPPORT_CHANGED = 'UnicodeSupportChanged';
+const MIN_LENGTH_CHANGED = 'MinLengthChanged';
+const MAX_LENGTH_CHANGED = 'MaxLengthChanged';
+const FEE_PERCENTAGE_CHANGED = 'FeePercentageChanged';
+const DISCOUNT_CHANGED = 'DiscountChanged';
+const MIN_COMMITMENT_AGE_CHANGED = 'MinCommitmentAgeChanged';
+
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
@@ -348,13 +357,13 @@ describe('Partner Configuration', () => {
     it('Should emit the MinDurationChanged event with the correct params', async () => {
       const NEW_MIN_DURATION = DEFAULT_MIN_DURATION + 1;
       await expect(PartnerConfiguration.setMinDuration(NEW_MIN_DURATION))
-        .to.emit(PartnerConfiguration, 'MinDurationChanged')
+        .to.emit(PartnerConfiguration, MIN_DURATION_CHANGED)
         .withArgs(DEFAULT_MIN_DURATION, NEW_MIN_DURATION);
     });
     it('Should emit the MaxDurationChanged event with the correct params', async () => {
       const NEW_MAX_DURATION = DEFAULT_MAX_DURATION + 1;
       await expect(PartnerConfiguration.setMaxDuration(NEW_MAX_DURATION))
-        .to.emit(PartnerConfiguration, 'MaxDurationChanged')
+        .to.emit(PartnerConfiguration, MAX_DURATION_CHANGED)
         .withArgs(DEFAULT_MAX_DURATION, NEW_MAX_DURATION);
     });
 
@@ -363,35 +372,35 @@ describe('Partner Configuration', () => {
       await expect(
         PartnerConfiguration.setUnicodeSupport(NEW_IS_UNICODE_SUPPORTED)
       )
-        .to.emit(PartnerConfiguration, 'UnicodeSupportChanged')
+        .to.emit(PartnerConfiguration, UNICODE_SUPPORT_CHANGED)
         .withArgs(DEFAULT_IS_UNICODE_SUPPORTED, NEW_IS_UNICODE_SUPPORTED);
     });
 
     it('Should emit the MinLengthChanged event with the correct params', async () => {
       const NEW_MIN_LENGTH = DEFAULT_MIN_LENGTH + 1;
       await expect(PartnerConfiguration.setMinLength(NEW_MIN_LENGTH))
-        .to.emit(PartnerConfiguration, 'MinLengthChanged')
+        .to.emit(PartnerConfiguration, MIN_LENGTH_CHANGED)
         .withArgs(DEFAULT_MIN_LENGTH, NEW_MIN_LENGTH);
     });
 
     it('Should emit the MaxLengthChanged event with the correct params', async () => {
       const NEW_MAX_LENGTH = DEFAULT_MAX_LENGTH + 1;
       await expect(PartnerConfiguration.setMaxLength(NEW_MAX_LENGTH))
-        .to.emit(PartnerConfiguration, 'MaxLengthChanged')
+        .to.emit(PartnerConfiguration, MAX_LENGTH_CHANGED)
         .withArgs(DEFAULT_MAX_LENGTH, NEW_MAX_LENGTH);
     });
 
     it('Should emit the FeePercentageChanged event with the correct params', async () => {
       const NEW_FEE_PERCENTAGE = DEFAULT_FEE_PERCENTAGE + 1;
       await expect(PartnerConfiguration.setFeePercentage(NEW_FEE_PERCENTAGE))
-        .to.emit(PartnerConfiguration, 'FeePercentageChanged')
+        .to.emit(PartnerConfiguration, FEE_PERCENTAGE_CHANGED)
         .withArgs(DEFAULT_FEE_PERCENTAGE, NEW_FEE_PERCENTAGE);
     });
 
     it('Should emit the DiscountChanged event with the correct params', async () => {
       const NEW_DISCOUNT = DEFAULT_DISCOUNT + 1;
       await expect(PartnerConfiguration.setDiscount(NEW_DISCOUNT))
-        .to.emit(PartnerConfiguration, 'DiscountChanged')
+        .to.emit(PartnerConfiguration, DISCOUNT_CHANGED)
         .withArgs(DEFAULT_DISCOUNT, NEW_DISCOUNT);
     });
 
@@ -400,7 +409,7 @@ describe('Partner Configuration', () => {
       await expect(
         PartnerConfiguration.setMinCommitmentAge(NEW_MIN_COMMITMENT_AGE)
       )
-        .to.emit(PartnerConfiguration, 'MinCommitmentAgeChanged')
+        .to.emit(PartnerConfiguration, MIN_COMMITMENT_AGE_CHANGED)
         .withArgs(DEFAULT_MIN_COMMITMENT_AGE, NEW_MIN_COMMITMENT_AGE);
     });
   });
