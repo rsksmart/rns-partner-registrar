@@ -184,7 +184,7 @@ const initialSetup = async () => {
   };
 };
 
-describe('New Domain Registration', () => {
+describe('New Domain Registration (Integration)', () => {
   it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
     const {
       RIF,
@@ -337,7 +337,9 @@ describe('New Domain Registration', () => {
     const commitment = await PartnerRegistrar.connect(nameOwner).makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (
