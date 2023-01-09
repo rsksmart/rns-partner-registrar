@@ -53,6 +53,20 @@ contract PartnerManager is IPartnerManager, Ownable {
         address partner,
         IPartnerConfiguration partnerConfiguration
     ) external override onlyOwner {
+        if (
+            address(_partnerConfigurations[partner]) ==
+            address(partnerConfiguration)
+        ) {
+            revert(
+                "PartnerManager: update param is same as param to be updated"
+            );
+        }
+
+        emit PartnerConfigurationChanged(
+            partner,
+            address(partnerConfiguration)
+        );
+
         require(
             partnerConfiguration != IPartnerConfiguration(address(0)),
             "PartnerManager: Invalid configuration"

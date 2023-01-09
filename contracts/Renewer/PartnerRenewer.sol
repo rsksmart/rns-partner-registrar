@@ -45,6 +45,13 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
     }
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
+        if (address(_feeManager) == address(feeManager)) {
+            revert(
+                "PartnerRenewer: update param is same as param to be updated"
+            );
+        }
+        emit FeeManagerChanged(address(this), address(feeManager));
+
         _feeManager = feeManager;
     }
 
@@ -110,6 +117,7 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
     /// @param name The name to register.
     /// @param duration Time to register in years.
     /// @param partner Partner address
+    /// @custom:emits-event emits the NameRenewed event
     function renew(
         string calldata name,
         uint256 duration,

@@ -24,6 +24,7 @@ import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
+import { duration } from '@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta';
@@ -34,6 +35,9 @@ const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = ethers.utils.id('rsk');
 
+const NAME_RENEWED_EVENT = 'NameRenewed';
+const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
+
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
@@ -41,6 +45,8 @@ const initialSetup = async () => {
   const partnerOwnerAccount = signers[2];
   const nameOwner = signers[3];
   const pool = signers[4];
+  const alternateFeeManager = signers[5];
+  const alternatePartnerManager = signers[7];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -97,6 +103,18 @@ const initialSetup = async () => {
   );
 
   const { contract: PartnerConfiguration } =
+    await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+      minLength: 5,
+      maxLength: 20,
+      isUnicodeSupported: false,
+      minDuration: 1,
+      maxDuration: 5,
+      feePercentage: FEE_PERCENTAGE,
+      discount: 0,
+      minCommitmentAge: 1,
+    });
+
+  const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
       minLength: 5,
       maxLength: 20,
@@ -185,6 +203,9 @@ const initialSetup = async () => {
     PartnerRenewer,
     pool,
     partnerOwnerAccount,
+    alternateFeeManager,
+    alternatePartnerConfiguration,
+    alternatePartnerManager,
   };
 };
 
@@ -384,6 +405,7 @@ describe('Domain Renewal', () => {
       PartnerManager,
       PartnerConfiguration,
       NodeOwner,
+      alternatePartnerConfiguration,
     } = await loadFixture(initialSetup);
 
     await (
@@ -393,11 +415,11 @@ describe('Domain Renewal', () => {
     await (
       await PartnerManager.setPartnerConfiguration(
         partner.address,
-        PartnerConfiguration.address
+        alternatePartnerConfiguration.address
       )
     ).wait();
 
-    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+    (await alternatePartnerConfiguration.setMinCommitmentAge(0)).wait();
 
     // First Register the name to be renewed
 
@@ -422,5 +444,79 @@ describe('Domain Renewal', () => {
     await expect(
       PartnerRenewer.renew(NAME, DURATION, partner.address)
     ).to.be.revertedWith('Token approval failed');
+  });
+
+  it('Should revert is the fee manager to be set is same as existing', async () => {
+    const { FeeManager, PartnerRenewer } = await loadFixture(initialSetup);
+
+    await expect(
+      PartnerRenewer.setFeeManager(FeeManager.address)
+    ).to.be.revertedWith(
+      'PartnerRenewer: update param is same as param to be updated'
+    );
+  });
+});
+
+describe('Renewal events', () => {
+  it('Should emit the NameRenewed event on successful domain renewal', async () => {
+    const {
+      RIF,
+      PartnerRenewer,
+      PartnerRegistrar,
+      nameOwner,
+      partner,
+      PartnerManager,
+      PartnerConfiguration,
+      NodeOwner,
+      alternatePartnerConfiguration,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        alternatePartnerConfiguration.address
+      )
+    ).wait();
+
+    (await alternatePartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    // First Register the name to be renewed
+
+    RIF.transferFrom.returns(true);
+    RIF.approve.returns(true);
+    RIF.transfer.returns(true);
+
+    await PartnerRegistrar.connect(partner).register(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      NodeOwner.address,
+      partner.address
+    );
+
+    // Attempt to renew registered name
+
+    RIF.transferFrom.returns(true);
+    RIF.approve.returns(true);
+
+    await expect(
+      PartnerRenewer.connect(partner).renew(NAME, DURATION, partner.address)
+    )
+      .to.emit(PartnerRenewer, NAME_RENEWED_EVENT)
+      .withArgs(partner.address, duration.years);
+  });
+
+  it('Should emit the FeeManagerSet event on successful setting of the fee manager contract', async () => {
+    const { FeeManager, PartnerRenewer, alternateFeeManager } =
+      await loadFixture(initialSetup);
+
+    await expect(PartnerRenewer.setFeeManager(alternateFeeManager.address))
+      .to.emit(PartnerRenewer, FEE_MANAGER_CHANGED_EVENT)
+      .withArgs(PartnerRenewer.address, alternateFeeManager.address);
   });
 });

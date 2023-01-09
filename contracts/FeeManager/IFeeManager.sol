@@ -7,7 +7,22 @@ pragma solidity ^0.8.16;
  */
 interface IFeeManager {
     /**
+     * @notice event emitted on successful withdrawal
+     * @param amount of tokens withdrawn
+     * @param to address tokens were deposited to
+     */
+    event WithdrawalSuccessful(uint256 amount, address to);
+
+    /**
+     * @notice event emitted on successful deposit
+     * @param amount of tokens deposited
+     * @param from address tokens were deposited from
+     */
+    event DepositSuccessful(uint256 amount, address from);
+
+    /**
      * @notice allows the partner to withdraw the balance of their revenue
+     * @custom:emits-event emits the WithdrawalSuccessful event
      */
     function withdraw() external;
 
@@ -15,6 +30,7 @@ interface IFeeManager {
      * @notice allows the registrar and renewer to deposit the partners revenue share
      * @param partner of the partners proxy that triggered the deposit
      * @param amount of tokens from the sale
+     * @custom:emits-event emits the DepositSuccessful event
      */
     function deposit(address partner, uint256 amount) external;
 
