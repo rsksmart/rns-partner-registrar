@@ -80,6 +80,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setMinLength(uint256 minLength) external override onlyOwner {
         uint256 preModifiedValue = _minLength;
 
+        emit MinLengthChanged(preModifiedValue, _minLength);
+
         if (preModifiedValue == minLength) {
             revert(
                 "PartnerConfiguration: Param being modified is same as new param"
@@ -98,8 +100,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _minLength = minLength;
-
-        emit MinLengthChanged(preModifiedValue, _minLength);
     }
 
     /**
@@ -115,6 +115,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setMaxLength(uint256 maxLength) external override onlyOwner {
         uint256 preModifiedValue = _maxLength;
 
+        emit MaxLengthChanged(preModifiedValue, _maxLength);
+
         if (preModifiedValue == maxLength) {
             revert(
                 "PartnerConfiguration: Param being modified is same as new param"
@@ -129,8 +131,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _maxLength = maxLength;
-
-        emit MaxLengthChanged(preModifiedValue, _maxLength);
     }
 
     /**
@@ -146,6 +146,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setUnicodeSupport(bool flag) external override onlyOwner {
         bool preModifiedValue = _isUnicodeSupported;
 
+        emit UnicodeSupportChanged(preModifiedValue, _isUnicodeSupported);
+
         if (preModifiedValue == flag) {
             revert(
                 "PartnerConfiguration: Param being modified is same as new param"
@@ -153,8 +155,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _isUnicodeSupported = flag;
-
-        emit UnicodeSupportChanged(preModifiedValue, _isUnicodeSupported);
     }
 
     /**
@@ -169,6 +169,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
      */
     function setMinDuration(uint256 minDuration) external override onlyOwner {
         uint256 preModifiedValue = _minDuration;
+
+        emit MinDurationChanged(preModifiedValue, _minDuration);
 
         if (preModifiedValue == minDuration) {
             revert(
@@ -188,8 +190,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _minDuration = minDuration;
-
-        emit MinDurationChanged(preModifiedValue, _minDuration);
     }
 
     /**
@@ -205,6 +205,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setMaxDuration(uint256 maxDuration) external override onlyOwner {
         uint256 preModifiedValue = _maxDuration;
 
+        emit MaxDurationChanged(preModifiedValue, _maxDuration);
+
         if (preModifiedValue == maxDuration) {
             revert(
                 "PartnerConfiguration: Param being modified is same as new param"
@@ -219,8 +221,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _maxDuration = maxDuration;
-
-        emit MaxDurationChanged(preModifiedValue, _maxDuration);
     }
 
     /**
@@ -238,6 +238,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     ) external override onlyOwner {
         uint256 preModifiedValue = _feePercentage;
 
+        emit FeePercentageChanged(preModifiedValue, _feePercentage);
+
         if (preModifiedValue == feePercentage) {
             revert(
                 "PartnerConfiguration: Param being modified is same as new param"
@@ -245,8 +247,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _feePercentage = feePercentage;
-
-        emit FeePercentageChanged(preModifiedValue, _feePercentage);
     }
 
     /**
@@ -262,6 +262,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setDiscount(uint256 discount) external override onlyOwner {
         uint256 preModifiedValue = _discount;
 
+        emit DiscountChanged(preModifiedValue, _discount);
+
         if (preModifiedValue == discount) {
             revert(
                 "PartnerConfiguration: Param being modified is same as new param"
@@ -269,8 +271,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _discount = discount;
-
-        emit DiscountChanged(preModifiedValue, _discount);
     }
 
     function getMinCommitmentAge() external view override returns (uint256) {
@@ -285,6 +285,8 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     ) external override onlyOwner {
         uint256 preModifiedValue = _minCommitmentAge;
 
+        emit MinCommitmentAgeChanged(preModifiedValue, _minCommitmentAge);
+
         if (preModifiedValue == minCommitmentAge) {
             revert(
                 "PartnerConfiguration: Param being modified is same as new param"
@@ -292,8 +294,6 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         }
 
         _minCommitmentAge = minCommitmentAge;
-
-        emit MinCommitmentAgeChanged(preModifiedValue, _minCommitmentAge);
     }
 
     /**
