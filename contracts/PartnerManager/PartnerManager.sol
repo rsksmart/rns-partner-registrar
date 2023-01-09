@@ -60,6 +60,8 @@ contract PartnerManager is IPartnerManager, Ownable {
         require(isPartner(partner), "PartnerManager: not a partner");
 
         _partnerConfigurations[partner] = partnerConfiguration;
+
+        emit PartnerConfigurationSet(partner, address(partnerConfiguration));
     }
 
     /**

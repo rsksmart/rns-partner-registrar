@@ -4,6 +4,8 @@ import { expect } from '../chairc';
 import { PartnerManager__factory } from '../typechain-types/factories/contracts/partnerManager/PartnerManager__factory';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
 
+const PARTNER_CONFIGURATION_SET_EVENT = 'PartnerConfigurationSet';
+
 async function testSetup() {
   const [
     owner,
@@ -164,7 +166,7 @@ describe('partnerManager', () => {
   });
 
   describe('Set Partner Configuration', () => {
-    it('should set partner configuration', async () => {
+    it('should successfully set partner configuration', async () => {
       const {
         partnerManager,
         account1: partner,
@@ -178,18 +180,41 @@ describe('partnerManager', () => {
             partner.address,
             partnerOwnerAccount.address
           )
-        ).to.not.be.reverted;
+        ).to.eventually.be.fulfilled;
 
         await expect(
           partnerManager.setPartnerConfiguration(
             partner.address,
             account3.address
           )
-        ).to.not.be.reverted;
+        ).to.eventually.be.fulfilled;
       } catch (e) {
         console.log(e);
         throw e;
       }
+    });
+
+    it('Should emit the PartnerConfigurationSet event when partner configuration is set', async () => {
+      const {
+        partnerManager,
+        account1: partner,
+        account3,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
+
+      await partnerManager.addPartner(
+        partner.address,
+        partnerOwnerAccount.address
+      );
+
+      await expect(
+        partnerManager.setPartnerConfiguration(
+          partner.address,
+          account3.address
+        )
+      )
+        .to.emit(partnerManager, PARTNER_CONFIGURATION_SET_EVENT)
+        .withArgs(partner.address, account3.address);
     });
 
     it('should revert if not partner address', async () => {
