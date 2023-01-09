@@ -65,6 +65,8 @@ contract FeeManager is IFeeManager, Ownable {
         if (!_rif.transfer(msg.sender, amount)) {
             revert TransferFailed(address(this), msg.sender, amount);
         }
+
+        emit WithdrawalSuccessful(amount, msg.sender);
     }
 
     /**
@@ -88,6 +90,8 @@ contract FeeManager is IFeeManager, Ownable {
         if (!_rif.transfer(_pool, balance)) {
             revert TransferFailed(address(this), _pool, balance);
         }
+
+        emit DepositSuccessful(cost, partner);
     }
 
     function _getPartnerConfiguration(

@@ -15,7 +15,9 @@ import { FeeManager__factory, RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
 import { FakeContract, MockContract } from '@defi-wonderland/smock';
-import { Signer } from 'ethers';
+
+const DEPOSIT_SUCCESSFUL_EVENT = 'DepositSuccessful';
+const WITHDRAWAL_SUCCESSFUL_EVENT = 'WithdrawalSuccessful';
 
 async function testSetup() {
   const [
@@ -300,6 +302,92 @@ describe('Fee Manager', () => {
         console.log(error);
         throw error;
       }
+    });
+  });
+
+  describe('Fee Manager Events', () => {
+    it('Should emit the DepositSuccessful on successful deposit', async () => {
+      try {
+        const {
+          feeManager,
+          registrar,
+          account3: partner,
+          PartnerManager,
+          PartnerConfiguration,
+          RIF,
+          pool,
+          oneRBTC,
+          partnerOwnerAccount,
+        } = await loadFixture(testSetup);
+
+        const depositAmount = ethers.BigNumber.from(10);
+        const feePercentage = ethers.BigNumber.from(10);
+
+        RIF.transferFrom.returns(true);
+        RIF.transfer.returns(true);
+        PartnerConfiguration.getFeePercentage.returns(feePercentage);
+        PartnerManager.getPartnerConfiguration.returns(
+          PartnerConfiguration.address
+        );
+
+        PartnerManager.getPartnerOwnerAccount.returns(
+          partnerOwnerAccount.address
+        );
+
+        await expect(
+          feeManager.connect(registrar).deposit(partner.address, depositAmount)
+        )
+          .to.emit(feeManager, DEPOSIT_SUCCESSFUL_EVENT)
+          .withArgs(depositAmount, partner.address);
+
+        // const partnerFee = depositAmount
+        //   .mul(feePercentage)
+        //   .div(oneRBTC.mul(100));
+        // expect(
+        //   +(await feeManager.getBalance(partnerOwnerAccount.address))
+        // ).to.be.equal(+partnerFee);
+
+        // expect(RIF.transfer).to.have.been.calledOnceWith(
+        //   pool.address,
+        //   depositAmount.sub(partnerFee)
+        // );
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    });
+
+    it('Should emit the WithdrawalSuccessful event on successful withdraw', async () => {
+      const {
+        feeManager,
+        registrar,
+        account3,
+        RIF,
+        PartnerConfiguration,
+        PartnerManager,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
+
+      const depositAmount = oneRBTC.mul(5);
+      const feePercentage = oneRBTC.mul(5);
+
+      RIF.transferFrom.returns(true);
+      RIF.transfer.returns(true);
+      PartnerConfiguration.getFeePercentage.returns(feePercentage);
+      PartnerManager.getPartnerConfiguration.returns(
+        PartnerConfiguration.address
+      );
+      PartnerManager.getPartnerOwnerAccount.returns(account3.address);
+
+      await feeManager
+        .connect(registrar)
+        .deposit(account3.address, depositAmount);
+
+      const partnerBalance = await feeManager.getBalance(account3.address);
+
+      await expect(feeManager.connect(account3).withdraw())
+        .to.emit(feeManager, WITHDRAWAL_SUCCESSFUL_EVENT)
+        .withArgs(partnerBalance, account3.address);
     });
   });
 });
