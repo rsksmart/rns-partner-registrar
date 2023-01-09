@@ -9,11 +9,24 @@ import "../FeeManager/IFeeManager.sol";
     @dev Defines the interface for a compatible Registrar
 */
 interface IBaseRegistrar {
+    /**
+     * @notice event emitted when a domain has been successfully registered
+     * @param partner through which the domain was registered (an address)
+     * @param duration the duration of the registration in years
+     */
     event NameRegistered(address indexed partner, uint256 duration);
+
+    /**
+     * @notice event emitted when a fee manager contract is set
+     * @param hostContract contract on which the fee manager is set
+     * @param feeManagerContract the address of the fee manager being set
+     */
+    event FeeManagerSet(address hostContract, address feeManagerContract);
 
     /**
         @notice sets the fee manager to use
         @param feeManager the fee manager to use
+        @custom:emits-event emits the FeeManagerSet event
     */
     function setFeeManager(IFeeManager feeManager) external;
 
@@ -25,6 +38,7 @@ interface IBaseRegistrar {
         @param duration the duration of the registration in years
         @param addr to be resolved to the name as default
         @param partner Partner address
+        @custom:emits-event emits the NameRegistered event
     */
     function register(
         string calldata name,

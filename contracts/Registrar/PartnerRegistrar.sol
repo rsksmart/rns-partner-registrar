@@ -58,6 +58,8 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
         _feeManager = feeManager;
+
+        emit FeeManagerSet(address(this), address(_feeManager));
     }
 
     // - Via ERC-677
@@ -157,6 +159,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     /// @param duration Time to register in years.
     /// @param addr Address to set as addr resolution.
     /// @param partner Partner address
+    /// @custom:emits-event emits the NameRegistered event
     function register(
         string calldata name,
         address nameOwner,

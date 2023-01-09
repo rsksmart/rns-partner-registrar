@@ -18,6 +18,8 @@ import { expect } from 'chai';
 import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
+import { duration } from '@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time';
+import { BigNumber } from 'ethers';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 
@@ -33,6 +35,9 @@ const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
 const MAX_DURATION = 2;
 const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
+
+const NAME_REGISTERED_EVENT = 'NameRegistered';
+const FEE_MANAGER_SET_EVENT = 'FeeManagerSet';
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -381,5 +386,53 @@ describe('Registrar Checks', () => {
 
       throw error;
     }
+  });
+});
+
+describe('Registrar events', () => {
+  it('Should emit the NameRegistered event on successful domain registration', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    await expect(
+      PartnerRegistrar.connect(partnerOwner).register(
+        'cheta',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address,
+        partner.address
+      )
+    )
+      .to.emit(PartnerRegistrar, NAME_REGISTERED_EVENT)
+      .withArgs(partnerOwner.address, duration.years);
+  });
+
+  it('Should emit the FeeManagerSet event on successful setting of the fee manager contract', async () => {
+    const { FeeManager, PartnerRegistrar } = await loadFixture(initialSetup);
+
+    await expect(PartnerRegistrar.setFeeManager(FeeManager.address))
+      .to.emit(PartnerRegistrar, FEE_MANAGER_SET_EVENT)
+      .withArgs(PartnerRegistrar.address, FeeManager.address);
   });
 });
