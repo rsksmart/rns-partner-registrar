@@ -18,5 +18,17 @@ interface IBaseRenewer {
         address partner
     ) external;
 
+    /**
+     * @notice event emitted when a domain has been successfully renewed
+     * @param partner through which the domain was renewed (an address)
+     * @param duration the duration of the renewal in years
+     */
     event NameRenewed(address indexed partner, uint256 duration);
+
+    /**
+     * @notice event emitted when a fee manager contract is set
+     * @param hostContract contract on which the fee manager is set
+     * @param feeManagerContract the address of the fee manager being set
+     */
+    event FeeManagerSet(address hostContract, address feeManagerContract);
 }

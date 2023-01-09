@@ -46,6 +46,8 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
         _feeManager = feeManager;
+
+        emit FeeManagerSet(address(this), address(_feeManager));
     }
 
     /// @notice ERC-677 token fallback function.
@@ -110,6 +112,7 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
     /// @param name The name to register.
     /// @param duration Time to register in years.
     /// @param partner Partner address
+    /// @custom:emits-event emits the NameRenewed event
     function renew(
         string calldata name,
         uint256 duration,
