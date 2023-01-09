@@ -413,4 +413,69 @@ describe('Partner Configuration', () => {
         .withArgs(DEFAULT_MIN_COMMITMENT_AGE, NEW_MIN_COMMITMENT_AGE);
     });
   });
+
+  context('Config checks', () => {
+    it('Should emit the MinDurationChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMinDuration(DEFAULT_MIN_DURATION)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+    it('Should emit the MaxDurationChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMaxDuration(DEFAULT_MAX_DURATION)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+
+    it('Should emit the UnicodeSupportChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setUnicodeSupport(DEFAULT_IS_UNICODE_SUPPORTED)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+
+    it('Should emit the MinLengthChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMinLength(DEFAULT_MIN_LENGTH)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+
+    it('Should emit the MaxLengthChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMaxLength(DEFAULT_MAX_LENGTH)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+
+    it('Should emit the FeePercentageChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setFeePercentage(DEFAULT_FEE_PERCENTAGE)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+
+    it('Should emit the DiscountChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setDiscount(DEFAULT_DISCOUNT)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+
+    it('Should emit the MinCommitmentAgeChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMinCommitmentAge(DEFAULT_MIN_COMMITMENT_AGE)
+      ).to.be.revertedWith(
+        'PartnerConfiguration: Param being modified is same as new param'
+      );
+    });
+  });
 });
