@@ -14,7 +14,7 @@ interface IPartnerManager {
      * @param partner address for the partner
      * @param configurationContract address of the configuration contract
      */
-    event PartnerConfigurationSet(
+    event PartnerConfigurationChanged(
         address partner,
         address configurationContract
     );

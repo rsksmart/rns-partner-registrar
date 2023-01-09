@@ -37,7 +37,7 @@ const MAX_DURATION = 2;
 const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
 
 const NAME_REGISTERED_EVENT = 'NameRegistered';
-const FEE_MANAGER_SET_EVENT = 'FeeManagerSet';
+const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -46,6 +46,7 @@ const initialSetup = async () => {
   const nameOwner = signers[2];
   const pool = signers[3];
   const partnerOwner = signers[4];
+  const alternateFeeManager = signers[5];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
@@ -120,6 +121,7 @@ const initialSetup = async () => {
     partner,
     nameOwner,
     partnerOwner,
+    alternateFeeManager,
   };
 };
 
@@ -387,8 +389,17 @@ describe('Registrar Checks', () => {
       throw error;
     }
   });
-});
 
+  it('Should revert is the fee manager to be set is same as existing', async () => {
+    const { FeeManager, PartnerRegistrar } = await loadFixture(initialSetup);
+
+    await expect(
+      PartnerRegistrar.setFeeManager(FeeManager.address)
+    ).to.be.revertedWith(
+      'PartnerRegistrar: update param is same as param to be updated'
+    );
+  });
+});
 describe('Registrar events', () => {
   it('Should emit the NameRegistered event on successful domain registration', async () => {
     const {
@@ -429,10 +440,11 @@ describe('Registrar events', () => {
   });
 
   it('Should emit the FeeManagerSet event on successful setting of the fee manager contract', async () => {
-    const { FeeManager, PartnerRegistrar } = await loadFixture(initialSetup);
+    const { FeeManager, PartnerRegistrar, alternateFeeManager } =
+      await loadFixture(initialSetup);
 
-    await expect(PartnerRegistrar.setFeeManager(FeeManager.address))
-      .to.emit(PartnerRegistrar, FEE_MANAGER_SET_EVENT)
-      .withArgs(PartnerRegistrar.address, FeeManager.address);
+    await expect(PartnerRegistrar.setFeeManager(alternateFeeManager.address))
+      .to.emit(PartnerRegistrar, FEE_MANAGER_CHANGED_EVENT)
+      .withArgs(PartnerRegistrar.address, alternateFeeManager.address);
   });
 });

@@ -4,7 +4,7 @@ import { expect } from '../chairc';
 import { PartnerManager__factory } from '../typechain-types/factories/contracts/partnerManager/PartnerManager__factory';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
 
-const PARTNER_CONFIGURATION_SET_EVENT = 'PartnerConfigurationSet';
+const PARTNER_CONFIGURATION_SET_EVENT = 'PartnerConfigurationChanged';
 
 async function testSetup() {
   const [
@@ -172,6 +172,7 @@ describe('partnerManager', () => {
         account1: partner,
         account3,
         partnerOwnerAccount,
+        accounts,
       } = await loadFixture(testSetup);
 
       try {
@@ -185,7 +186,7 @@ describe('partnerManager', () => {
         await expect(
           partnerManager.setPartnerConfiguration(
             partner.address,
-            account3.address
+            accounts[4].address
           )
         ).to.eventually.be.fulfilled;
       } catch (e) {
@@ -215,6 +216,35 @@ describe('partnerManager', () => {
       )
         .to.emit(partnerManager, PARTNER_CONFIGURATION_SET_EVENT)
         .withArgs(partner.address, account3.address);
+    });
+
+    it('Should revert is the partner configuration to be set is same as existing', async () => {
+      const {
+        partnerManager,
+        account1: partner,
+        account3,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
+
+      await partnerManager.addPartner(
+        partner.address,
+        partnerOwnerAccount.address
+      );
+
+      await partnerManager.setPartnerConfiguration(
+        partner.address,
+        account3.address
+      );
+
+      // attempt to change partner configuration
+      await expect(
+        partnerManager.setPartnerConfiguration(
+          partner.address,
+          account3.address
+        )
+      ).to.be.revertedWith(
+        'PartnerManager: update param is same as param to be updated'
+      );
     });
 
     it('should revert if not partner address', async () => {

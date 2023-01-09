@@ -45,9 +45,14 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
     }
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
-        _feeManager = feeManager;
+        if (address(_feeManager) == address(feeManager)) {
+            revert(
+                "PartnerRenewer: update param is same as param to be updated"
+            );
+        }
+        emit FeeManagerChanged(address(this), address(feeManager));
 
-        emit FeeManagerSet(address(this), address(_feeManager));
+        _feeManager = feeManager;
     }
 
     /// @notice ERC-677 token fallback function.

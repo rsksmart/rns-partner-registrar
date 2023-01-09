@@ -57,9 +57,15 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     }
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
-        _feeManager = feeManager;
+        if (address(_feeManager) == address(feeManager)) {
+            revert(
+                "PartnerRegistrar: update param is same as param to be updated"
+            );
+        }
 
-        emit FeeManagerSet(address(this), address(_feeManager));
+        emit FeeManagerChanged(address(this), address(feeManager));
+
+        _feeManager = feeManager;
     }
 
     // - Via ERC-677

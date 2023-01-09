@@ -30,5 +30,5 @@ interface IBaseRenewer {
      * @param hostContract contract on which the fee manager is set
      * @param feeManagerContract the address of the fee manager being set
      */
-    event FeeManagerSet(address hostContract, address feeManagerContract);
+    event FeeManagerChanged(address hostContract, address feeManagerContract);
 }

@@ -22,6 +22,7 @@ import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
+import { feeManager } from 'typechain-types/contracts';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta👀aa';
@@ -95,6 +96,18 @@ const initialSetup = async () => {
   );
 
   const { contract: PartnerConfiguration } =
+    await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+      minLength: 5,
+      maxLength: 20,
+      isUnicodeSupported: false,
+      minDuration: 1,
+      maxDuration: 5,
+      feePercentage: FEE_PERCENTAGE,
+      discount: 0,
+      minCommitmentAge: 0,
+    });
+
+  const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
       minLength: 5,
       maxLength: 20,
@@ -181,6 +194,7 @@ const initialSetup = async () => {
     signers,
     pool,
     partner,
+    alternatePartnerConfiguration,
   };
 };
 
@@ -286,6 +300,7 @@ describe('New Domain Registration', () => {
       PartnerManager,
       PartnerConfiguration,
       NodeOwner,
+      alternatePartnerConfiguration,
     } = await loadFixture(initialSetup);
     await (
       await PartnerManager.addPartner(partner.address, partner.address)
@@ -294,7 +309,7 @@ describe('New Domain Registration', () => {
     await (
       await PartnerManager.setPartnerConfiguration(
         partner.address,
-        PartnerConfiguration.address
+        alternatePartnerConfiguration.address
       )
     ).wait();
 
