@@ -1,5 +1,8 @@
 import { initialSetup } from './utils/initialSetup';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
+import { DURATION, FEE_PERCENTAGE, LABEL, NAME, SECRET } from './utils/constants';
+import { calculatePercentageWPrecision, getAddrRegisterData } from 'test/utils/mock.utils';
+import { expect } from 'chai';
 
 describe('New Domain Registration (Integration)', () => {
   it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {

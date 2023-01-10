@@ -1,26 +1,24 @@
 import { ethers } from 'hardhat';
-import { deployContract, Factory } from '../../utils/deployment.utils';
-import { deployContract as deployContractAsMock } from '../utils/mock.utils';
+import { deployContract, Factory } from '../../../utils/deployment.utils';
+import { deployContract as deployContractAsMock } from '../../utils/mock.utils';
 import {
-  calculatePercentageWPrecision,
-  getAddrRegisterData,
-  oneRBTC,
-} from '../utils/mock.utils';
+  oneRBTC
+} from '../../utils/mock.utils';
 import { NodeOwner } from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
 import { ERC677Token__factory } from 'typechain-types';
-import { expect } from 'chai';
 import { IFeeManager } from 'typechain-types';
-import NodeOwnerAbi from '../external-abis/NodeOwner.json';
-import RNSAbi from '../external-abis/RNS.json';
-import ResolverAbi from '../external-abis/ResolverV1.json';
+import NodeOwnerAbi from '../../external-abis/NodeOwner.json';
+import RNSAbi from '../../external-abis/RNS.json';
+import ResolverAbi from '../../external-abis/ResolverV1.json';
 import { ERC677Token } from 'typechain-types';
 import { PartnerConfiguration } from 'typechain-types';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
-import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
+import { FEE_PERCENTAGE, rootNodeId, tldAsSha3, tldNode } from './constants';
+
 
 export const initialSetup = async () => {
   const signers = await ethers.getSigners();
