@@ -4,6 +4,7 @@ coverage
 coverage.json
 typechain-types
 contracts-exposed
+.vscode
 
 #Hardhat files
 cache
