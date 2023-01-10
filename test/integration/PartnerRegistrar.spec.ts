@@ -1,8 +1,18 @@
 import { initialSetup } from './utils/initialSetup';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
-import { DURATION, FEE_PERCENTAGE, LABEL, NAME, SECRET } from './utils/constants';
-import { calculatePercentageWPrecision, getAddrRegisterData } from 'test/utils/mock.utils';
+import {
+  OneYearDuration,
+  FEE_PERCENTAGE,
+  LABEL,
+  NAME,
+  SECRET,
+} from './utils/constants';
+import {
+  calculatePercentageWPrecision,
+  getAddrRegisterData,
+} from 'test/utils/mock.utils';
 import { expect } from 'chai';
+import { namehash } from 'ethers/lib/utils';
 
 describe('New Domain Registration (Integration)', () => {
   it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
@@ -19,7 +29,7 @@ describe('New Domain Registration (Integration)', () => {
     const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION,
+      OneYearDuration,
       partner.address
     );
 
@@ -27,7 +37,7 @@ describe('New Domain Registration (Integration)', () => {
       NAME,
       nameOwner.address,
       SECRET,
-      DURATION,
+      OneYearDuration,
       nameOwner.address,
       partner.address
     );
@@ -75,7 +85,7 @@ describe('New Domain Registration (Integration)', () => {
     const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION,
+      OneYearDuration,
       partner.address
     );
 
@@ -83,7 +93,7 @@ describe('New Domain Registration (Integration)', () => {
       NAME,
       nameOwner.address,
       SECRET,
-      DURATION,
+      OneYearDuration,
       nameOwner.address,
       partner.address
     );
@@ -126,7 +136,7 @@ describe('New Domain Registration (Integration)', () => {
         'cheta',
         nameOwner.address,
         SECRET,
-        DURATION,
+        OneYearDuration,
         NodeOwner.address,
         partner.address
       )
@@ -147,7 +157,7 @@ describe('New Domain Registration (Integration)', () => {
     const namePrice = await PartnerRegistrar.price(
       NAME,
       0,
-      DURATION,
+      OneYearDuration,
       partner.address
     );
 
@@ -158,7 +168,7 @@ describe('New Domain Registration (Integration)', () => {
       LABEL,
       nameOwner.address,
       SECRET,
-      DURATION,
+      OneYearDuration,
       nameOwner.address
     );
 
@@ -181,7 +191,7 @@ describe('New Domain Registration (Integration)', () => {
       NAME,
       nameOwner.address,
       SECRET,
-      DURATION,
+      OneYearDuration,
       nameOwner.address,
       partner.address
     );

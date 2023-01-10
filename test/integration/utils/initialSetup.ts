@@ -1,9 +1,7 @@
 import { ethers } from 'hardhat';
 import { deployContract, Factory } from '../../../utils/deployment.utils';
 import { deployContract as deployContractAsMock } from '../../utils/mock.utils';
-import {
-  oneRBTC
-} from '../../utils/mock.utils';
+import { oneRBTC } from '../../utils/mock.utils';
 import { NodeOwner } from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
@@ -19,7 +17,6 @@ import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 import { FEE_PERCENTAGE, rootNodeId, tldAsSha3, tldNode } from './constants';
 
-
 export const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
@@ -27,6 +24,7 @@ export const initialSetup = async () => {
   const partnerOwnerAccount = signers[2];
   const nameOwner = signers[3];
   const pool = signers[4];
+  const regularUser = signers[5];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -169,5 +167,6 @@ export const initialSetup = async () => {
     signers,
     pool,
     partner,
+    regularUser,
   };
 };
