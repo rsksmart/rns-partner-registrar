@@ -8,24 +8,25 @@ import {
 import { deployContract, oneRBTC } from './utils/mock.utils';
 import { MockContract } from '@defi-wonderland/smock';
 import { BigNumber } from 'ethers';
-
-const DEFAULT_MIN_LENGTH = 3;
-const DEFAULT_MAX_LENGTH = 7;
-const DEFAULT_MIN_DURATION = 1;
-const DEFAULT_MAX_DURATION = 2;
-const DEFAULT_MIN_COMMITMENT_AGE = 0;
-const DEFAULT_DISCOUNT = 4;
-const DEFAULT_IS_UNICODE_SUPPORTED = false;
-const DEFAULT_FEE_PERCENTAGE = 5;
-
-const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';
-const MAX_DURATION_CHANGED_EVENT = 'MaxDurationChanged';
-const UNICODE_SUPPORT_CHANGED_EVENT = 'UnicodeSupportChanged';
-const MIN_LENGTH_CHANGED_EVENT = 'MinLengthChanged';
-const MAX_LENGTH_CHANGED_EVENT = 'MaxLengthChanged';
-const FEE_PERCENTAGE_CHANGED_EVENT = 'FeePercentageChanged';
-const DISCOUNT_CHANGED_EVENT = 'DiscountChanged';
-const MIN_COMMITMENT_AGE_CHANGED_EVENT = 'MinCommitmentAgeChanged';
+import {
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+  MIN_DURATION_CHANGED_EVENT,
+  MAX_DURATION_CHANGED_EVENT,
+  UNICODE_SUPPORT_CHANGED_EVENT,
+  MIN_LENGTH_CHANGED_EVENT,
+  MAX_LENGTH_CHANGED_EVENT,
+  FEE_PERCENTAGE_CHANGED_EVENT,
+  DISCOUNT_CHANGED_EVENT,
+  MIN_COMMITMENT_AGE_CHANGED_EVENT,
+  DEFAULT_MIN_LENGTH,
+  DEFAULT_MAX_LENGTH,
+  DEFAULT_MIN_DURATION,
+  DEFAULT_MAX_DURATION,
+  DEFAULT_MIN_COMMITMENT_AGE,
+  DEFAULT_DISCOUNT,
+  DEFAULT_IS_UNICODE_SUPPORTED,
+  DEFAULT_FEE_PERCENTAGE,
+} from './utils/constants.utils';
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -418,64 +419,48 @@ describe('Partner Configuration', () => {
     it('Should emit the MinDurationChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setMinDuration(DEFAULT_MIN_DURATION)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
     it('Should emit the MaxDurationChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setMaxDuration(DEFAULT_MAX_DURATION)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('Should emit the UnicodeSupportChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setUnicodeSupport(DEFAULT_IS_UNICODE_SUPPORTED)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('Should emit the MinLengthChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setMinLength(DEFAULT_MIN_LENGTH)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('Should emit the MaxLengthChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setMaxLength(DEFAULT_MAX_LENGTH)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('Should emit the FeePercentageChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setFeePercentage(DEFAULT_FEE_PERCENTAGE)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('Should emit the DiscountChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setDiscount(DEFAULT_DISCOUNT)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('Should emit the MinCommitmentAgeChanged event with the correct params', async () => {
       await expect(
         PartnerConfiguration.setMinCommitmentAge(DEFAULT_MIN_COMMITMENT_AGE)
-      ).to.be.revertedWith(
-        'PartnerConfiguration: Param being modified is same as new param'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
   });
 });

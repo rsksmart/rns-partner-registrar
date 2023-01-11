@@ -81,9 +81,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 preModifiedValue = _minLength;
 
         if (preModifiedValue == minLength) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         if (minLength == 0) {
@@ -116,9 +114,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 preModifiedValue = _maxLength;
 
         if (preModifiedValue == maxLength) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         if (maxLength < _minLength) {
@@ -147,9 +143,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         bool preModifiedValue = _isUnicodeSupported;
 
         if (preModifiedValue == flag) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         _isUnicodeSupported = flag;
@@ -171,9 +165,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 preModifiedValue = _minDuration;
 
         if (preModifiedValue == minDuration) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         if (minDuration == 0) {
@@ -206,9 +198,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 preModifiedValue = _maxDuration;
 
         if (preModifiedValue == maxDuration) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         if (maxDuration < _minDuration) {
@@ -239,9 +229,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 preModifiedValue = _feePercentage;
 
         if (preModifiedValue == feePercentage) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         _feePercentage = feePercentage;
@@ -263,9 +251,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 preModifiedValue = _discount;
 
         if (preModifiedValue == discount) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         _discount = discount;
@@ -286,9 +272,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 preModifiedValue = _minCommitmentAge;
 
         if (preModifiedValue == minCommitmentAge) {
-            revert(
-                "PartnerConfiguration: Param being modified is same as new param"
-            );
+            revert("Param being modified is same as new param");
         }
 
         _minCommitmentAge = minCommitmentAge;

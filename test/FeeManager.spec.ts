@@ -15,7 +15,6 @@ import { FeeManager__factory, RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
 import { FakeContract, MockContract } from '@defi-wonderland/smock';
-import { Signer } from 'ethers';
 
 async function testSetup() {
   const [
