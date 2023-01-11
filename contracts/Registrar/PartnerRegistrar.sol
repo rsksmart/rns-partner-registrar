@@ -58,9 +58,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
         if (address(_feeManager) == address(feeManager)) {
-            revert(
-                "PartnerRegistrar: update param is same as param to be updated"
-            );
+            revert("Param being modified is same as new param");
         }
 
         emit FeeManagerChanged(address(this), address(feeManager));
@@ -214,9 +212,14 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     function makeCommitment(
         bytes32 label,
         address nameOwner,
-        bytes32 secret
+        bytes32 secret,
+        uint256 duration,
+        address addr
     ) public pure override returns (bytes32) {
-        return keccak256(abi.encodePacked(label, nameOwner, secret));
+        return
+            keccak256(
+                abi.encodePacked(label, nameOwner, secret, duration, addr)
+            );
     }
 
     /**
@@ -262,7 +265,13 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
         bytes32 label = keccak256(abi.encodePacked(name));
 
         if (partnerConfiguration.getMinCommitmentAge() != 0) {
-            bytes32 commitment = makeCommitment(label, nameOwner, secret);
+            bytes32 commitment = makeCommitment(
+                label,
+                nameOwner,
+                secret,
+                duration,
+                addr
+            );
             require(canReveal(commitment), "No commitment found");
             _commitmentRevealTime[commitment] = 0;
         }

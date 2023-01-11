@@ -3,8 +3,10 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from '../chairc';
 import { PartnerManager__factory } from '../typechain-types/factories/contracts/partnerManager/PartnerManager__factory';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
-
-const PARTNER_CONFIGURATION_SET_EVENT = 'PartnerConfigurationChanged';
+import {
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+  PARTNER_CONFIGURATION_CHANGED_EVENT,
+} from './utils/constants.utils';
 
 async function testSetup() {
   const [
@@ -214,7 +216,7 @@ describe('partnerManager', () => {
           account3.address
         )
       )
-        .to.emit(partnerManager, PARTNER_CONFIGURATION_SET_EVENT)
+        .to.emit(partnerManager, PARTNER_CONFIGURATION_CHANGED_EVENT)
         .withArgs(partner.address, account3.address);
     });
 
@@ -242,9 +244,7 @@ describe('partnerManager', () => {
           partner.address,
           account3.address
         )
-      ).to.be.revertedWith(
-        'PartnerManager: update param is same as param to be updated'
-      );
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('should revert if not partner address', async () => {

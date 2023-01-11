@@ -19,25 +19,26 @@ import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
 import { duration } from '@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time';
-import { BigNumber } from 'ethers';
+import {
+  DEFAULT_MIN_LENGTH,
+  DEFAULT_MAX_LENGTH,
+  DEFAULT_MIN_DURATION,
+  DEFAULT_MAX_DURATION,
+  DEFAULT_DISCOUNT,
+  DEFAULT_IS_UNICODE_SUPPORTED,
+  DEFAULT_FEE_PERCENTAGE,
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+  FEE_MANAGER_CHANGED_EVENT,
+  NAME_REGISTERED_EVENT,
+} from './utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 
 const LABEL = keccak256(toUtf8Bytes('cheta'));
-const MIN_LENGTH = 3;
-const MAX_LENGTH = 7;
 const DURATION = 1;
 const ROOT_NODE = namehash('rsk');
-const FEE_PERCENTAGE = 10;
-const DISCOUNT = 0;
-const MIN_DURATION = 1;
-const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
-const MAX_DURATION = 2;
 const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
-
-const NAME_REGISTERED_EVENT = 'NameRegistered';
-const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -47,6 +48,7 @@ const initialSetup = async () => {
   const pool = signers[3];
   const partnerOwner = signers[4];
   const alternateFeeManager = signers[5];
+  const attacker = signers[5];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
@@ -67,13 +69,13 @@ const initialSetup = async () => {
     await deployContract<PartnerConfiguration__factory>(
       'PartnerConfiguration',
       [
-        MIN_LENGTH,
-        MAX_LENGTH,
-        IS_UNICODE_SUPPORTED,
-        MIN_DURATION,
-        MAX_DURATION,
-        FEE_PERCENTAGE,
-        DISCOUNT,
+        DEFAULT_MIN_LENGTH,
+        DEFAULT_MAX_LENGTH,
+        DEFAULT_IS_UNICODE_SUPPORTED,
+        DEFAULT_MIN_DURATION,
+        DEFAULT_MAX_DURATION,
+        DEFAULT_FEE_PERCENTAGE,
+        DEFAULT_DISCOUNT,
         MIN_COMMITMENT_AGE,
       ]
     );
@@ -122,6 +124,7 @@ const initialSetup = async () => {
     nameOwner,
     partnerOwner,
     alternateFeeManager,
+    attacker,
   };
 };
 
@@ -151,7 +154,9 @@ describe('New Domain Registration', () => {
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      NodeOwner.address
     );
 
     const tx = await PartnerRegistrar.commit(commitment, partner.address);
@@ -241,7 +246,7 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
 
     await expect(
       PartnerRegistrar.register(
@@ -269,8 +274,8 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
-    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(DEFAULT_MAX_LENGTH);
 
     await expect(
       PartnerRegistrar.register(
@@ -298,8 +303,8 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
-    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(DEFAULT_MAX_LENGTH);
     PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     await expect(
@@ -328,14 +333,16 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
-    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(DEFAULT_MAX_LENGTH);
     PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     const commitment = await PartnerRegistrar.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      NodeOwner.address
     );
 
     const tx = await PartnerRegistrar.commit(commitment, partner.address);
@@ -351,6 +358,106 @@ describe('New Domain Registration', () => {
         partner.address
       )
     ).to.be.revertedWith('No commitment found');
+  });
+
+  it('Should ensure registration can not be front run by spoofing the duration other than the original one', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    const SPOOFED_DURATION = DURATION + 1;
+    const commitment = await PartnerRegistrar.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      NodeOwner.address
+    );
+
+    const tx = await PartnerRegistrar.commit(commitment, partner.address);
+    tx.wait();
+    try {
+      await expect(
+        PartnerRegistrar.register(
+          'cheta',
+          nameOwner.address,
+          SECRET,
+          SPOOFED_DURATION,
+          NodeOwner.address,
+          partner.address
+        )
+      ).to.be.revertedWith('No commitment found');
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  });
+
+  it('Should ensure registration can not be front run by spoofing the owner address', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+      attacker,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    const commitment = await PartnerRegistrar.makeCommitment(
+      LABEL,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      NodeOwner.address
+    );
+
+    const tx = await PartnerRegistrar.commit(commitment, partner.address);
+    tx.wait();
+    try {
+      await expect(
+        PartnerRegistrar.connect(attacker).register(
+          'cheta',
+          nameOwner.address,
+          SECRET,
+          DURATION,
+          attacker.address,
+          partner.address
+        )
+      ).to.be.revertedWith('No commitment found');
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   });
 });
 
@@ -395,9 +502,7 @@ describe('Registrar Checks', () => {
 
     await expect(
       PartnerRegistrar.setFeeManager(FeeManager.address)
-    ).to.be.revertedWith(
-      'PartnerRegistrar: update param is same as param to be updated'
-    );
+    ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
   });
 });
 describe('Registrar events', () => {

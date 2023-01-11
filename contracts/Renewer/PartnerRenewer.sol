@@ -46,9 +46,7 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
         if (address(_feeManager) == address(feeManager)) {
-            revert(
-                "PartnerRenewer: update param is same as param to be updated"
-            );
+            revert("Param being modified is same as new param");
         }
         emit FeeManagerChanged(address(this), address(feeManager));
 

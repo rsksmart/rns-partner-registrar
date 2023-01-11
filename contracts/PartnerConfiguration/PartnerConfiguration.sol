@@ -78,6 +78,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinLength(uint256 minLength) external override onlyOwner {
+        uint256 preModifiedValue = _minLength;
+
+        emit MinLengthChanged(preModifiedValue, minLength);
+
+        if (preModifiedValue == minLength) {
+            revert("Param being modified is same as new param");
+        }
+
         if (minLength == 0) {
             revert InvalidLength(minLength, "Minimum length cannot be 0");
         }
@@ -103,6 +111,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxLength(uint256 maxLength) external override onlyOwner {
+        uint256 preModifiedValue = _maxLength;
+
+        emit MaxLengthChanged(preModifiedValue, maxLength);
+
+        if (preModifiedValue == maxLength) {
+            revert("Param being modified is same as new param");
+        }
+
         if (maxLength < _minLength) {
             revert InvalidLength(
                 maxLength,
@@ -124,6 +140,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setUnicodeSupport(bool flag) external override onlyOwner {
+        bool preModifiedValue = _isUnicodeSupported;
+
+        emit UnicodeSupportChanged(preModifiedValue, flag);
+
+        if (preModifiedValue == flag) {
+            revert("Param being modified is same as new param");
+        }
+
         _isUnicodeSupported = flag;
     }
 
@@ -138,6 +162,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMinDuration(uint256 minDuration) external override onlyOwner {
+        uint256 preModifiedValue = _minDuration;
+
+        emit MinDurationChanged(preModifiedValue, minDuration);
+
+        if (preModifiedValue == minDuration) {
+            revert("Param being modified is same as new param");
+        }
+
         if (minDuration == 0) {
             revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
         }
@@ -163,6 +195,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setMaxDuration(uint256 maxDuration) external override onlyOwner {
+        uint256 preModifiedValue = _maxDuration;
+
+        emit MaxDurationChanged(preModifiedValue, maxDuration);
+
+        if (preModifiedValue == maxDuration) {
+            revert("Param being modified is same as new param");
+        }
+
         if (maxDuration < _minDuration) {
             revert InvalidDuration(
                 maxDuration,
@@ -186,6 +226,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setFeePercentage(
         uint256 feePercentage
     ) external override onlyOwner {
+        uint256 preModifiedValue = _feePercentage;
+
+        emit FeePercentageChanged(preModifiedValue, feePercentage);
+
+        if (preModifiedValue == feePercentage) {
+            revert("Param being modified is same as new param");
+        }
+
         _feePercentage = feePercentage;
     }
 
@@ -200,6 +248,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
        @inheritdoc IPartnerConfiguration
      */
     function setDiscount(uint256 discount) external override onlyOwner {
+        uint256 preModifiedValue = _discount;
+
+        emit DiscountChanged(preModifiedValue, discount);
+
+        if (preModifiedValue == discount) {
+            revert("Param being modified is same as new param");
+        }
+
         _discount = discount;
     }
 
@@ -213,6 +269,14 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     function setMinCommitmentAge(
         uint256 minCommitmentAge
     ) external override onlyOwner {
+        uint256 preModifiedValue = _minCommitmentAge;
+
+        emit MinCommitmentAgeChanged(preModifiedValue, minCommitmentAge);
+
+        if (preModifiedValue == minCommitmentAge) {
+            revert("Param being modified is same as new param");
+        }
+
         _minCommitmentAge = minCommitmentAge;
     }
 

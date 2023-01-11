@@ -15,9 +15,11 @@ import { FeeManager__factory, RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
 import { FakeContract, MockContract } from '@defi-wonderland/smock';
-
-const DEPOSIT_SUCCESSFUL_EVENT = 'DepositSuccessful';
-const WITHDRAWAL_SUCCESSFUL_EVENT = 'WithdrawalSuccessful';
+import {
+  DEPOSIT_SUCCESSFUL_EVENT,
+  WITHDRAWAL_SUCCESSFUL_EVENT,
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+} from './utils/constants.utils';
 
 async function testSetup() {
   const [
@@ -315,8 +317,6 @@ describe('Fee Manager', () => {
           PartnerManager,
           PartnerConfiguration,
           RIF,
-          pool,
-          oneRBTC,
           partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
@@ -339,18 +339,6 @@ describe('Fee Manager', () => {
         )
           .to.emit(feeManager, DEPOSIT_SUCCESSFUL_EVENT)
           .withArgs(depositAmount, partner.address);
-
-        // const partnerFee = depositAmount
-        //   .mul(feePercentage)
-        //   .div(oneRBTC.mul(100));
-        // expect(
-        //   +(await feeManager.getBalance(partnerOwnerAccount.address))
-        // ).to.be.equal(+partnerFee);
-
-        // expect(RIF.transfer).to.have.been.calledOnceWith(
-        //   pool.address,
-        //   depositAmount.sub(partnerFee)
-        // );
       } catch (error) {
         console.log(error);
         throw error;
@@ -365,7 +353,6 @@ describe('Fee Manager', () => {
         RIF,
         PartnerConfiguration,
         PartnerManager,
-        partnerOwnerAccount,
       } = await loadFixture(testSetup);
 
       const depositAmount = oneRBTC.mul(5);

@@ -25,6 +25,11 @@ import { PartnerRenewer } from 'typechain-types';
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
 import { duration } from '@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time';
+import {
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+  NAME_RENEWED_EVENT,
+  FEE_MANAGER_CHANGED_EVENT,
+} from 'test/utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta';
@@ -34,9 +39,6 @@ const FEE_PERCENTAGE = oneRBTC.mul(5); //5%
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = ethers.utils.id('rsk');
-
-const NAME_RENEWED_EVENT = 'NameRenewed';
-const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -250,7 +252,9 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (
@@ -310,7 +314,9 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (
@@ -365,7 +371,9 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET
+      SECRET,
+      DURATION,
+      nameOwner.address
     );
 
     await (
@@ -451,9 +459,7 @@ describe('Domain Renewal', () => {
 
     await expect(
       PartnerRenewer.setFeeManager(FeeManager.address)
-    ).to.be.revertedWith(
-      'PartnerRenewer: update param is same as param to be updated'
-    );
+    ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
   });
 });
 

@@ -57,9 +57,7 @@ contract PartnerManager is IPartnerManager, Ownable {
             address(_partnerConfigurations[partner]) ==
             address(partnerConfiguration)
         ) {
-            revert(
-                "PartnerManager: update param is same as param to be updated"
-            );
+            revert("Param being modified is same as new param");
         }
 
         emit PartnerConfigurationChanged(
