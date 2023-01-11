@@ -18,20 +18,22 @@ import { expect } from 'chai';
 import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
+import {
+  DEFAULT_MIN_LENGTH,
+  DEFAULT_MAX_LENGTH,
+  DEFAULT_MIN_DURATION,
+  DEFAULT_MAX_DURATION,
+  DEFAULT_DISCOUNT,
+  DEFAULT_IS_UNICODE_SUPPORTED,
+  DEFAULT_FEE_PERCENTAGE,
+} from './utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 
 const LABEL = keccak256(toUtf8Bytes('cheta'));
-const MIN_LENGTH = 3;
-const MAX_LENGTH = 7;
 const DURATION = 1;
 const ROOT_NODE = namehash('rsk');
-const FEE_PERCENTAGE = 10;
-const DISCOUNT = 0;
-const MIN_DURATION = 1;
-const IS_UNICODE_SUPPORTED = true;
 const MIN_COMMITMENT_AGE = 1;
-const MAX_DURATION = 2;
 const DUMMY_COMMITMENT = keccak256(toUtf8Bytes('this is a dummy'));
 
 const initialSetup = async () => {
@@ -62,13 +64,13 @@ const initialSetup = async () => {
     await deployContract<PartnerConfiguration__factory>(
       'PartnerConfiguration',
       [
-        MIN_LENGTH,
-        MAX_LENGTH,
-        IS_UNICODE_SUPPORTED,
-        MIN_DURATION,
-        MAX_DURATION,
-        FEE_PERCENTAGE,
-        DISCOUNT,
+        DEFAULT_MIN_LENGTH,
+        DEFAULT_MAX_LENGTH,
+        DEFAULT_IS_UNICODE_SUPPORTED,
+        DEFAULT_MIN_DURATION,
+        DEFAULT_MAX_DURATION,
+        DEFAULT_FEE_PERCENTAGE,
+        DEFAULT_DISCOUNT,
         MIN_COMMITMENT_AGE,
       ]
     );
@@ -238,7 +240,7 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
 
     await expect(
       PartnerRegistrar.register(
@@ -266,8 +268,8 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
-    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(DEFAULT_MAX_LENGTH);
 
     await expect(
       PartnerRegistrar.register(
@@ -295,8 +297,8 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
-    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(DEFAULT_MAX_LENGTH);
     PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     await expect(
@@ -325,8 +327,8 @@ describe('New Domain Registration', () => {
     PartnerManager.getPartnerConfiguration.returns(
       PartnerConfiguration.address
     );
-    PartnerConfiguration.getMinLength.returns(MIN_LENGTH);
-    PartnerConfiguration.getMaxLength.returns(MAX_LENGTH);
+    PartnerConfiguration.getMinLength.returns(DEFAULT_MIN_LENGTH);
+    PartnerConfiguration.getMaxLength.returns(DEFAULT_MAX_LENGTH);
     PartnerConfiguration.getMinCommitmentAge.returns(ethers.BigNumber.from(1));
 
     const commitment = await PartnerRegistrar.makeCommitment(

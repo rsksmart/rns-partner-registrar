@@ -8,15 +8,25 @@ import {
 import { deployContract, oneRBTC } from './utils/mock.utils';
 import { MockContract } from '@defi-wonderland/smock';
 import { BigNumber } from 'ethers';
-
-const DEFAULT_MIN_LENGTH = 3;
-const DEFAULT_MAX_LENGTH = 7;
-const DEFAULT_MIN_DURATION = 1;
-const DEFAULT_MAX_DURATION = 2;
-const DEFAULT_MIN_COMMITMENT_AGE = 0;
-const DEFAULT_DISCOUNT = 4;
-const DEFAULT_IS_UNICODE_SUPPORTED = false;
-const DEFAULT_FEE_PERCENTAGE = 5;
+import {
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+  MIN_DURATION_CHANGED_EVENT,
+  MAX_DURATION_CHANGED_EVENT,
+  UNICODE_SUPPORT_CHANGED_EVENT,
+  MIN_LENGTH_CHANGED_EVENT,
+  MAX_LENGTH_CHANGED_EVENT,
+  FEE_PERCENTAGE_CHANGED_EVENT,
+  DISCOUNT_CHANGED_EVENT,
+  MIN_COMMITMENT_AGE_CHANGED_EVENT,
+  DEFAULT_MIN_LENGTH,
+  DEFAULT_MAX_LENGTH,
+  DEFAULT_MIN_DURATION,
+  DEFAULT_MAX_DURATION,
+  DEFAULT_MIN_COMMITMENT_AGE,
+  DEFAULT_DISCOUNT,
+  DEFAULT_IS_UNICODE_SUPPORTED,
+  DEFAULT_FEE_PERCENTAGE,
+} from './utils/constants.utils';
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -150,7 +160,7 @@ describe('Partner Configuration', () => {
         DEFAULT_DISCOUNT
       );
     });
-    it('Should return the default commitement age', async () => {
+    it('Should return the default commitment age', async () => {
       expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
         DEFAULT_MIN_COMMITMENT_AGE
       );
@@ -332,7 +342,7 @@ describe('Partner Configuration', () => {
       tx.wait();
       expect(await PartnerConfiguration.getDiscount()).to.equal(NEW_DISCOUNT);
     });
-    it('Should return the default commitement age', async () => {
+    it('Should return the default commitment age', async () => {
       const NEW_MIN_COMMITMENT_AGE = 6;
       const tx = await PartnerConfiguration.setMinCommitmentAge(
         NEW_MIN_COMMITMENT_AGE
@@ -341,6 +351,116 @@ describe('Partner Configuration', () => {
       expect(await PartnerConfiguration.getMinCommitmentAge()).to.equal(
         NEW_MIN_COMMITMENT_AGE
       );
+    });
+  });
+
+  context('Config modification events', () => {
+    it('Should emit the MinDurationChanged event with the correct params', async () => {
+      const NEW_MIN_DURATION = DEFAULT_MIN_DURATION + 1;
+      await expect(PartnerConfiguration.setMinDuration(NEW_MIN_DURATION))
+        .to.emit(PartnerConfiguration, MIN_DURATION_CHANGED_EVENT)
+        .withArgs(DEFAULT_MIN_DURATION, NEW_MIN_DURATION);
+    });
+    it('Should emit the MaxDurationChanged event with the correct params', async () => {
+      const NEW_MAX_DURATION = DEFAULT_MAX_DURATION + 1;
+      await expect(PartnerConfiguration.setMaxDuration(NEW_MAX_DURATION))
+        .to.emit(PartnerConfiguration, MAX_DURATION_CHANGED_EVENT)
+        .withArgs(DEFAULT_MAX_DURATION, NEW_MAX_DURATION);
+    });
+
+    it('Should emit the UnicodeSupportChanged event with the correct params', async () => {
+      const NEW_IS_UNICODE_SUPPORTED = !DEFAULT_IS_UNICODE_SUPPORTED;
+      await expect(
+        PartnerConfiguration.setUnicodeSupport(NEW_IS_UNICODE_SUPPORTED)
+      )
+        .to.emit(PartnerConfiguration, UNICODE_SUPPORT_CHANGED_EVENT)
+        .withArgs(DEFAULT_IS_UNICODE_SUPPORTED, NEW_IS_UNICODE_SUPPORTED);
+    });
+
+    it('Should emit the MinLengthChanged event with the correct params', async () => {
+      const NEW_MIN_LENGTH = DEFAULT_MIN_LENGTH + 1;
+      await expect(PartnerConfiguration.setMinLength(NEW_MIN_LENGTH))
+        .to.emit(PartnerConfiguration, MIN_LENGTH_CHANGED_EVENT)
+        .withArgs(DEFAULT_MIN_LENGTH, NEW_MIN_LENGTH);
+    });
+
+    it('Should emit the MaxLengthChanged event with the correct params', async () => {
+      const NEW_MAX_LENGTH = DEFAULT_MAX_LENGTH + 1;
+      await expect(PartnerConfiguration.setMaxLength(NEW_MAX_LENGTH))
+        .to.emit(PartnerConfiguration, MAX_LENGTH_CHANGED_EVENT)
+        .withArgs(DEFAULT_MAX_LENGTH, NEW_MAX_LENGTH);
+    });
+
+    it('Should emit the FeePercentageChanged event with the correct params', async () => {
+      const NEW_FEE_PERCENTAGE = DEFAULT_FEE_PERCENTAGE + 1;
+      await expect(PartnerConfiguration.setFeePercentage(NEW_FEE_PERCENTAGE))
+        .to.emit(PartnerConfiguration, FEE_PERCENTAGE_CHANGED_EVENT)
+        .withArgs(DEFAULT_FEE_PERCENTAGE, NEW_FEE_PERCENTAGE);
+    });
+
+    it('Should emit the DiscountChanged event with the correct params', async () => {
+      const NEW_DISCOUNT = DEFAULT_DISCOUNT + 1;
+      await expect(PartnerConfiguration.setDiscount(NEW_DISCOUNT))
+        .to.emit(PartnerConfiguration, DISCOUNT_CHANGED_EVENT)
+        .withArgs(DEFAULT_DISCOUNT, NEW_DISCOUNT);
+    });
+
+    it('Should emit the MinCommitmentAgeChanged event with the correct params', async () => {
+      const NEW_MIN_COMMITMENT_AGE = DEFAULT_MIN_COMMITMENT_AGE + 1;
+      await expect(
+        PartnerConfiguration.setMinCommitmentAge(NEW_MIN_COMMITMENT_AGE)
+      )
+        .to.emit(PartnerConfiguration, MIN_COMMITMENT_AGE_CHANGED_EVENT)
+        .withArgs(DEFAULT_MIN_COMMITMENT_AGE, NEW_MIN_COMMITMENT_AGE);
+    });
+  });
+
+  context('Config checks', () => {
+    it('Should emit the MinDurationChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMinDuration(DEFAULT_MIN_DURATION)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+    it('Should emit the MaxDurationChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMaxDuration(DEFAULT_MAX_DURATION)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+
+    it('Should emit the UnicodeSupportChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setUnicodeSupport(DEFAULT_IS_UNICODE_SUPPORTED)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+
+    it('Should emit the MinLengthChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMinLength(DEFAULT_MIN_LENGTH)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+
+    it('Should emit the MaxLengthChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMaxLength(DEFAULT_MAX_LENGTH)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+
+    it('Should emit the FeePercentageChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setFeePercentage(DEFAULT_FEE_PERCENTAGE)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+
+    it('Should emit the DiscountChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setDiscount(DEFAULT_DISCOUNT)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+
+    it('Should emit the MinCommitmentAgeChanged event with the correct params', async () => {
+      await expect(
+        PartnerConfiguration.setMinCommitmentAge(DEFAULT_MIN_COMMITMENT_AGE)
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
   });
 });
