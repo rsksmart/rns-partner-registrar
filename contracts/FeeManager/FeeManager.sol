@@ -58,6 +58,8 @@ contract FeeManager is IFeeManager, Ownable {
     function withdraw() external override {
         uint256 amount = _balances[msg.sender];
 
+        emit WithdrawalSuccessful(amount, msg.sender);
+
         if (amount == 0) revert ZeroBalance();
 
         _balances[msg.sender] = 0;
@@ -74,6 +76,8 @@ contract FeeManager is IFeeManager, Ownable {
         address partner,
         uint256 cost
     ) external override onlyAuthorised {
+        emit DepositSuccessful(cost, partner);
+
         if (!_rif.transferFrom(msg.sender, address(this), cost)) {
             revert TransferFailed(msg.sender, address(this), cost);
         }

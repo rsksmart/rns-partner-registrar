@@ -10,7 +10,20 @@ import "../PartnerConfiguration/IPartnerConfiguration.sol";
 */
 interface IPartnerManager {
     /**
+     * @notice event emitted when the configuration for a partner is set
+     * @param partner address for the partner
+     * @param configurationContract address of the configuration contract
+     */
+    event PartnerConfigurationChanged(
+        address partner,
+        address configurationContract
+    );
+
+    /**
      * @notice sets the configuration for a partner
+     * @param partner address for the partner
+     * @param configuration address of the configuration contract
+     * @custom:emits-event emits the PartnerConfigurationSet event
      */
     function setPartnerConfiguration(
         address partner,

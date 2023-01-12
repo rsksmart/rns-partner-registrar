@@ -57,6 +57,12 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     }
 
     function setFeeManager(IFeeManager feeManager) external onlyOwner {
+        if (address(_feeManager) == address(feeManager)) {
+            revert("Param being modified is same as new param");
+        }
+
+        emit FeeManagerChanged(address(this), address(feeManager));
+
         _feeManager = feeManager;
     }
 
@@ -157,6 +163,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     /// @param duration Time to register in years.
     /// @param addr Address to set as addr resolution.
     /// @param partner Partner address
+    /// @custom:emits-event emits the NameRegistered event
     function register(
         string calldata name,
         address nameOwner,

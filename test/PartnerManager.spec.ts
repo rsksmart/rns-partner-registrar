@@ -3,6 +3,10 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from '../chairc';
 import { PartnerManager__factory } from '../typechain-types/factories/contracts/partnerManager/PartnerManager__factory';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
+import {
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+  PARTNER_CONFIGURATION_CHANGED_EVENT,
+} from './utils/constants.utils';
 
 async function testSetup() {
   const [
@@ -164,12 +168,13 @@ describe('partnerManager', () => {
   });
 
   describe('Set Partner Configuration', () => {
-    it('should set partner configuration', async () => {
+    it('should successfully set partner configuration', async () => {
       const {
         partnerManager,
         account1: partner,
         account3,
         partnerOwnerAccount,
+        accounts,
       } = await loadFixture(testSetup);
 
       try {
@@ -178,18 +183,68 @@ describe('partnerManager', () => {
             partner.address,
             partnerOwnerAccount.address
           )
-        ).to.not.be.reverted;
+        ).to.eventually.be.fulfilled;
 
         await expect(
           partnerManager.setPartnerConfiguration(
             partner.address,
-            account3.address
+            accounts[4].address
           )
-        ).to.not.be.reverted;
+        ).to.eventually.be.fulfilled;
       } catch (e) {
         console.log(e);
         throw e;
       }
+    });
+
+    it('Should emit the PartnerConfigurationSet event when partner configuration is set', async () => {
+      const {
+        partnerManager,
+        account1: partner,
+        account3,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
+
+      await partnerManager.addPartner(
+        partner.address,
+        partnerOwnerAccount.address
+      );
+
+      await expect(
+        partnerManager.setPartnerConfiguration(
+          partner.address,
+          account3.address
+        )
+      )
+        .to.emit(partnerManager, PARTNER_CONFIGURATION_CHANGED_EVENT)
+        .withArgs(partner.address, account3.address);
+    });
+
+    it('Should revert is the partner configuration to be set is same as existing', async () => {
+      const {
+        partnerManager,
+        account1: partner,
+        account3,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
+
+      await partnerManager.addPartner(
+        partner.address,
+        partnerOwnerAccount.address
+      );
+
+      await partnerManager.setPartnerConfiguration(
+        partner.address,
+        account3.address
+      );
+
+      // attempt to change partner configuration
+      await expect(
+        partnerManager.setPartnerConfiguration(
+          partner.address,
+          account3.address
+        )
+      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
     it('should revert if not partner address', async () => {

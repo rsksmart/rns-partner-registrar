@@ -18,6 +18,7 @@ import { expect } from 'chai';
 import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
+import { duration } from '@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time';
 import {
   DEFAULT_MIN_LENGTH,
   DEFAULT_MAX_LENGTH,
@@ -26,6 +27,9 @@ import {
   DEFAULT_DISCOUNT,
   DEFAULT_IS_UNICODE_SUPPORTED,
   DEFAULT_FEE_PERCENTAGE,
+  UN_NECESSARY_MODIFICATION_ERROR_MSG,
+  FEE_MANAGER_CHANGED_EVENT,
+  NAME_REGISTERED_EVENT,
 } from './utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
@@ -43,6 +47,7 @@ const initialSetup = async () => {
   const nameOwner = signers[2];
   const pool = signers[3];
   const partnerOwner = signers[4];
+  const alternateFeeManager = signers[5];
   const attacker = signers[5];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
@@ -118,6 +123,7 @@ const initialSetup = async () => {
     partner,
     nameOwner,
     partnerOwner,
+    alternateFeeManager,
     attacker,
   };
 };
@@ -489,5 +495,61 @@ describe('Registrar Checks', () => {
 
       throw error;
     }
+  });
+
+  it('Should revert is the fee manager to be set is same as existing', async () => {
+    const { FeeManager, PartnerRegistrar } = await loadFixture(initialSetup);
+
+    await expect(
+      PartnerRegistrar.setFeeManager(FeeManager.address)
+    ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+  });
+});
+describe('Registrar events', () => {
+  it('Should emit the NameRegistered event on successful domain registration', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    await expect(
+      PartnerRegistrar.connect(partnerOwner).register(
+        'cheta',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address,
+        partner.address
+      )
+    )
+      .to.emit(PartnerRegistrar, NAME_REGISTERED_EVENT)
+      .withArgs(partnerOwner.address, duration.years);
+  });
+
+  it('Should emit the FeeManagerSet event on successful setting of the fee manager contract', async () => {
+    const { FeeManager, PartnerRegistrar, alternateFeeManager } =
+      await loadFixture(initialSetup);
+
+    await expect(PartnerRegistrar.setFeeManager(alternateFeeManager.address))
+      .to.emit(PartnerRegistrar, FEE_MANAGER_CHANGED_EVENT)
+      .withArgs(PartnerRegistrar.address, alternateFeeManager.address);
   });
 });

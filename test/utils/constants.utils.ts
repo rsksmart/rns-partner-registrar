@@ -11,6 +11,13 @@ export const MAX_LENGTH_CHANGED_EVENT = 'MaxLengthChanged';
 export const FEE_PERCENTAGE_CHANGED_EVENT = 'FeePercentageChanged';
 export const DISCOUNT_CHANGED_EVENT = 'DiscountChanged';
 export const MIN_COMMITMENT_AGE_CHANGED_EVENT = 'MinCommitmentAgeChanged';
+export const DEPOSIT_SUCCESSFUL_EVENT = 'DepositSuccessful';
+export const WITHDRAWAL_SUCCESSFUL_EVENT = 'WithdrawalSuccessful';
+export const NAME_RENEWED_EVENT = 'NameRenewed';
+export const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
+export const NAME_REGISTERED_EVENT = 'NameRegistered';
+export const PARTNER_CONFIGURATION_CHANGED_EVENT =
+  'PartnerConfigurationChanged';
 
 // CONSTANT VALUES
 export const DEFAULT_MIN_LENGTH = 3;
