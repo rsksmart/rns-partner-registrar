@@ -1,6 +1,8 @@
 // ERRORS
 export const UN_NECESSARY_MODIFICATION_ERROR_MSG =
   'Param being modified is same as new param';
+export const VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG =
+  'Value must be within range 0 to 100';
 
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';

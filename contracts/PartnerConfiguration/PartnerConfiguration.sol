@@ -234,6 +234,10 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
             revert("Param being modified is same as new param");
         }
 
+        if (feePercentage > 100) {
+            revert("Value must be within range 0 to 100");
+        }
+
         _feePercentage = feePercentage;
     }
 
@@ -254,6 +258,10 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
 
         if (preModifiedValue == discount) {
             revert("Param being modified is same as new param");
+        }
+
+        if (discount > 100) {
+            revert("Value must be within range 0 to 100");
         }
 
         _discount = discount;

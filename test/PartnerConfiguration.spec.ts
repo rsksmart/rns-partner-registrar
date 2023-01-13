@@ -26,6 +26,7 @@ import {
   DEFAULT_DISCOUNT,
   DEFAULT_IS_UNICODE_SUPPORTED,
   DEFAULT_FEE_PERCENTAGE,
+  VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG,
 } from './utils/constants.utils';
 
 const initialSetup = async () => {
@@ -461,6 +462,20 @@ describe('Partner Configuration', () => {
       await expect(
         PartnerConfiguration.setMinCommitmentAge(DEFAULT_MIN_COMMITMENT_AGE)
       ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
+    });
+
+    it('Should revert if value being set is outside of allowed range for the discount', async () => {
+      const OUT_OF_RANGE_DISCOUNT = DEFAULT_DISCOUNT + 100;
+      await expect(
+        PartnerConfiguration.setDiscount(OUT_OF_RANGE_DISCOUNT)
+      ).to.be.revertedWith(VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG);
+    });
+
+    it.only('Should revert if value being set is outside of allowed range for the fee percentage', async () => {
+      const OUT_OF_RANGE_FEE_PERCENTAGE = DEFAULT_FEE_PERCENTAGE + 100;
+      await expect(
+        PartnerConfiguration.setFeePercentage(OUT_OF_RANGE_FEE_PERCENTAGE)
+      ).to.be.revertedWith(VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG);
     });
   });
 });
