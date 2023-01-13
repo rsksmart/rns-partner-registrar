@@ -304,6 +304,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     ) external view override returns (uint256) {
         uint256 actualPrice;
 
+        // 100% discount applied
         if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
 
         if (duration == 1) {
