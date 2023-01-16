@@ -349,6 +349,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     }
 
     function _applyDiscount(uint256 price) private view returns (uint256) {
+        // 100% discount applied
+        if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
+        
         uint256 discounted_price = (price * _discount) /
             _PERCENT100_WITH_PRECISION18;
         uint256 final_price = price - discounted_price;
