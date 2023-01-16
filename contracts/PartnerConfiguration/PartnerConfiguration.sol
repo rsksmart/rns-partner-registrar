@@ -24,6 +24,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     uint256 private _minCommitmentAge;
 
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
+    uint256 internal constant _PRECISION18 = 10 ** 18;
     string internal constant _UN_NECESSARY_MODIFICATION_ERROR_MSG =
         "Param being modified is same as new param";
     string internal constant _VALUE_OUT_OF_BOUND_ERROR_MSG =
@@ -308,15 +309,15 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
 
         if (duration == 1) {
-            actualPrice = 2 * (10 ** 18);
+            actualPrice = 2 * (_PRECISION18);
             return _applyDiscount(actualPrice);
         }
         if (duration == 2) {
-            actualPrice = 4 * (10 ** 18);
+            actualPrice = 4 * (_PRECISION18);
             return _applyDiscount(actualPrice);
         }
 
-        actualPrice = (duration + 2) * (10 ** 18);
+        actualPrice = (duration + 2) * (_PRECISION18);
 
         return _applyDiscount(actualPrice);
     }
