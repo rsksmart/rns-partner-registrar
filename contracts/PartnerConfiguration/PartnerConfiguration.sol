@@ -308,15 +308,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         // 100% discount applied
         if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
 
-        if (duration == 1) {
-            actualPrice = 2 * (_PRECISION18);
-            return _applyDiscount(actualPrice);
-        }
-        if (duration == 2) {
-            actualPrice = 4 * (_PRECISION18);
+        // for duration equal to 1 or 2
+        if (duration <= 2) {
+            actualPrice = (2 * duration) * _PRECISION18;
             return _applyDiscount(actualPrice);
         }
 
+        // for duration greater than 2
         actualPrice = (duration + 2) * (_PRECISION18);
 
         return _applyDiscount(actualPrice);
