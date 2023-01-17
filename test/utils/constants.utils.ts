@@ -1,6 +1,7 @@
 // ERRORS
 export const UN_NECESSARY_MODIFICATION_ERROR_MSG =
   'Param being modified is same as new param';
+export const ONLY_OWNER_ERR = 'OnlyOwner';
 
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';
