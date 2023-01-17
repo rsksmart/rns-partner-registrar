@@ -355,10 +355,10 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         // No discount to be applied
         if (_discount == 0) return price;
 
-        uint256 discounted_price = (price * _discount) /
+        uint256 discountedPrice = (price * _discount) /
             _PERCENT100_WITH_PRECISION18;
-        uint256 final_price = price - discounted_price;
+        uint256 finalPrice = price - discountedPrice;
 
-        return final_price;
+        return finalPrice;
     }
 }
