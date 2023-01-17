@@ -264,7 +264,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit DiscountChanged(preModifiedValue, discount);
 
         if (preModifiedValue == discount) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
         }
 
         if (discount > _PERCENT100_WITH_PRECISION18) {
