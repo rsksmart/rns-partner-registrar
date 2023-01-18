@@ -2,6 +2,8 @@
 export const UN_NECESSARY_MODIFICATION_ERROR_MSG =
   'Param being modified is same as new param';
 export const ONLY_OWNER_ERR = 'OnlyOwner';
+export const VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG =
+  'Value must be within range 0 to 100000000000000000000'; // 100000000000000000000 here is the precision representation of 100%
 
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';
@@ -26,6 +28,6 @@ export const DEFAULT_MAX_LENGTH = 7;
 export const DEFAULT_MIN_DURATION = 1;
 export const DEFAULT_MAX_DURATION = 2;
 export const DEFAULT_MIN_COMMITMENT_AGE = 0;
-export const DEFAULT_DISCOUNT = 4;
+export const DEFAULT_DISCOUNT = 0;
 export const DEFAULT_IS_UNICODE_SUPPORTED = false;
 export const DEFAULT_FEE_PERCENTAGE = 5;

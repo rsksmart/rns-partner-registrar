@@ -89,13 +89,22 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
         emit NameRenewed(from, duration);
 
         uint256 cost = _executeRenovation(name, duration, partner);
-        require(amount >= cost, "Insufficient tokens transferred");
 
-        _collectFees(partner, cost);
+        // This aims to skip token transfer transactions if the cost is zero as it doesn't make
+        // any sense to have transactions involving zero tokens. Hence calculations are
+        // only done for non zero cost domain registrations.
+        if (cost > 0) {
+            require(amount >= cost, "Insufficient tokens transferred");
 
-        uint256 difference = amount - cost;
-        if (difference > 0)
-            require(_rif.transfer(from, difference), "Token transfer failed");
+            _collectFees(partner, cost);
+
+            uint256 difference = amount - cost;
+            if (difference > 0)
+                require(
+                    _rif.transfer(from, difference),
+                    "Token transfer failed"
+                );
+        }
     }
 
     function _collectFees(address partner, uint256 amount) private {
@@ -125,12 +134,17 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
 
         uint256 cost = _executeRenovation(name, duration, partner);
 
-        require(
-            _rif.transferFrom(msg.sender, address(this), cost),
-            "Token transfer failed"
-        );
+        // This aims to skip token transfer transactions if the cost is zero as it doesn't make
+        // any sense to have transactions involving zero tokens. Hence calculations are
+        // only done for non zero cost domain registrations.
+        if (cost > 0) {
+            require(
+                _rif.transferFrom(msg.sender, address(this), cost),
+                "Token transfer failed"
+            );
 
-        _collectFees(partner, cost);
+            _collectFees(partner, cost);
+        }
     }
 
     /// @notice Executes renovation abstracted from payment method.

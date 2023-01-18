@@ -454,6 +454,62 @@ describe('Domain Renewal', () => {
     ).to.be.revertedWith('Token approval failed');
   });
 
+  it('Should successfully renew a new domain without token transfer transactions when discount is 100%', async () => {
+    const {
+      RIF,
+      FakeRIF,
+      PartnerRenewer,
+      PartnerRegistrar,
+      nameOwner,
+      partner,
+      PartnerManager,
+      NodeOwner,
+      alternatePartnerConfiguration,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        alternatePartnerConfiguration.address
+      )
+    ).wait();
+
+    (await alternatePartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    // First Register the name to be renewed
+
+    RIF.transferFrom.returns(true);
+    RIF.approve.returns(true);
+    RIF.transfer.returns(true);
+
+    await PartnerRegistrar.register(
+      NAME,
+      nameOwner.address,
+      SECRET,
+      DURATION,
+      NodeOwner.address,
+      partner.address
+    );
+
+    // Attempt to renew registered name
+    (await alternatePartnerConfiguration.setDiscount(oneRBTC.mul(100))).wait();
+
+    // The idea here is that the new domain registration shouldn't involve any token transfer
+    // transactions as discount is a 100%. Hence the RIF transactions which would normally
+    // cause the registration to fail with return values of false have no effect because
+    // no token transfer methods are invoked in this domain registration scenario.
+    RIF.transferFrom.returns(false);
+    RIF.approve.returns(false);
+    RIF.transfer.returns(false);
+
+    await expect(PartnerRenewer.renew(NAME, DURATION, partner.address)).to.be
+      .fulfilled;
+  });
+
   it('Should revert is the fee manager to be set is same as existing', async () => {
     const { FeeManager, PartnerRenewer } = await loadFixture(initialSetup);
 
