@@ -4,6 +4,11 @@ pragma solidity ^0.8.16;
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IAccessControl.sol";
 
+/**
+    @author Identity Team @IOVLabs
+    @title RegistrarAccessControl
+    @notice Defines Access Control roles management
+*/
 contract RegistrarAccessControl is IAccessControl, AccessControl {
     bytes32 private constant _OWNER = keccak256("OWNER");
     bytes32 private constant _HIGH_LEVEL_OPERATOR =
