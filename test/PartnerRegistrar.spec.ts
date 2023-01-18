@@ -1,6 +1,10 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
-import { deployMockContract, deployContract } from './utils/mock.utils';
+import {
+  deployMockContract,
+  deployContract,
+  oneRBTC,
+} from './utils/mock.utils';
 import {
   FeeManager__factory,
   NodeOwner as NodeOwnerType,
@@ -201,6 +205,52 @@ describe('New Domain Registration', () => {
     ).wait();
 
     (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    await expect(
+      PartnerRegistrar.register(
+        'cheta',
+        nameOwner.address,
+        SECRET,
+        DURATION,
+        NodeOwner.address,
+        partner.address
+      )
+    ).to.be.fulfilled;
+  });
+
+  it('Should successfully register a new domain without token transfer transactions when discount is 100%', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+      RIF,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+    (await PartnerConfiguration.setDiscount(oneRBTC.mul(100))).wait();
+
+    // The idea here is that the new domain registration shouldn't involve any token transfer
+    // transactions as discount is a 100%. Hence the RIF transactions which would normally
+    // cause the registration to fail with return values of false have no effect because
+    // no token transfer methods are invoked in this domain registration scenario.
+    RIF.transferFrom.returns(false);
+    RIF.transfer.returns(false);
+    RIF.approve.returns(false);
 
     await expect(
       PartnerRegistrar.register(
@@ -515,6 +565,7 @@ describe('Registrar events', () => {
       nameOwner,
       partner,
       partnerOwner,
+      RIF,
     } = await loadFixture(initialSetup);
 
     await (
@@ -529,6 +580,10 @@ describe('Registrar events', () => {
     ).wait();
 
     (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    RIF.transferFrom.returns(true);
+    RIF.transfer.returns(true);
+    RIF.approve.returns(true);
 
     await expect(
       PartnerRegistrar.connect(partnerOwner).register(

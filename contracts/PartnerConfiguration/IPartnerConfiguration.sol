@@ -122,14 +122,16 @@ interface IPartnerConfiguration {
     /**
      * @notice sets the discount assigned to the partner for each domain name registered
      * @param discount the discount assigned to the partner for each domain name registered
-     * @custom:emits-event emits the DiscountChanged event on success
+     * @custom:emits-event emits the DiscountChanged event on success. N.B: percentage value
+     * should be multiplied with the precision value of 10^18, i.e percentageValue * 10^18
      */
     function setDiscount(uint256 discount) external;
 
     /**
      * @notice sets the fee percentage assigned to the partner for each domain name registered
      * @param feePercentage the percentage assigned to the partner for each domain name registered
-     * @custom:emits-event emits the FeePercentageChanged event on success
+     * @custom:emits-event emits the FeePercentageChanged event on success. N.B: percentage value
+     * should be multiplied with the precision value of 10^18, i.e percentageValue * 10^18
      */
     function setFeePercentage(uint256 feePercentage) external;
 

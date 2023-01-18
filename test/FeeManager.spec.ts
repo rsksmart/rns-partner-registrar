@@ -18,7 +18,6 @@ import { FakeContract, MockContract } from '@defi-wonderland/smock';
 import {
   DEPOSIT_SUCCESSFUL_EVENT,
   WITHDRAWAL_SUCCESSFUL_EVENT,
-  UN_NECESSARY_MODIFICATION_ERROR_MSG,
 } from './utils/constants.utils';
 
 async function testSetup() {
@@ -49,8 +48,6 @@ async function testSetup() {
     PartnerManager.address,
     pool.address,
   ]);
-
-  const oneRBTC = ethers.BigNumber.from(10).pow(18);
 
   return {
     RIF,

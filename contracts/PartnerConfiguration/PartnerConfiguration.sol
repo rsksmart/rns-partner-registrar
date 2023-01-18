@@ -23,6 +23,13 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     uint256 private _discount;
     uint256 private _minCommitmentAge;
 
+    uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
+    uint256 internal constant _PRECISION18 = 10 ** 18;
+    string internal constant _UN_NECESSARY_MODIFICATION_ERROR_MSG =
+        "Param being modified is same as new param";
+    string internal constant _VALUE_OUT_OF_BOUND_ERROR_MSG =
+        "Value must be within range 0 to 100000000000000000000";
+
     using StringUtils for string;
 
     constructor(
@@ -83,7 +90,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit MinLengthChanged(preModifiedValue, minLength);
 
         if (preModifiedValue == minLength) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
         }
 
         if (minLength == 0) {
@@ -116,7 +123,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit MaxLengthChanged(preModifiedValue, maxLength);
 
         if (preModifiedValue == maxLength) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
         }
 
         if (maxLength < _minLength) {
@@ -145,7 +152,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit UnicodeSupportChanged(preModifiedValue, flag);
 
         if (preModifiedValue == flag) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
         }
 
         _isUnicodeSupported = flag;
@@ -167,7 +174,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit MinDurationChanged(preModifiedValue, minDuration);
 
         if (preModifiedValue == minDuration) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
         }
 
         if (minDuration == 0) {
@@ -200,7 +207,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit MaxDurationChanged(preModifiedValue, maxDuration);
 
         if (preModifiedValue == maxDuration) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
         }
 
         if (maxDuration < _minDuration) {
@@ -231,7 +238,11 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit FeePercentageChanged(preModifiedValue, feePercentage);
 
         if (preModifiedValue == feePercentage) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
+        }
+
+        if (feePercentage > _PERCENT100_WITH_PRECISION18) {
+            revert(_VALUE_OUT_OF_BOUND_ERROR_MSG);
         }
 
         _feePercentage = feePercentage;
@@ -253,7 +264,11 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit DiscountChanged(preModifiedValue, discount);
 
         if (preModifiedValue == discount) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
+        }
+
+        if (discount > _PERCENT100_WITH_PRECISION18) {
+            revert(_VALUE_OUT_OF_BOUND_ERROR_MSG);
         }
 
         _discount = discount;
@@ -274,7 +289,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         emit MinCommitmentAgeChanged(preModifiedValue, minCommitmentAge);
 
         if (preModifiedValue == minCommitmentAge) {
-            revert("Param being modified is same as new param");
+            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
         }
 
         _minCommitmentAge = minCommitmentAge;
@@ -288,10 +303,21 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 /* expires */,
         uint256 duration
     ) external view override returns (uint256) {
-        if (duration == 1) return 2 * (10 ** 18);
-        if (duration == 2) return 4 * (10 ** 18);
+        uint256 actualPrice;
 
-        return (duration + 2) * (10 ** 18);
+        // 100% discount applied
+        if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
+
+        // for duration equal to 1 or 2
+        if (duration <= 2) {
+            actualPrice = (2 * duration) * _PRECISION18;
+            return _applyDiscount(actualPrice);
+        }
+
+        // for duration greater than 2
+        actualPrice = (duration + 2) * (_PRECISION18);
+
+        return _applyDiscount(actualPrice);
     }
 
     /**
@@ -318,5 +344,19 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
 
         if (_maxLength != 0 && name.strlen() > _maxLength)
             revert InvalidName(name, "Name is more than max length");
+    }
+
+    function _applyDiscount(uint256 price) private view returns (uint256) {
+        // 100% discount applied
+        if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
+
+        // No discount to be applied
+        if (_discount == 0) return price;
+
+        uint256 discountedPrice = (price * _discount) /
+            _PERCENT100_WITH_PRECISION18;
+        uint256 finalPrice = price - discountedPrice;
+
+        return finalPrice;
     }
 }
