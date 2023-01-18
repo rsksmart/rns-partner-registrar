@@ -10,7 +10,7 @@ contract RegistrarAccessControl is IAccessControl, AccessControl {
         keccak256("HIGH_LEVEL_OPERATOR");
 
     /**
-     * @notice Checks if the action is done by an admin address.
+     * @notice Checks if the action is done by an owner address.
      * Reverts with reason: 'Not an owner'
      */
     modifier onlyOwner() {
