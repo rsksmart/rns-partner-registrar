@@ -32,7 +32,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const duration = 1;
 
-    let errorCapturado: boolean = false;
+    let capturedError: boolean = false;
 
     try {
       await runCheckPriceNegativeFlow(
@@ -45,7 +45,7 @@ describe('Check Domain Price With Given Partner', () => {
         domain
       );
     } catch (error) {
-      errorCapturado = true;
+      capturedError = true;
 
       const expectedError =
         'Error: call revert exception; VM Exception while processing transaction: reverted with reason string ';
@@ -67,7 +67,7 @@ describe('Check Domain Price With Given Partner', () => {
       ).to.contains('Not a partner');
     }
 
-    expect(errorCapturado).to.be.true;
+    expect(capturedError).to.be.true;
   }); //it
 
   it('Test Case No. 2 - Should return the correct price, NO discounts and RIFF currency', async () => {
@@ -86,7 +86,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const tokenName = nameToTokenId(domain);
 
-    const shouldnDomainBeAvailableByExpiration = false;
+    const shouldDomainBeAvailableByExpiration = false;
 
     const duration = 1;
 
@@ -122,7 +122,7 @@ describe('Check Domain Price With Given Partner', () => {
       regularUser,
       domainHashed,
       partner.address,
-      shouldnDomainBeAvailableByExpiration,
+      shouldDomainBeAvailableByExpiration,
       domain,
       isPurchased
     );
@@ -169,7 +169,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const shouldnDomainBeAvailableByExpiration = false;
+    const shouldDomainBeAvailableByExpiration = false;
 
     const duration = 3;
 
@@ -188,7 +188,7 @@ describe('Check Domain Price With Given Partner', () => {
       regularUser,
       domainHashed,
       partner.address,
-      shouldnDomainBeAvailableByExpiration,
+      shouldDomainBeAvailableByExpiration,
       domain,
       isPurchased
     );
@@ -208,7 +208,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const shouldnDomainBeAvailableByExpiration = true;
+    const shouldDomainBeAvailableByExpiration = true;
 
     const duration = 5;
 
@@ -221,7 +221,7 @@ describe('Check Domain Price With Given Partner', () => {
       regularUser,
       domainHashed,
       partner.address,
-      shouldnDomainBeAvailableByExpiration,
+      shouldDomainBeAvailableByExpiration,
       domain,
       isPurchased
     );
@@ -242,7 +242,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const shouldnDomainBeAvailableByExpiration = true;
+    const shouldDomainBeAvailableByExpiration = true;
 
     const duration = 5;
 
@@ -255,7 +255,7 @@ describe('Check Domain Price With Given Partner', () => {
       owner,
       domainHashed,
       partner.address,
-      shouldnDomainBeAvailableByExpiration,
+      shouldDomainBeAvailableByExpiration,
       domain,
       isPurchased
     );
@@ -276,7 +276,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const shouldnDomainBeAvailableByExpiration = false;
+    const shouldDomainBeAvailableByExpiration = false;
 
     const duration = 1;
 
@@ -289,7 +289,7 @@ describe('Check Domain Price With Given Partner', () => {
       partner,
       domainHashed,
       partner.address,
-      shouldnDomainBeAvailableByExpiration,
+      shouldDomainBeAvailableByExpiration,
       domain,
       isPurchased
     );
@@ -309,7 +309,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const shouldnDomainBeAvailableByExpiration = true;
+    const shouldDomainBeAvailableByExpiration = true;
 
     const duration = 2;
 
@@ -322,7 +322,7 @@ describe('Check Domain Price With Given Partner', () => {
       regularUser,
       domainHashed,
       partner.address,
-      shouldnDomainBeAvailableByExpiration,
+      shouldDomainBeAvailableByExpiration,
       domain,
       isPurchased
     );
@@ -367,7 +367,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const duration = 1;
 
-    let errorCapturado: boolean = false;
+    let capturedError: boolean = false;
 
     try {
       const domainHashed = namehash(domain);
@@ -382,7 +382,7 @@ describe('Check Domain Price With Given Partner', () => {
         domain
       );
     } catch (error) {
-      errorCapturado = true;
+      capturedError = true;
 
       const expectedError = 'Error: Disallowed codepoint: 0x23';
 
@@ -398,7 +398,7 @@ describe('Check Domain Price With Given Partner', () => {
       ).to.equal(expectedError);
     }
 
-    expect(errorCapturado, 'BUG: The contract did not throw Exception!').to.be
+    expect(capturedError, 'BUG: The contract did not throw Exception!').to.be
       .true;
   });
 
@@ -472,7 +472,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const duration = -1;
 
-    let errorCapturado: boolean = false;
+    let capturedError: boolean = false;
 
     try {
       await runCheckPriceNegativeFlow(
@@ -485,7 +485,7 @@ describe('Check Domain Price With Given Partner', () => {
         domain
       );
     } catch (error) {
-      errorCapturado = true;
+      capturedError = true;
 
       const expectedError = 'Error: value out-of-bounds';
 
@@ -501,7 +501,7 @@ describe('Check Domain Price With Given Partner', () => {
       ).to.contains(expectedError);
     }
 
-    expect(errorCapturado, 'BUG: The contract did not throw Exception!').to.be
+    expect(capturedError, 'BUG: The contract did not throw Exception!').to.be
       .true;
   });
 }); // describe
