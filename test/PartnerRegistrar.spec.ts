@@ -12,6 +12,7 @@ import {
   PartnerManager__factory,
   PartnerRegistrar__factory,
   PartnerRenewer__factory,
+  RegistrarAccessControl__factory,
 } from 'typechain-types';
 import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
 import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
@@ -69,10 +70,16 @@ const initialSetup = async () => {
   RIF.transfer.returns(true);
   RIF.approve.returns(true);
 
+  const accessControl = await deployContract<RegistrarAccessControl__factory>(
+    'RegistrarAccessControl',
+    []
+  );
+
   const PartnerConfiguration =
     await deployContract<PartnerConfiguration__factory>(
       'PartnerConfiguration',
       [
+        accessControl.address,
         DEFAULT_MIN_LENGTH,
         DEFAULT_MAX_LENGTH,
         DEFAULT_IS_UNICODE_SUPPORTED,
@@ -86,12 +93,13 @@ const initialSetup = async () => {
 
   const PartnerManager = await deployContract<PartnerManager__factory>(
     'PartnerManager',
-    []
+    [accessControl.address]
   );
 
   const PartnerRegistrar = await deployContract<PartnerRegistrar__factory>(
     'PartnerRegistrar',
     [
+      accessControl.address,
       NodeOwner.address,
       RIF.address,
       PartnerManager.address,
@@ -102,7 +110,12 @@ const initialSetup = async () => {
 
   const PartnerRenewer = await deployContract<PartnerRenewer__factory>(
     'PartnerRenewer',
-    [NodeOwner.address, RIF.address, PartnerManager.address]
+    [
+      accessControl.address,
+      NodeOwner.address,
+      RIF.address,
+      PartnerManager.address,
+    ]
   );
 
   const FeeManager = await deployContract<FeeManager__factory>('FeeManager', [

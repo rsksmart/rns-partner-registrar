@@ -7,6 +7,8 @@ import {
   UN_NECESSARY_MODIFICATION_ERROR_MSG,
   PARTNER_CONFIGURATION_CHANGED_EVENT,
 } from './utils/constants.utils';
+import { deployContract } from './utils/mock.utils';
+import { RegistrarAccessControl__factory } from 'typechain-types';
 
 async function testSetup() {
   const [
@@ -18,11 +20,15 @@ async function testSetup() {
     ...accounts
   ] = await ethers.getSigners();
 
-  const PartnerManager = (await ethers.getContractFactory(
-    'PartnerManager'
-  )) as PartnerManager__factory;
+  const accessControl = await deployContract<RegistrarAccessControl__factory>(
+    'RegistrarAccessControl',
+    []
+  );
 
-  const partnerManager = (await PartnerManager.deploy()) as PartnerManager;
+  const partnerManager = await deployContract<PartnerManager__factory>(
+    'PartnerManager',
+    [accessControl.address]
+  );
 
   await partnerManager.deployed();
 

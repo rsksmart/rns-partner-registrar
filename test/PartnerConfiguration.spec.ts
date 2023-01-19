@@ -2,11 +2,10 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import {
-  PartnerConfiguration,
   PartnerConfiguration__factory,
+  RegistrarAccessControl__factory,
 } from 'typechain-types';
 import { deployContract, oneRBTC } from './utils/mock.utils';
-import { MockContract } from '@defi-wonderland/smock';
 import { BigNumber } from 'ethers';
 import {
   UN_NECESSARY_MODIFICATION_ERROR_MSG,
@@ -33,10 +32,16 @@ const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
 
+  const accessControl = await deployContract<RegistrarAccessControl__factory>(
+    'RegistrarAccessControl',
+    []
+  );
+
   const PartnerConfiguration =
     await deployContract<PartnerConfiguration__factory>(
       'PartnerConfiguration',
       [
+        accessControl.address,
         DEFAULT_MIN_LENGTH,
         DEFAULT_MAX_LENGTH,
         DEFAULT_IS_UNICODE_SUPPORTED,
@@ -52,16 +57,20 @@ const initialSetup = async () => {
     PartnerConfiguration,
     owner,
     signers,
+    accessControl,
   };
 };
 
 describe('Partner Configuration', () => {
   describe('when the contract is deployed', () => {
     it('should revert if the min length is 0', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
 
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           0,
           DEFAULT_MAX_LENGTH,
           DEFAULT_IS_UNICODE_SUPPORTED,
@@ -75,9 +84,12 @@ describe('Partner Configuration', () => {
     });
 
     it('should revert if the max length is less than the min length', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           DEFAULT_MIN_LENGTH,
           2,
           DEFAULT_IS_UNICODE_SUPPORTED,
@@ -91,9 +103,12 @@ describe('Partner Configuration', () => {
     });
 
     it('should revert if the min duration is 0', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           DEFAULT_MIN_LENGTH,
           DEFAULT_MAX_LENGTH,
           DEFAULT_IS_UNICODE_SUPPORTED,
@@ -107,9 +122,12 @@ describe('Partner Configuration', () => {
     });
 
     it('should revert if the max duration is less than the min duration', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           DEFAULT_MIN_LENGTH,
           DEFAULT_MAX_LENGTH,
           DEFAULT_IS_UNICODE_SUPPORTED,

@@ -8,7 +8,7 @@ import {
   getRenewData,
   oneRBTC,
 } from '../utils/mock.utils';
-import { NodeOwner } from 'typechain-types';
+import { NodeOwner, RegistrarAccessControl__factory } from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
 import { expect } from 'chai';
@@ -99,13 +99,20 @@ const initialSetup = async () => {
     }
   );
 
+  const accessControl =
+    await deployContractAsMock<RegistrarAccessControl__factory>(
+      'RegistrarAccessControl',
+      []
+    );
+
   const { contract: PartnerManager } = await deployContract<PartnerManager>(
     'PartnerManager',
-    {}
+    { accessControl: accessControl.address }
   );
 
   const { contract: PartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+      accessControl: accessControl.address,
       minLength: 5,
       maxLength: 20,
       isUnicodeSupported: false,
@@ -118,6 +125,7 @@ const initialSetup = async () => {
 
   const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+      accessControl: accessControl.address,
       minLength: 5,
       maxLength: 20,
       isUnicodeSupported: false,
@@ -131,6 +139,7 @@ const initialSetup = async () => {
   const { contract: PartnerRegistrar } = await deployContract<PartnerRegistrar>(
     'PartnerRegistrar',
     {
+      accessControl: accessControl.address,
       nodeOwner: NodeOwner.address,
       rif: RIF.address,
       partnerManager: PartnerManager.address,
@@ -142,6 +151,7 @@ const initialSetup = async () => {
   const { contract: PartnerRenewer } = await deployContract<PartnerRenewer>(
     'PartnerRenewer',
     {
+      accessControl: accessControl.address,
       nodeOwner: NodeOwner.address,
       rif: RIF.address,
       partnerManager: PartnerManager.address,
