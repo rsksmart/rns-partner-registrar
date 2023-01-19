@@ -16,7 +16,9 @@ import {
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
+
 describe('Check Domain Price With Given Partner', () => {
+  
   it('Test Case No. 1 - Should throw an warning of White List. Should not deliver price', async () => {
     //Test Case No. 1
     //User Role:                     Partner Reseller (NOT AT WHITE LIST)

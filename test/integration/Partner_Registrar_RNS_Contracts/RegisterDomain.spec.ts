@@ -17,249 +17,219 @@ import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
 
-describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
-
+describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     it('Test Case No. 1 - ... ... ...', async () => {
         //Test Case No. 1
-        //User Role:                     RNS Owner
-        //Number of Steps:               One step
-        //Domain Name - Chars:           Valid (Within Allowed Range) - Only Letters
-        //Domain Name - Is Available?:   Available (Never Purchased)
-        //MinCommitmentAge:              Equals To Zero
-        //Duration:                      -1 year (-)
-
-
-
-
-    }); //it 
+        //User Role:                            RNS Owner
+        //Number of Steps:                      One step
+        //Domain Name - Chars:                  Valid (Within Allowed Range) - Only Letters
+        //Domain Name - Is Available?:          Available (Never Purchased)
+        //MinCommitmentAge:                     Equals To Zero
+        //Duration:                             -1 year (-)
+        
+        }); //it 
 
 
 
 
 
-    it('Test Case No. 2 - ... ... ...', async () => {
+        it('Test Case No. 2 - ... ... ...', async () => {
         //Test Case No. 2
-        //User Role:                      Partner Reseller
-        //Number of Steps:                Two steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Only Numbers
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               (Greater than zero)
-        //Duration:                       0 Years (-)
+        //User Role:                           Partner Reseller
+        //Number of Steps:                     Two steps
+        //Domain Name - Chars:                 Valid (Within Allowed Range) - Only Numbers
+        //Domain Name - Is Available?:         Available (Never Purchased)
+        //MinCommitmentAge:                    Greater than zero
+        //Duration:                            0 Years (-)
+            
+        }); //it
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 3 - ... ... ...', async () => {
+        it('Test Case No. 3 - ... ... ...', async () => {
         //Test Case No. 3
-        //User Role:                      RNS Owner
-        //Number of Steps:                Two steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Only Emojis
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               Equals To Zero
-        //Duration:                       1 year
+        //User Role:                          RNS Owner
+        //Number of Steps:                    Two steps
+        //Domain Name - Chars:                Valid (Within Allowed Range) - Letters And Number
+        //Domain Name - Is Available?:        Available (Never Purchased)
+        //MinCommitmentAge:                   Equals To Zero
+        //Duration:                           1 year
+        
+        }); //it
+        
+        
 
 
 
-
-    }); //it 
-
-
-
-
-    it('Test Case No. 4 - ... ... ...', async () => {
+        it('Test Case No. 4 - ... ... ...', async () => {
         //Test Case No. 4
-        //User Role:                      Partner Reseller
-        //Number of Steps:                One step
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
-        //Domain Name - Is Available?:    Available (Not Renovated)
-        //MinCommitmentAge:              (Greater than zero)
-        //Duration:                       2 years
+        //User Role:                         Partner Reseller
+        //Number of Steps:                   One step
+        //Domain Name - Chars:               Valid (Within Allowed Range) - Letters and Numbers
+        //Domain Name - Is Available?:       Available (Never Purchased)
+        //MinCommitmentAge:                  Greater than zero
+        //Duration:                          2 years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 5 - ... ... ...', async () => {
+        it('Test Case No. 5 - ... ... ...', async () => {
         //Test Case No. 5
-        //User Role:                      RNS Owner
-        //Number of Steps:                Three steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Emojis
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               (Greater than zero)
-        //Duration:                       Between 3 and 9 Years
+        //User Role:                         RNS Owner
+        //Number of Steps:                   Three steps
+        //Domain Name - Chars:               Valid (Within Allowed Range) - Only Letters
+        //Domain Name - Is Available?:       Available (Never Purchased)
+        //MinCommitmentAge:                  Greater than zero
+        //Duration:                          Between 3 and 9 Years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 6 - ... ... ...', async () => {
+        it('Test Case No. 6 - ... ... ...', async () => {
         //Test Case No. 6
-        //User Role:                      Partner Reseller
-        //Number of Steps:                Three steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Numbers and Emojis
-        //Domain Name - Is Available?:    Available (Not Renovated)
-        //MinCommitmentAge:               Equals To Zero
-        //Duration:                       Between 3 and 9 Years
+        //User Role:                         Partner Reseller
+        //Number of Steps:                   Three steps
+        //Domain Name - Chars:               Valid (Within Allowed Range) - Only Numbers
+        //Domain Name - Is Available?:       Available (Never Purchased)
+        //MinCommitmentAge:                  Equals To Zero
+        //Duration:                          Between 3 and 9 Years
+        
+        }); //it
+        
+        
 
 
 
-
-    }); //it 
-
-
-
-
-    it('Test Case No. 7 - ... ... ...', async () => {
+        it('Test Case No. 7 - ... ... ...', async () => {
         //Test Case No. 7
-        //User Role:                      Regular User 
-        //Number of Steps:                One step
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Letters, Numbers And Emojis
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               Equals To Zero
-        //Duration:                       10 years
+        //User Role:                         Regular User 
+        //Number of Steps:                   One step
+        //Domain Name - Chars:               Valid (Within Allowed Range) - Letters and Numbers
+        //Domain Name - Is Available?:       Available (Never Purchased)
+        //MinCommitmentAge:                  Equals To Zero
+        //Duration:                          10 years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 8 - ... ... ...', async () => {
+        it('Test Case No. 8 - ... ... ...', async () => {
         //Test Case No. 8
-        //User Role:                      Regular User 
-        //Number of Steps:                Two steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Only Letters
-        //Domain Name - Is Available?:    Available (Not Renovated)
-        //MinCommitmentAge:               (Greater than zero)
-        //Duration:                       10 years
+        //User Role:                       Regular User 
+        //Number of Steps:                 Two steps
+        //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Greater than zero
+        //Duration:                        10 years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 9 - ... ... ...', async () => {
+        it('Test Case No. 9 - ... ... ...', async () => {
         //Test Case No. 9
-        //User Role:                      Regular User 
-        //Number of Steps:                Three steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Only Numbers
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               (Greater than zero)
-        //Duration:                       1 year
+        //User Role:                       Regular User 
+        //Number of Steps:                 Three steps
+        //Domain Name - Chars:             Valid (Within Allowed Range) - Only Numbers
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Greater than zero
+        //Duration:                        1 year
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 10 - ... ... ...', async () => {
+        it('Test Case No. 10 - ... ... ...', async () => {
         //Test Case No. 10
-        //User Role:                      Regular User 
-        //Number of Steps:                Three steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Only Emojis
-        //Domain Name - Is Available?:    Available (Not Renovated)
-        //MinCommitmentAge:               Equals To Zero
-        //Duration:                       2 years
+        //User Role:                       Regular User 
+        //Number of Steps:                 Three steps
+        //Domain Name - Chars:             Valid (Within Allowed Range) - Letters and Numbers
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Equals To Zero
+        //Duration:                        2 years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 11 - ... ... ...', async () => {
+        it('Test Case No. 11 - ... ... ...', async () => {
         //Test Case No. 11
-        //User Role:                      Regular User 
-        //Number of Steps:                One step
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               (Greater than zero)
-        //Duration:                       Between 3 and 9 Years
+        //User Role:                       Regular User 
+        //Number of Steps:                 One step
+        //Domain Name - Chars:             Valid (Within Allowed Range) - Letters and Numbers
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Greater than zero
+        //Duration:                        Between 3 and 9 Years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 12 - ... ... ...', async () => {
+        it('Test Case No. 12 - ... ... ...', async () => {
         //Test Case No. 12
-        //User Role:                      Regular User 
-        //Number of Steps:                Three steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Emojis
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               (Greater than zero)
-        //Duration:                       10 years
+        //User Role:                       Regular User 
+        //Number of Steps:                 Three steps
+        //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Greater than zero
+        //Duration:                        10 years
+    
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 13 - ... ... ...', async () => {
+        it('Test Case No. 13 - ... ... ...', async () => {
         //Test Case No. 13
-        //User Role:                      Partner Reseller
-        //Number of Steps:                Two steps
-        //Domain Name - Chars:            Greater Than The Maximum Allowed (-) - Numbers and Emojis
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               Equals To Zero
-        //Duration:                       Between 3 and 9 Years
+        //User Role:                       Partner Reseller
+        //Number of Steps:                 Two steps
+        //Domain Name - Chars:             Greater Than The Maximum Allowed (-) - Only Numbers 
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Equals To Zero
+        //Duration:                        Between 3 and 9 Years
+    
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 14 - ... ... ...', async () => {
+        it('Test Case No. 14 - ... ... ...', async () => {
         //Test Case No. 14
-        //User Role:                      RNS Owner
-        //Number of Steps:                One step
-        //Domain Name - Chars:            Smaller Than 5 (Minimum Allowed) (-) - Letters, Numbers And Emojis
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               Equals To Zero
-        //Duration:                       2 years
+        //User Role:                       RNS Owner
+        //Number of Steps:                 One step
+        //Domain Name - Chars:             Smaller Than 5 (Minimum Allowed) (-) - Letters and Numbers
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Equals To Zero
+        //Duration:                        2 years
+    
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 15 - ... ... ...', async () => {
+        it('Test Case No. 15 - ... ... ...', async () => {
         //Test Case No. 15
         //User Role:                      Partner Reseller
         //Number of Steps:                One step
@@ -267,82 +237,103 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
         //Domain Name - Is Available?:    Available (Never Purchased)
         //MinCommitmentAge:               Equals To Zero
         //Duration:                       10 years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 16 - ... ... ...', async () => {
+        it('Test Case No. 16 - ... ... ...', async () => {
         //Test Case No. 16
-        //User Role:                      RNS Owner
-        //Number of Steps:                One step
-        //Domain Name - Chars:            Valid (Within Allowed Range) - With Special Chars (-)
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               (Greater than zero)
-        //Duration:                       1 year
+        //User Role:                       RNS Owner
+        //Number of Steps:                 One step
+        //Domain Name - Chars:             Valid (Within Allowed Range) - With Special Chars (-)
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Greater than zero
+        //Duration:                        1 year
+    
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-
-    it('Test Case No. 17 - ... ... ...', async () => {
+        it('Test Case No. 17 - ... ... ...', async () => {
         //Test Case No. 17
-        //User Role:                      Partner Reseller
-        //Number of Steps:                Two steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Only Letters
-        //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               Números Negativos (-)
-        //Duration:                       2 years
+        //User Role:                       Partner Reseller
+        //Number of Steps:                 Two steps
+        //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters
+        //Domain Name - Is Available?:     Available (Never Purchased)
+        //MinCommitmentAge:                Negative Number (-)
+        //Duration:                        2 years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
 
-
-
-    it('Test Case No. 18 - ... ... ...', async () => {
+        it('Test Case No. 18 - ... ... ...', async () => {
         //Test Case No. 18
         //User Role:                      Regular User 
         //Number of Steps:                Three steps
         //Domain Name - Chars:            Valid (Within Allowed Range) - Only Numbers
         //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               Vacío (-)
+        //MinCommitmentAge:               Empty Value (-)
         //Duration:                       Between 3 and 9 Years
+        
+        }); //it 
 
 
 
 
-    }); //it 
 
-
-
-    
-    it('Test Case No. 19 - ... ... ...', async () => {
+        it('Test Case No. 19 - ... ... ...', async () => {
         //Test Case No. 19
         //User Role:                      RNS Owner
         //Number of Steps:                Two steps
-        //Domain Name - Chars:            Valid (Within Allowed Range) - Only Emojis
+        //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
         //Domain Name - Is Available?:    Available (Never Purchased)
-        //MinCommitmentAge:               Mayor al Máximo (-)
+        //MinCommitmentAge:               Greater Than Maximum (-)
         //Duration:                       10 years
+        
+        }); //it 
 
 
 
 
-    }); //it 
+
+        it('Test Case No. 20 - ... ... ...', async () => {
+        //Test Case No. 20
+        //User Role:                      Regular User 
+        //Number of Steps:                One step
+        //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
+        //Domain Name - Is Available?:    Occupied By Regular User (-)
+        //MinCommitmentAge:               Greater than zero
+        //Duration:                       2 years
+            
+        }); //it 
+
+
+
+
+
+        it('Test Case No. 21 - ... ... ...', async () => {
+        //Test Case No. 21
+        //User Role:                     Regular User 
+        //Number of Steps:               One step
+        //Domain Name - Chars:           Valid (Within Allowed Range) - Letters and Numbers
+        //Domain Name - Is Available?:   Available (Never Purchased)
+        //MinCommitmentAge:              Greater than zero
+        //Duration:                      Greater Than Maximum (-)
+    
+        }); //it 
 
 
 
 
 
 }); // describe
+  
