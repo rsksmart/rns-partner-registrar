@@ -3,20 +3,32 @@ pragma solidity ^0.8.16;
 
 import "./IPartnerManager.sol";
 import "../PartnerConfiguration/IPartnerConfiguration.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "../Access/IAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title PartnerManager
     @dev Keeps track of the whitelisted partners and its configurations.
 */
-contract PartnerManager is IPartnerManager, Ownable {
+contract PartnerManager is IPartnerManager {
     mapping(address => bool) private _partners;
     mapping(address => IPartnerConfiguration) private _partnerConfigurations;
     mapping(address => address) private _partnerOwnerAccounts;
+    IAccessControl private _accessControl;
 
     event PartnerAdded(address indexed partner, address indexed ownerAccount);
     event PartnerRemoved(address indexed partner, address indexed ownerAccount);
+
+    modifier onlyHighLevelOperator() {
+        if (!_accessControl.isHighLevelOperator(msg.sender)) {
+            revert OnlyHighLevelOperator(msg.sender);
+        }
+        _;
+    }
+
+    constructor(IAccessControl accessControl) {
+        _accessControl = accessControl;
+    }
 
     /**
        @inheritdoc IPartnerManager
@@ -31,7 +43,7 @@ contract PartnerManager is IPartnerManager, Ownable {
     function addPartner(
         address partner,
         address partnerOwnerAccount
-    ) external override onlyOwner {
+    ) external override onlyHighLevelOperator {
         _partners[partner] = true;
         _partnerOwnerAccounts[partner] = partnerOwnerAccount;
         emit PartnerAdded(partner, partnerOwnerAccount);
@@ -40,7 +52,9 @@ contract PartnerManager is IPartnerManager, Ownable {
     /**
        @inheritdoc IPartnerManager
      */
-    function removePartner(address partner) external override onlyOwner {
+    function removePartner(
+        address partner
+    ) external override onlyHighLevelOperator {
         _partners[partner] = false;
 
         emit PartnerRemoved(partner, _partnerOwnerAccounts[partner]);
@@ -52,7 +66,7 @@ contract PartnerManager is IPartnerManager, Ownable {
     function setPartnerConfiguration(
         address partner,
         IPartnerConfiguration partnerConfiguration
-    ) external override onlyOwner {
+    ) external override onlyHighLevelOperator {
         if (
             address(_partnerConfigurations[partner]) ==
             address(partnerConfiguration)

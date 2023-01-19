@@ -6,6 +6,8 @@ pragma solidity ^0.8.16;
  * @dev Defines the common behavior for a Partner Renewer.
  */
 interface IBaseRenewer {
+    error OnlyHighLevelOperator(address sender);
+
     /**
      * @notice allows name owner to renew their name
      * @param name the name of the partner

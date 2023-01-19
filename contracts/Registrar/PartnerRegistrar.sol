@@ -6,19 +6,19 @@ import "../NodeOwner.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../StringUtils.sol";
 import "../FeeManager/IFeeManager.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../test-utils/Resolver.sol";
 import "../RNS.sol";
 import "@rsksmart/erc677/contracts/IERC677.sol";
 import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "../BytesUtils.sol";
+import "../Access/IAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title PartnerRegistrar
     @dev Implements the interface IBaseRegistrar to register names in RNS.
 */
-contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
+contract PartnerRegistrar is IBaseRegistrar, IERC677TransferReceiver {
     mapping(bytes32 => uint256) private _commitmentRevealTime;
 
     NodeOwner private _nodeOwner;
@@ -27,6 +27,7 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     IFeeManager private _feeManager;
     RNS private _rns;
     bytes32 private _rootNode;
+    IAccessControl private _accessControl;
 
     // sha3("register(string,address,bytes32,uint,address,address)")
     bytes4 private constant _REGISTER_SIGNATURE = 0x646c3681;
@@ -34,18 +35,27 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
     using BytesUtils for bytes;
     using StringUtils for string;
 
+    modifier onlyHighLevelOperator() {
+        if (!_accessControl.isHighLevelOperator(msg.sender)) {
+            revert OnlyHighLevelOperator(msg.sender);
+        }
+        _;
+    }
+
     constructor(
+        IAccessControl accessControl,
         NodeOwner nodeOwner,
         IERC677 rif,
         IPartnerManager partnerManager,
         RNS rns,
         bytes32 rootNode
-    ) Ownable() {
+    ) {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
         _rns = rns;
         _rootNode = rootNode;
+        _accessControl = accessControl;
     }
 
     modifier onlyPartner(address partner) {
@@ -56,7 +66,9 @@ contract PartnerRegistrar is IBaseRegistrar, Ownable, IERC677TransferReceiver {
         _;
     }
 
-    function setFeeManager(IFeeManager feeManager) external onlyOwner {
+    function setFeeManager(
+        IFeeManager feeManager
+    ) external onlyHighLevelOperator {
         if (address(_feeManager) == address(feeManager)) {
             revert("Param being modified is same as new param");
         }

@@ -7,6 +7,7 @@ pragma solidity ^0.8.16;
  * @dev Defines the configuration for a partner in particular
  */
 interface IPartnerConfiguration {
+    error OnlyHighLevelOperator(address sender);
     /**
      * @notice event emitted when the minimum length is changed
      * @param previousValue the old length

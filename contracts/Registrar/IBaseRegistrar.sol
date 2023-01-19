@@ -9,6 +9,8 @@ import "../FeeManager/IFeeManager.sol";
     @dev Defines the interface for a compatible Registrar
 */
 interface IBaseRegistrar {
+    error OnlyHighLevelOperator(address sender);
+
     /**
      * @notice event emitted when a domain has been successfully registered
      * @param partner through which the domain was registered (an address)
