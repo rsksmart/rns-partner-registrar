@@ -4,6 +4,7 @@ pragma solidity ^0.8.16;
 import "./IPartnerConfiguration.sol";
 import "../StringUtils.sol";
 import "../Access/IAccessControl.sol";
+import "../Access/HasAccessControl.sol";
 
 error InvalidName(string name, string reason);
 error InvalidDuration(uint256 duration, string reason);
@@ -13,7 +14,7 @@ error InvalidLength(uint256 length, string reason);
  * @title PartnerConfiguration
  * @author Identity Team @IOVLabs
  */
-contract PartnerConfiguration is IPartnerConfiguration {
+contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
     bool private _isUnicodeSupported;
     uint256 private _minLength;
     uint256 private _maxLength;
@@ -22,7 +23,6 @@ contract PartnerConfiguration is IPartnerConfiguration {
     uint256 private _feePercentage;
     uint256 private _discount;
     uint256 private _minCommitmentAge;
-    IAccessControl private _accessControl;
 
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
     uint256 internal constant _PRECISION18 = 10 ** 18;
@@ -32,13 +32,6 @@ contract PartnerConfiguration is IPartnerConfiguration {
         "Value must be within range 0 to 100000000000000000000";
 
     using StringUtils for string;
-
-    modifier onlyHighLevelOperator() {
-        if (!_accessControl.isHighLevelOperator(msg.sender)) {
-            revert OnlyHighLevelOperator(msg.sender);
-        }
-        _;
-    }
 
     constructor(
         IAccessControl accessControl,
@@ -50,7 +43,7 @@ contract PartnerConfiguration is IPartnerConfiguration {
         uint256 feePercentage,
         uint256 discount,
         uint256 minCommitmentAge
-    ) {
+    ) HasAccessControl(accessControl) {
         if (minLength == 0) {
             revert InvalidLength(minLength, "Minimum length cannot be 0");
         }
@@ -81,7 +74,6 @@ contract PartnerConfiguration is IPartnerConfiguration {
         _feePercentage = feePercentage;
         _discount = discount;
         _minCommitmentAge = minCommitmentAge;
-        _accessControl = accessControl;
     }
 
     /**

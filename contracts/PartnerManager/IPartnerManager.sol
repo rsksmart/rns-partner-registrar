@@ -9,8 +9,6 @@ import "../PartnerConfiguration/IPartnerConfiguration.sol";
     @dev Keeps track of the whitelisted partners and its configurations.
 */
 interface IPartnerManager {
-    error OnlyHighLevelOperator(address sender);
-
     /**
      * @notice event emitted when the configuration for a partner is set
      * @param partner address for the partner

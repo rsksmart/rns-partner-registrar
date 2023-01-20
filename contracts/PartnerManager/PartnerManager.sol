@@ -4,31 +4,22 @@ pragma solidity ^0.8.16;
 import "./IPartnerManager.sol";
 import "../PartnerConfiguration/IPartnerConfiguration.sol";
 import "../Access/IAccessControl.sol";
+import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title PartnerManager
     @dev Keeps track of the whitelisted partners and its configurations.
 */
-contract PartnerManager is IPartnerManager {
+contract PartnerManager is IPartnerManager, HasAccessControl {
     mapping(address => bool) private _partners;
     mapping(address => IPartnerConfiguration) private _partnerConfigurations;
     mapping(address => address) private _partnerOwnerAccounts;
-    IAccessControl private _accessControl;
 
     event PartnerAdded(address indexed partner, address indexed ownerAccount);
     event PartnerRemoved(address indexed partner, address indexed ownerAccount);
 
-    modifier onlyHighLevelOperator() {
-        if (!_accessControl.isHighLevelOperator(msg.sender)) {
-            revert OnlyHighLevelOperator(msg.sender);
-        }
-        _;
-    }
-
-    constructor(IAccessControl accessControl) {
-        _accessControl = accessControl;
-    }
+    constructor(IAccessControl accessControl) HasAccessControl(accessControl) {}
 
     /**
        @inheritdoc IPartnerManager

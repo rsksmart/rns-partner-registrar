@@ -9,41 +9,37 @@ import "../FeeManager/IFeeManager.sol";
 import "./IBaseRenewer.sol";
 import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
+import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title PartnerRenewer
     @dev Implements the interface IBaseRenewer to renew names in RNS.
 */
-contract PartnerRenewer is IBaseRenewer, IERC677TransferReceiver {
+contract PartnerRenewer is
+    IBaseRenewer,
+    IERC677TransferReceiver,
+    HasAccessControl
+{
     NodeOwner private _nodeOwner;
     IERC677 private _rif;
     IPartnerManager private _partnerManager;
     IFeeManager private _feeManager;
-    IAccessControl private _accessControl;
 
     // sha3('renew(string,uint,address)')
     bytes4 private constant _RENEW_SIGNATURE = 0x8d7016ca;
 
     using BytesUtils for bytes;
 
-    modifier onlyHighLevelOperator() {
-        if (!_accessControl.isHighLevelOperator(msg.sender)) {
-            revert OnlyHighLevelOperator(msg.sender);
-        }
-        _;
-    }
-
     constructor(
         IAccessControl accessControl,
         NodeOwner nodeOwner,
         IERC677 rif,
         IPartnerManager partnerManager
-    ) {
+    ) HasAccessControl(accessControl) {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
-        _accessControl = accessControl;
     }
 
     modifier onlyPartner(address partner) {

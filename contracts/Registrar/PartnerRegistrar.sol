@@ -12,13 +12,18 @@ import "@rsksmart/erc677/contracts/IERC677.sol";
 import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
+import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title PartnerRegistrar
     @dev Implements the interface IBaseRegistrar to register names in RNS.
 */
-contract PartnerRegistrar is IBaseRegistrar, IERC677TransferReceiver {
+contract PartnerRegistrar is
+    IBaseRegistrar,
+    IERC677TransferReceiver,
+    HasAccessControl
+{
     mapping(bytes32 => uint256) private _commitmentRevealTime;
 
     NodeOwner private _nodeOwner;
@@ -27,20 +32,12 @@ contract PartnerRegistrar is IBaseRegistrar, IERC677TransferReceiver {
     IFeeManager private _feeManager;
     RNS private _rns;
     bytes32 private _rootNode;
-    IAccessControl private _accessControl;
 
     // sha3("register(string,address,bytes32,uint,address,address)")
     bytes4 private constant _REGISTER_SIGNATURE = 0x646c3681;
 
     using BytesUtils for bytes;
     using StringUtils for string;
-
-    modifier onlyHighLevelOperator() {
-        if (!_accessControl.isHighLevelOperator(msg.sender)) {
-            revert OnlyHighLevelOperator(msg.sender);
-        }
-        _;
-    }
 
     constructor(
         IAccessControl accessControl,
@@ -49,13 +46,12 @@ contract PartnerRegistrar is IBaseRegistrar, IERC677TransferReceiver {
         IPartnerManager partnerManager,
         RNS rns,
         bytes32 rootNode
-    ) {
+    ) HasAccessControl(accessControl) {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
         _rns = rns;
         _rootNode = rootNode;
-        _accessControl = accessControl;
     }
 
     modifier onlyPartner(address partner) {

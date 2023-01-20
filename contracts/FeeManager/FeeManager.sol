@@ -5,7 +5,6 @@ import "../RIF.sol";
 import "./IFeeManager.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../Registrar/IBaseRegistrar.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../Renewer/IBaseRenewer.sol";
 
 error ZeroBalance();
@@ -17,7 +16,7 @@ error TransferFailed(address from, address to, uint256 amount);
     @title FeeManager
     @dev Keeps the balances of the collected revenew made by the partners.
 */
-contract FeeManager is IFeeManager, Ownable {
+contract FeeManager is IFeeManager {
     RIF private _rif;
 
     mapping(address => uint256) private _balances;
@@ -44,7 +43,7 @@ contract FeeManager is IFeeManager, Ownable {
         IBaseRenewer renewer,
         IPartnerManager partnerManager,
         address pool
-    ) Ownable() {
+    ) {
         _rif = rif;
         _registrar = registrar;
         _renewer = renewer;
