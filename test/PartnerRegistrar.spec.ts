@@ -12,6 +12,7 @@ import {
   PartnerManager__factory,
   PartnerRegistrar__factory,
   PartnerRenewer__factory,
+  RegistrarAccessControl__factory,
 } from 'typechain-types';
 import NodeOwnerJson from '../artifacts/contracts/NodeOwner.sol/NodeOwner.json';
 import RNSJson from '../artifacts/contracts/RNS.sol/RNS.json';
@@ -34,6 +35,7 @@ import {
   UN_NECESSARY_MODIFICATION_ERROR_MSG,
   FEE_MANAGER_CHANGED_EVENT,
   NAME_REGISTERED_EVENT,
+  ONLY_HIGH_LEVEL_OPERATOR_ERR,
 } from './utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
@@ -53,6 +55,7 @@ const initialSetup = async () => {
   const partnerOwner = signers[4];
   const alternateFeeManager = signers[5];
   const attacker = signers[5];
+  const highLevelOperator = signers[6];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
@@ -69,10 +72,16 @@ const initialSetup = async () => {
   RIF.transfer.returns(true);
   RIF.approve.returns(true);
 
+  const accessControl = await deployContract<RegistrarAccessControl__factory>(
+    'RegistrarAccessControl',
+    []
+  );
+
   const PartnerConfiguration =
     await deployContract<PartnerConfiguration__factory>(
       'PartnerConfiguration',
       [
+        accessControl.address,
         DEFAULT_MIN_LENGTH,
         DEFAULT_MAX_LENGTH,
         DEFAULT_IS_UNICODE_SUPPORTED,
@@ -86,12 +95,13 @@ const initialSetup = async () => {
 
   const PartnerManager = await deployContract<PartnerManager__factory>(
     'PartnerManager',
-    []
+    [accessControl.address]
   );
 
   const PartnerRegistrar = await deployContract<PartnerRegistrar__factory>(
     'PartnerRegistrar',
     [
+      accessControl.address,
       NodeOwner.address,
       RIF.address,
       PartnerManager.address,
@@ -102,7 +112,12 @@ const initialSetup = async () => {
 
   const PartnerRenewer = await deployContract<PartnerRenewer__factory>(
     'PartnerRenewer',
-    [NodeOwner.address, RIF.address, PartnerManager.address]
+    [
+      accessControl.address,
+      NodeOwner.address,
+      RIF.address,
+      PartnerManager.address,
+    ]
   );
 
   const FeeManager = await deployContract<FeeManager__factory>('FeeManager', [
@@ -129,6 +144,8 @@ const initialSetup = async () => {
     partnerOwner,
     alternateFeeManager,
     attacker,
+    highLevelOperator,
+    accessControl,
   };
 };
 
@@ -606,5 +623,38 @@ describe('Registrar events', () => {
     await expect(PartnerRegistrar.setFeeManager(alternateFeeManager.address))
       .to.emit(PartnerRegistrar, FEE_MANAGER_CHANGED_EVENT)
       .withArgs(PartnerRegistrar.address, alternateFeeManager.address);
+  });
+});
+
+describe('Access Control', () => {
+  it('Should revert if the caller is not the high level operator', async () => {
+    const { PartnerRegistrar, attacker, alternateFeeManager } =
+      await loadFixture(initialSetup);
+
+    await expect(
+      PartnerRegistrar.connect(attacker).setFeeManager(
+        alternateFeeManager.address
+      )
+    ).to.be.revertedWithCustomError(
+      PartnerRegistrar,
+      ONLY_HIGH_LEVEL_OPERATOR_ERR
+    );
+  });
+
+  it('Should succeed if the caller is the high level operator', async () => {
+    const {
+      PartnerRegistrar,
+      alternateFeeManager,
+      highLevelOperator,
+      accessControl,
+    } = await loadFixture(initialSetup);
+
+    await accessControl.addHighLevelOperator(highLevelOperator.address);
+
+    await expect(
+      PartnerRegistrar.connect(highLevelOperator).setFeeManager(
+        alternateFeeManager.address
+      )
+    ).to.be.fulfilled;
   });
 });

@@ -4,6 +4,7 @@ export const UN_NECESSARY_MODIFICATION_ERROR_MSG =
 export const ONLY_OWNER_ERR = 'OnlyOwner';
 export const VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG =
   'Value must be within range 0 to 100000000000000000000'; // 100000000000000000000 here is the precision representation of 100%
+export const ONLY_HIGH_LEVEL_OPERATOR_ERR = 'OnlyHighLevelOperator';
 
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';

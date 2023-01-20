@@ -6,7 +6,10 @@ import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
 import {
   UN_NECESSARY_MODIFICATION_ERROR_MSG,
   PARTNER_CONFIGURATION_CHANGED_EVENT,
+  ONLY_HIGH_LEVEL_OPERATOR_ERR,
 } from './utils/constants.utils';
+import { deployContract } from './utils/mock.utils';
+import { RegistrarAccessControl__factory } from 'typechain-types';
 
 async function testSetup() {
   const [
@@ -15,14 +18,19 @@ async function testSetup() {
     account2,
     account3,
     partnerOwnerAccount,
+    highLevelOperator,
     ...accounts
   ] = await ethers.getSigners();
 
-  const PartnerManager = (await ethers.getContractFactory(
-    'PartnerManager'
-  )) as PartnerManager__factory;
+  const accessControl = await deployContract<RegistrarAccessControl__factory>(
+    'RegistrarAccessControl',
+    []
+  );
 
-  const partnerManager = (await PartnerManager.deploy()) as PartnerManager;
+  const partnerManager = await deployContract<PartnerManager__factory>(
+    'PartnerManager',
+    [accessControl.address]
+  );
 
   await partnerManager.deployed();
 
@@ -34,6 +42,8 @@ async function testSetup() {
     account3,
     accounts,
     partnerOwnerAccount,
+    accessControl,
+    highLevelOperator,
   };
 }
 
@@ -355,6 +365,71 @@ describe('partnerManager', () => {
         console.log(e);
         throw e;
       }
+    });
+  });
+
+  describe('Access Control', () => {
+    it('Should revert if the caller is not the high level operator', async () => {
+      const {
+        partnerManager,
+        account1: partner,
+        account2,
+        partnerOwnerAccount,
+      } = await loadFixture(testSetup);
+
+      await expect(
+        partnerManager
+          .connect(account2)
+          .addPartner(partner.address, partnerOwnerAccount.address)
+      ).to.be.revertedWithCustomError(
+        partnerManager,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        partnerManager
+          .connect(account2)
+          .setPartnerConfiguration(partner.address, account2.address)
+      ).to.be.revertedWithCustomError(
+        partnerManager,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        partnerManager.connect(account2).removePartner(partner.address)
+      ).to.be.revertedWithCustomError(
+        partnerManager,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+    });
+
+    it('Should succeed if the caller is the high level operator', async () => {
+      const {
+        partnerManager,
+        account1: partner,
+        account2,
+        partnerOwnerAccount,
+        accessControl,
+        highLevelOperator,
+      } = await loadFixture(testSetup);
+
+      await accessControl.addHighLevelOperator(highLevelOperator.address);
+
+      await expect(
+        partnerManager
+          .connect(highLevelOperator)
+          .addPartner(partner.address, partnerOwnerAccount.address)
+      ).to.be.fulfilled;
+
+      await expect(
+        partnerManager
+          .connect(highLevelOperator)
+          .setPartnerConfiguration(partner.address, account2.address)
+      ).to.be.fulfilled;
+
+      await expect(
+        partnerManager.connect(highLevelOperator).removePartner(partner.address)
+      ).to.be.fulfilled;
     });
   });
 });

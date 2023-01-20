@@ -5,17 +5,22 @@ import "@rsksmart/erc677/contracts/IERC677.sol";
 import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "../NodeOwner.sol";
 import "../PartnerManager/IPartnerManager.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../FeeManager/IFeeManager.sol";
 import "./IBaseRenewer.sol";
 import "../BytesUtils.sol";
+import "../Access/IAccessControl.sol";
+import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title PartnerRenewer
     @dev Implements the interface IBaseRenewer to renew names in RNS.
 */
-contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
+contract PartnerRenewer is
+    IBaseRenewer,
+    IERC677TransferReceiver,
+    HasAccessControl
+{
     NodeOwner private _nodeOwner;
     IERC677 private _rif;
     IPartnerManager private _partnerManager;
@@ -27,10 +32,11 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
     using BytesUtils for bytes;
 
     constructor(
+        IAccessControl accessControl,
         NodeOwner nodeOwner,
         IERC677 rif,
         IPartnerManager partnerManager
-    ) Ownable() {
+    ) HasAccessControl(accessControl) {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
@@ -44,7 +50,9 @@ contract PartnerRenewer is IBaseRenewer, Ownable, IERC677TransferReceiver {
         _;
     }
 
-    function setFeeManager(IFeeManager feeManager) external onlyOwner {
+    function setFeeManager(
+        IFeeManager feeManager
+    ) external onlyHighLevelOperator {
         if (address(_feeManager) == address(feeManager)) {
             revert("Param being modified is same as new param");
         }

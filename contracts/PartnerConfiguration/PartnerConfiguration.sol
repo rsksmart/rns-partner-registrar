@@ -2,8 +2,9 @@
 pragma solidity ^0.8.16;
 
 import "./IPartnerConfiguration.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "../StringUtils.sol";
+import "../Access/IAccessControl.sol";
+import "../Access/HasAccessControl.sol";
 
 error InvalidName(string name, string reason);
 error InvalidDuration(uint256 duration, string reason);
@@ -13,10 +14,10 @@ error InvalidLength(uint256 length, string reason);
  * @title PartnerConfiguration
  * @author Identity Team @IOVLabs
  */
-contract PartnerConfiguration is IPartnerConfiguration, Ownable {
+contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
+    bool private _isUnicodeSupported;
     uint256 private _minLength;
     uint256 private _maxLength;
-    bool private _isUnicodeSupported;
     uint256 private _minDuration;
     uint256 private _maxDuration;
     uint256 private _feePercentage;
@@ -33,6 +34,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     using StringUtils for string;
 
     constructor(
+        IAccessControl accessControl,
         uint256 minLength,
         uint256 maxLength,
         bool isUnicodeSupported,
@@ -41,7 +43,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
         uint256 feePercentage,
         uint256 discount,
         uint256 minCommitmentAge
-    ) {
+    ) HasAccessControl(accessControl) {
         if (minLength == 0) {
             revert InvalidLength(minLength, "Minimum length cannot be 0");
         }
@@ -84,7 +86,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function setMinLength(uint256 minLength) external override onlyOwner {
+    function setMinLength(
+        uint256 minLength
+    ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _minLength;
 
         emit MinLengthChanged(preModifiedValue, minLength);
@@ -117,7 +121,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function setMaxLength(uint256 maxLength) external override onlyOwner {
+    function setMaxLength(
+        uint256 maxLength
+    ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _maxLength;
 
         emit MaxLengthChanged(preModifiedValue, maxLength);
@@ -146,7 +152,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function setUnicodeSupport(bool flag) external override onlyOwner {
+    function setUnicodeSupport(
+        bool flag
+    ) external override onlyHighLevelOperator {
         bool preModifiedValue = _isUnicodeSupported;
 
         emit UnicodeSupportChanged(preModifiedValue, flag);
@@ -168,7 +176,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function setMinDuration(uint256 minDuration) external override onlyOwner {
+    function setMinDuration(
+        uint256 minDuration
+    ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _minDuration;
 
         emit MinDurationChanged(preModifiedValue, minDuration);
@@ -201,7 +211,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function setMaxDuration(uint256 maxDuration) external override onlyOwner {
+    function setMaxDuration(
+        uint256 maxDuration
+    ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _maxDuration;
 
         emit MaxDurationChanged(preModifiedValue, maxDuration);
@@ -232,7 +244,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
      */
     function setFeePercentage(
         uint256 feePercentage
-    ) external override onlyOwner {
+    ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _feePercentage;
 
         emit FeePercentageChanged(preModifiedValue, feePercentage);
@@ -258,7 +270,9 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
     /**
        @inheritdoc IPartnerConfiguration
      */
-    function setDiscount(uint256 discount) external override onlyOwner {
+    function setDiscount(
+        uint256 discount
+    ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _discount;
 
         emit DiscountChanged(preModifiedValue, discount);
@@ -283,7 +297,7 @@ contract PartnerConfiguration is IPartnerConfiguration, Ownable {
      */
     function setMinCommitmentAge(
         uint256 minCommitmentAge
-    ) external override onlyOwner {
+    ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _minCommitmentAge;
 
         emit MinCommitmentAgeChanged(preModifiedValue, minCommitmentAge);

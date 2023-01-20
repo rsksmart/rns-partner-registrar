@@ -2,11 +2,10 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import {
-  PartnerConfiguration,
   PartnerConfiguration__factory,
+  RegistrarAccessControl__factory,
 } from 'typechain-types';
 import { deployContract, oneRBTC } from './utils/mock.utils';
-import { MockContract } from '@defi-wonderland/smock';
 import { BigNumber } from 'ethers';
 import {
   UN_NECESSARY_MODIFICATION_ERROR_MSG,
@@ -27,16 +26,24 @@ import {
   DEFAULT_IS_UNICODE_SUPPORTED,
   DEFAULT_FEE_PERCENTAGE,
   VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG,
+  ONLY_HIGH_LEVEL_OPERATOR_ERR,
 } from './utils/constants.utils';
 
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
+  const highLevelOperator = signers[1];
+
+  const accessControl = await deployContract<RegistrarAccessControl__factory>(
+    'RegistrarAccessControl',
+    []
+  );
 
   const PartnerConfiguration =
     await deployContract<PartnerConfiguration__factory>(
       'PartnerConfiguration',
       [
+        accessControl.address,
         DEFAULT_MIN_LENGTH,
         DEFAULT_MAX_LENGTH,
         DEFAULT_IS_UNICODE_SUPPORTED,
@@ -52,16 +59,21 @@ const initialSetup = async () => {
     PartnerConfiguration,
     owner,
     signers,
+    accessControl,
+    highLevelOperator,
   };
 };
 
 describe('Partner Configuration', () => {
   describe('when the contract is deployed', () => {
     it('should revert if the min length is 0', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
 
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           0,
           DEFAULT_MAX_LENGTH,
           DEFAULT_IS_UNICODE_SUPPORTED,
@@ -75,9 +87,12 @@ describe('Partner Configuration', () => {
     });
 
     it('should revert if the max length is less than the min length', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           DEFAULT_MIN_LENGTH,
           2,
           DEFAULT_IS_UNICODE_SUPPORTED,
@@ -91,9 +106,12 @@ describe('Partner Configuration', () => {
     });
 
     it('should revert if the min duration is 0', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           DEFAULT_MIN_LENGTH,
           DEFAULT_MAX_LENGTH,
           DEFAULT_IS_UNICODE_SUPPORTED,
@@ -107,9 +125,12 @@ describe('Partner Configuration', () => {
     });
 
     it('should revert if the max duration is less than the min duration', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
+      const { PartnerConfiguration, accessControl } = await loadFixture(
+        initialSetup
+      );
       await expect(
         deployContract<PartnerConfiguration__factory>('PartnerConfiguration', [
+          accessControl.address,
           DEFAULT_MIN_LENGTH,
           DEFAULT_MAX_LENGTH,
           DEFAULT_IS_UNICODE_SUPPORTED,
@@ -535,6 +556,125 @@ describe('Partner Configuration', () => {
       await expect(
         PartnerConfiguration.setFeePercentage(OUT_OF_RANGE_FEE_PERCENTAGE)
       ).to.be.revertedWith(VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG);
+    });
+  });
+
+  describe('Access Control', () => {
+    it('Should revert if the caller is not the high level operator', async () => {
+      const { PartnerConfiguration, highLevelOperator, signers } =
+        await loadFixture(initialSetup);
+
+      const unAuthorizedCaller = signers[2];
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setMinDuration(1)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setMinLength(1)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setMaxLength(1)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setUnicodeSupport(true)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setMinCommitmentAge(1)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setFeePercentage(1)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setDiscount(1)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+
+      await expect(
+        PartnerConfiguration.connect(unAuthorizedCaller).setMaxDuration(1)
+      ).to.be.revertedWithCustomError(
+        PartnerConfiguration,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+    });
+
+    it('Should succeed if the caller is the high level operator', async () => {
+      const { PartnerConfiguration, highLevelOperator, accessControl } =
+        await loadFixture(initialSetup);
+
+      await accessControl.addHighLevelOperator(highLevelOperator.address);
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setMinDuration(
+          DEFAULT_MIN_DURATION + 1
+        )
+      ).to.be.fulfilled;
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setMinLength(
+          DEFAULT_MIN_LENGTH + 1
+        )
+      ).to.be.fulfilled;
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setMaxLength(
+          DEFAULT_MAX_LENGTH + 1
+        )
+      ).to.be.fulfilled;
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setUnicodeSupport(
+          !DEFAULT_IS_UNICODE_SUPPORTED
+        )
+      ).to.be.fulfilled;
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setMinCommitmentAge(
+          DEFAULT_MIN_COMMITMENT_AGE + 1
+        )
+      ).to.be.fulfilled;
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setFeePercentage(
+          DEFAULT_FEE_PERCENTAGE + 1
+        )
+      ).to.be.fulfilled;
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setDiscount(
+          DEFAULT_DISCOUNT + 1
+        )
+      ).to.be.fulfilled;
+
+      await expect(
+        PartnerConfiguration.connect(highLevelOperator).setMaxDuration(
+          DEFAULT_MAX_DURATION + 1
+        )
+      ).to.be.fulfilled;
     });
   });
 });
