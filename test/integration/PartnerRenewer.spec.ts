@@ -30,8 +30,8 @@ import {
   NAME_RENEWED_EVENT,
   FEE_MANAGER_CHANGED_EVENT,
 } from 'test/utils/constants.utils';
+import { SECRET } from './utils/constants';
 
-const SECRET = keccak256(toUtf8Bytes('1234'));
 const NAME = 'cheta';
 const LABEL = keccak256(toUtf8Bytes(NAME));
 const DURATION = ethers.BigNumber.from('1');
@@ -262,7 +262,7 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       nameOwner.address
     );
@@ -274,7 +274,7 @@ describe('Domain Renewal', () => {
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       nameOwner.address,
       partner.address
@@ -324,7 +324,7 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       nameOwner.address
     );
@@ -336,7 +336,7 @@ describe('Domain Renewal', () => {
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       nameOwner.address,
       partner.address
@@ -381,7 +381,7 @@ describe('Domain Renewal', () => {
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       nameOwner.address
     );
@@ -393,7 +393,7 @@ describe('Domain Renewal', () => {
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       nameOwner.address,
       partner.address
@@ -433,7 +433,7 @@ describe('Domain Renewal', () => {
     await PartnerRegistrar.register(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       NodeOwner.address,
       partner.address
@@ -480,7 +480,7 @@ describe('Domain Renewal', () => {
     await PartnerRegistrar.register(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       NodeOwner.address,
       partner.address
@@ -541,7 +541,7 @@ describe('Renewal events', () => {
     await PartnerRegistrar.connect(partner).register(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       DURATION,
       NodeOwner.address,
       partner.address

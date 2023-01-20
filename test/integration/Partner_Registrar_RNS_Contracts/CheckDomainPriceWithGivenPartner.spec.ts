@@ -10,15 +10,13 @@ import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
   calculateDiscountByDuration,
-  purchaseName,
+  purchaseDomainUsingTransferAndCallWithoutCommit,
   nameToTokenId,
 } from '../utils/operations';
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
-
 describe('Check Domain Price With Given Partner', () => {
-  
   it('Test Case No. 1 - Should throw an warning of White List. Should not deliver price', async () => {
     //Test Case No. 1
     //User Role:                     Partner Reseller (NOT AT WHITE LIST)
@@ -79,8 +77,14 @@ describe('Check Domain Price With Given Partner', () => {
     //Domain Name - Is Available?:   Occupied (By A Regular User)
     //Duration:                      1 year
 
-    const { PartnerRegistrar, partner, regularUser, NodeOwner, RIF } =
-      await loadFixture(initialSetup);
+    const {
+      PartnerRegistrar,
+      partner,
+      regularUser,
+      NodeOwner,
+      RIF,
+      PartnerConfiguration,
+    } = await loadFixture(initialSetup);
 
     const domain = '95122411002'; //Occupied
 
@@ -98,14 +102,15 @@ describe('Check Domain Price With Given Partner', () => {
     const isNameAvailable = await NodeOwner.available(tokenName);
 
     if (isNameAvailable)
-      await purchaseName(
+      await purchaseDomainUsingTransferAndCallWithoutCommit(
         domain,
         BigNumber.from(duration),
-        SECRET,
+        SECRET(),
         regularUser,
         PartnerRegistrar,
         RIF,
-        partner.address
+        partner.address,
+        PartnerConfiguration
       );
 
     const isNameAvailableAfterPossiblePurchase = await NodeOwner.available(
@@ -540,16 +545,19 @@ const runCheckPricePositiveFlow = async (
 
   //Domain Expiration Flow (Available, Not Renovated)
   if (shouldBeAvailableByExpiration) {
-    const { partner, RIF } = await loadFixture(initialSetup);
+    const { partner, RIF, PartnerConfiguration } = await loadFixture(
+      initialSetup
+    );
 
-    await purchaseName(
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
       domain,
       durationAsBN,
-      SECRET,
+      SECRET(),
       userRoleAccount,
       registrar,
       RIF,
-      partnerAddress
+      partnerAddress,
+      PartnerConfiguration
     );
 
     await time.increase(31536000 * (duration + 1)); //31536000 = 1 Year (To Make The Name Expires)
