@@ -10,8 +10,9 @@ import { namehash, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { MockContract } from '@defi-wonderland/smock';
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { OneYearDuration, SECRET } from './constants';
+import { expect } from 'chai';
 
-//Purchase 1 Step
+//Purchase 1 Step (Commit = 0)
 export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   domainName: string,
   duration: BigNumber,
@@ -55,7 +56,9 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   ).wait();
 };
 
-//Purchase 2 Step
+
+
+//Purchase 2 Step (Commit Greater Than Zero)
 export const purchaseDomainUsingTransferAndCallWithCommit = async (
   domainName: string,
   duration: BigNumber,
@@ -109,6 +112,18 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
     partnerAddress
   ); // Contract Execution
 
+
+  
+  //Validate given price is correct 
+  const expectPrice = calculateDiscountByDuration(duration);
+
+  console.log('Expected: ' + expectPrice + '. Current: ' +  currentNamePrice);
+
+  expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(+currentNamePrice);
+
+
+
+
   await (
     await RIFAsRegularUser.transferAndCall(
       registrar.address,
@@ -118,7 +133,9 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   ).wait();
 };
 
-//Purchase 2 Step
+
+
+//Purchase 2 Step (Commit 0)
 export const purchaseDomainWithoutCommit = async (
   domainName: string,
   duration: BigNumber,
@@ -145,6 +162,16 @@ export const purchaseDomainWithoutCommit = async (
     partnerAddress
   ); // Contract Execution
 
+
+   //Validate given price is correct 
+    const expectPrice = calculateDiscountByDuration(duration);
+
+    console.log('Expected: ' + expectPrice + '. Current: ' +  currentNamePrice);
+  
+    expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(+currentNamePrice);
+
+
+
   //step 1
   await (
     await RIFAsRegularUser.approve(registrar.address, currentNamePrice)
@@ -163,7 +190,9 @@ export const purchaseDomainWithoutCommit = async (
   ).wait();
 };
 
-//Purchase 3 Step
+
+
+//Purchase 3 Step (Commit Greater Than 0)
 export const purchaseDomainWithCommit = async (
   domainName: string,
   duration: BigNumber,
@@ -239,13 +268,37 @@ export const nameToTokenId = (name: string) => {
 };
 
 // generate a random string of a given length including numbers and letters
-export const generateRandomStringWithLettersAndNumbers = (length: number) => {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+export const generateRandomStringWithLettersAndNumbers = (length: number, hasLetters: boolean, hasNumbers: boolean) => {
+
+  let domainName = '';
+
+  let characters:string = '';
+
+  let realLength:number = length;
+
+  if (hasLetters){
+    characters = characters + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    
+    domainName = domainName + 'A';
+
+    realLength--;
   }
-  return result;
+
+  if (hasNumbers){
+    characters = characters + '0123456789';
+    
+    domainName = domainName + '1';
+
+    realLength--;
+  }
+
+  const charactersLength = characters.length;
+
+  for (let i = 0; i < realLength; i++) {
+    domainName += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  //TODO Poner Fecha y Hora para que nunca se repita
+    
+  return domainName;
 };

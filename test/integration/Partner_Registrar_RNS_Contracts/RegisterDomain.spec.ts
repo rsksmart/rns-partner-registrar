@@ -19,7 +19,7 @@ import {
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
-describe('Pucharse Name By 1st Time (Domain Registration)', () => {
+describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 1 - ... ... ...', async () => {
     //Test Case No. 1
     //User Role:                            RNS Owner
@@ -29,6 +29,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //MinCommitmentAge:                     Equals To Zero
     //Duration:                             -1 year (-)
   }); //it
+
 
   it('Test Case No. 2 - ... ... ...', async () => {
     //Test Case No. 2
@@ -40,35 +41,50 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Duration:                            0 Years (-)
   }); //it
 
-  it.only('Test Case No. 3 - ... ... ...', async () => {
-    //Test Case No. 3
-    //User Role:                          RNS Owner
-    //Number of Steps:                    Two steps
-    //Domain Name - Chars:                Valid (Within Allowed Range) - Letters And Number
-    //Domain Name - Is Available?:        Available (Never Purchased)
-    //MinCommitmentAge:                   Equals To Zero
-    //Duration:                           1 year
 
-    const {
-      PartnerRegistrar,
-      partner,
-      RIF,
-      PartnerConfiguration,
-      regularUser,
-      owner,
-    } = await loadFixture(initialSetup);
-    const domainName = generateRandomStringWithLettersAndNumbers(10);
-    await purchaseDomainWithoutCommit(
-      domainName,
-      BigNumber.from('1'),
-      SECRET(),
-      owner,
-      PartnerRegistrar,
-      RIF,
-      partner.address,
-      PartnerConfiguration
-    );
+
+  it('Test Case No. 3 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+    //Test Case No. 3
+    //User Role:                          RNS Owner                                            (OK)
+    //Number of Steps:                    Two steps                                            (OK)
+    //Domain Name - Chars:                Valid (Within Allowed Range) - Letters And Number    (OK)
+    //Domain Name - Is Available?:        Available (Never Purchased)                          (OK)
+    //MinCommitmentAge:                   Equals To Zero                                       (OK)
+    //Duration:                           1 year                                               (OK)
+
+    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration, owner } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(10, true, true);
+
+    console.log("Nombre Generado: " + domainName);
+
+    const duration = BigNumber.from('1');
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithoutCommit( domainName, duration, SECRET(), owner, PartnerRegistrar, RIF, partner.address, PartnerConfiguration );
+
+
+    //TODO - Expected Results
+    //Validate Domain Name ISN'T Available anymore
+    const tokenName = nameToTokenId(domainName);
+
+    const isNameAvailable = await NodeOwner.available(tokenName);
+
+    expect(+isNameAvailable, 'The calculated domain price is incorrect!').to.be.false;
+
+
+    //Validate the Domain Name Owner Is the correct (SERGIO)
+
+    //Validate the correct money amount from the buyer (SERGIO)
+    
+    
+
   }); //it
+
+
 
   it('Test Case No. 4 - ... ... ...', async () => {
     //Test Case No. 4
@@ -88,6 +104,9 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:       Available (Never Purchased)
     //MinCommitmentAge:                  Greater than zero
     //Duration:                          Between 3 and 9 Years
+
+
+
   }); //it
 
   it('Test Case No. 6 - ... ... ...', async () => {
@@ -107,17 +126,53 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Chars:               Valid (Within Allowed Range) - Letters and Numbers
     //Domain Name - Is Available?:       Available (Never Purchased)
     //MinCommitmentAge:                  Equals To Zero
-    //Duration:                          10 years
+    //Duration:                          5 years
   }); //it
 
-  it('Test Case No. 8 - ... ... ...', async () => {
+  it.only('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 8
-    //User Role:                       Regular User
-    //Number of Steps:                 Two steps
-    //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters
-    //Domain Name - Is Available?:     Available (Never Purchased)
-    //MinCommitmentAge:                Greater than zero
-    //Duration:                        10 years
+    //User Role:                       Regular User                                          (OK)
+    //Number of Steps:                 Two steps                                             (OK)
+    //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters           (OK)
+    //Domain Name - Is Available?:     Available (Never Purchased)                           (OK)
+    //MinCommitmentAge:                Greater than zero                                     (OK)
+    //Duration:                        5 years                                               (OK)
+
+    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration, regularUser } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
+
+    console.log("Nombre Generado: " + domainName);
+
+    const duration = BigNumber.from('5');
+
+    const commitAge = BigNumber.from('30');
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithCommit( domainName, duration, SECRET(), regularUser, 
+    PartnerRegistrar, RIF, partner.address, PartnerConfiguration, commitAge);
+
+
+    //TODO - Expected Results
+    //Validate Domain Name ISN'T Available anymore
+    const tokenName = nameToTokenId(domainName);
+
+    const isNameAvailable = await NodeOwner.available(tokenName);
+
+    expect(+isNameAvailable, 'The calculated domain price is incorrect!').to.be.false;
+
+
+    //Validate the Domain Name Owner Is the correct (SERGIO)
+
+    //Validate the correct money amount from the buyer (SERGIO)
+
+
+
+
+
   }); //it
 
   it('Test Case No. 9 - ... ... ...', async () => {
@@ -157,7 +212,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters
     //Domain Name - Is Available?:     Available (Never Purchased)
     //MinCommitmentAge:                Greater than zero
-    //Duration:                        10 years
+    //Duration:                        5 years
   }); //it
 
   it('Test Case No. 13 - ... ... ...', async () => {
@@ -187,7 +242,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Chars:            Equals To Zero (Empty Domain Name) (-) - Only Letters
     //Domain Name - Is Available?:    Available (Never Purchased)
     //MinCommitmentAge:               Equals To Zero
-    //Duration:                       10 years
+    //Duration:                       5 years
   }); //it
 
   it('Test Case No. 16 - ... ... ...', async () => {
@@ -227,7 +282,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
     //Domain Name - Is Available?:    Available (Never Purchased)
     //MinCommitmentAge:               Greater Than Maximum (-)
-    //Duration:                       10 years
+    //Duration:                       5 years
   }); //it
 
   it('Test Case No. 20 - ... ... ...', async () => {
