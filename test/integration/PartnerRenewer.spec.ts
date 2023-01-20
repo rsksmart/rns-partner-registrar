@@ -258,11 +258,11 @@ describe('Domain Renewal', () => {
     );
 
     const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
-
+    const secret = SECRET();
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET(),
+      secret,
       DURATION,
       nameOwner.address
     );
@@ -274,7 +274,7 @@ describe('Domain Renewal', () => {
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET(),
+      secret,
       DURATION,
       nameOwner.address,
       partner.address
@@ -320,11 +320,11 @@ describe('Domain Renewal', () => {
     );
 
     const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
-
+    const secret = SECRET();
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET(),
+      secret,
       DURATION,
       nameOwner.address
     );
@@ -336,7 +336,7 @@ describe('Domain Renewal', () => {
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET(),
+      secret,
       DURATION,
       nameOwner.address,
       partner.address
@@ -377,11 +377,11 @@ describe('Domain Renewal', () => {
     );
 
     const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
-
+    const secret = SECRET();
     const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET(),
+      secret,
       DURATION,
       nameOwner.address
     );
@@ -393,7 +393,7 @@ describe('Domain Renewal', () => {
     const registerData = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET(),
+      secret,
       DURATION,
       nameOwner.address,
       partner.address
