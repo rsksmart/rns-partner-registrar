@@ -9,7 +9,7 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
-  calculateDiscountByDuration,
+  calculateNamePriceByDuration,
   purchaseDomainUsingTransferAndCallWithoutCommit,
   nameToTokenId,
 } from '../utils/operations';

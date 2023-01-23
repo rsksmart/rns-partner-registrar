@@ -9,16 +9,15 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
-  calculateDiscountByDuration,
+  calculateNamePriceByDuration,
   purchaseDomainUsingTransferAndCallWithoutCommit,
   nameToTokenId,
   purchaseDomainUsingTransferAndCallWithCommit,
   generateRandomStringWithLettersAndNumbers,
-  purchaseDomainWithoutCommit, 
+  purchaseDomainWithoutCommit,
 } from '../utils/operations';
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
-
 
 describe('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 1 - ... ... ...', async () => {
@@ -29,11 +28,8 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:          Available (Never Purchased)
     //MinCommitmentAge:                     Equals To Zero
     //Duration:                             -1 year (-)
-
-
-
+    //STEP 3 + COMMIT 0 -- NO POSSIBLE (FIX DESIGN)
   }); //it
-
 
   it('Test Case No. 2 - ... ... ...', async () => {
     //Test Case No. 2
@@ -45,8 +41,6 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Duration:                            0 Years (-)
   }); //it
 
-
-
   it('Test Case No. 3 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 3
     //User Role:                          RNS Owner                                            (OK)
@@ -56,11 +50,22 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //MinCommitmentAge:                   Equals To Zero                                       (OK)
     //Duration:                           1 year                                               (OK)
 
-    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration, owner } = await loadFixture(initialSetup);
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+    } = await loadFixture(initialSetup);
 
-    const domainName = generateRandomStringWithLettersAndNumbers(10, true, true);
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      10,
+      true,
+      true
+    );
 
-    console.log("Nombre Generado: " + domainName);
+    console.log('Nombre Generado: ' + domainName);
 
     const duration = BigNumber.from('1');
 
@@ -68,23 +73,40 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //1st - Domain Name to Purchase
     //2nd - Duration (years)
     //4th - Role User (Regular, Partner, RNS Owner)
-    await purchaseDomainWithoutCommit( domainName, duration, SECRET(), owner, PartnerRegistrar, RIF, partner.address, PartnerConfiguration );
 
+    const moneyBeforePurchase = await RIF.balanceOf(owner.address);
+
+    await purchaseDomainWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      owner,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
 
     //TODO - Expected Results
     //Validate Domain Name ISN'T Available anymore
-    validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
-
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
 
     //Validate the Domain Name Owner Is the correct (SERGIO)
+    const TOKENID = nameToTokenId(domainName);
+
+    const ownerOfDomainPurchased = await NodeOwner.ownerOf(TOKENID); // ya vimos hace unos dias como transformar un nombre al formato TOKENID
+
+    expect(ownerOfDomainPurchased).to.be.equals(owner.address);
 
     //Validate the correct money amount from the buyer (SERGIO)
-    
-    
+    const moneyAfterPurchase = await RIF.balanceOf(owner.address);
 
+    const expectedPrice = calculateNamePriceByDuration(duration);
+
+    const expectedBalance = moneyBeforePurchase.sub(expectedPrice);
+
+    expect(+moneyAfterPurchase).to.be.equals(+expectedBalance);
   }); //it
-
-
 
   it('Test Case No. 4 - ... ... ...', async () => {
     //Test Case No. 4
@@ -104,9 +126,6 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:       Available (Never Purchased)
     //MinCommitmentAge:                  Greater than zero
     //Duration:                          Between 3 and 9 Years
-
-
-
   }); //it
 
   it('Test Case No. 6 - ... ... ...', async () => {
@@ -138,11 +157,22 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //MinCommitmentAge:                Greater than zero                                     (OK)
     //Duration:                        5 years                                               (OK)
 
-    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration, regularUser } = await loadFixture(initialSetup);
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+    } = await loadFixture(initialSetup);
 
-    const domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      10,
+      true,
+      false
+    );
 
-    console.log("Nombre Generado: " + domainName);
+    console.log('Nombre Generado: ' + domainName);
 
     const duration = BigNumber.from('5');
 
@@ -152,9 +182,17 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //1st - Domain Name to Purchase
     //2nd - Duration (years)
     //4th - Role User (Regular, Partner, RNS Owner)
-    await purchaseDomainUsingTransferAndCallWithCommit( domainName, duration, SECRET(), regularUser, 
-    PartnerRegistrar, RIF, partner.address, PartnerConfiguration, commitAge);
-
+    await purchaseDomainUsingTransferAndCallWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      commitAge
+    );
 
     //TODO - Expected Results
     //Validate Domain Name ISN'T Available anymore
@@ -163,11 +201,6 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Validate the Domain Name Owner Is the correct (SERGIO)
 
     //Validate the correct money amount from the buyer (SERGIO)
-
-
-
-
-
   }); //it
 
   it('Test Case No. 9 - ... ... ...', async () => {
@@ -301,16 +334,14 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
   }); //it
 }); // describe
 
-
-
 //Validate Domain Name IS OR ISN'T Available anymore
-const validatePurchasedDomainIsNotAvailable =  async (NodeOwner:NodeOwner, domainName: string) => {
-
+const validatePurchasedDomainIsNotAvailable = async (
+  NodeOwner: NodeOwner,
+  domainName: string
+) => {
   const tokenName = nameToTokenId(domainName);
 
   const isNameAvailable = await NodeOwner.available(tokenName);
 
   expect(isNameAvailable, 'BUG: The Purchased Name IS Available!').to.be.false;
-}
-
-
+};

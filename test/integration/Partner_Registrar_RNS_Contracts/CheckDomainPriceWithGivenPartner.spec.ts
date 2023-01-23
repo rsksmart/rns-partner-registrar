@@ -9,7 +9,7 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
-  calculateDiscountByDuration,
+  calculateNamePriceByDuration,
   purchaseDomainUsingTransferAndCallWithoutCommit,
   nameToTokenId,
 } from '../utils/operations';
@@ -581,7 +581,7 @@ const runCheckPricePositiveFlow = async (
 
   //Expected Result - Validate price equation: 2*Duration, Duration+2 (50% Discount)
   //Expected Result - Validate price currency is at 'RIFF'
-  const expectedNamePrice = calculateDiscountByDuration(durationAsBN);
+  const expectedNamePrice = calculateNamePriceByDuration(durationAsBN);
 
   console.log(
     'Expected: ' +
@@ -633,7 +633,7 @@ const runCheckPriceNegativeFlow = async (
 
   //Expected Result - Validate Error Messages
   if (durationAsBN.eq(0)) {
-    const expectedNamePrice = calculateDiscountByDuration(durationAsBN);
+    const expectedNamePrice = calculateNamePriceByDuration(durationAsBN);
 
     expect(
       +currentNamePriceAfterExpiration,

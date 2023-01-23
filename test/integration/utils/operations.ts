@@ -56,8 +56,6 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   ).wait();
 };
 
-
-
 //Purchase 2 Step (Commit Greater Than Zero)
 export const purchaseDomainUsingTransferAndCallWithCommit = async (
   domainName: string,
@@ -112,12 +110,8 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
     partnerAddress
   ); // Contract Execution
 
-
-
-  //Validate given price is correct 
-  validateNamePrice(duration, currentNamePrice)
-
-
+  //Validate given price is correct
+  validateNamePrice(duration, currentNamePrice);
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -127,8 +121,6 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
     )
   ).wait();
 };
-
-
 
 //Purchase 2 Step (Commit 0)
 export const purchaseDomainWithoutCommit = async (
@@ -157,8 +149,7 @@ export const purchaseDomainWithoutCommit = async (
     partnerAddress
   ); // Contract Execution
 
-
-  //Validate given price is correct 
+  //Validate given price is correct
   validateNamePrice(duration, currentNamePrice);
 
   //step 1
@@ -178,8 +169,6 @@ export const purchaseDomainWithoutCommit = async (
     )
   ).wait();
 };
-
-
 
 //Purchase 3 Step (Commit Greater Than 0)
 export const purchaseDomainWithCommit = async (
@@ -245,7 +234,7 @@ export const purchaseDomainWithCommit = async (
   ).wait();
 };
 
-export const calculateDiscountByDuration = (duration: BigNumber) => {
+export const calculateNamePriceByDuration = (duration: BigNumber) => {
   if (duration.lte(2)) return oneRBTC.mul(BigNumber.from('2')).mul(duration);
   else return oneRBTC.mul(duration.add(BigNumber.from('2')));
 };
@@ -257,8 +246,11 @@ export const nameToTokenId = (name: string) => {
 };
 
 // generate a random string of a given length including numbers and letters
-export const generateRandomStringWithLettersAndNumbers = (length: number, hasLetters: boolean, hasNumbers: boolean) => {
-
+export const generateRandomStringWithLettersAndNumbers = (
+  length: number,
+  hasLetters: boolean,
+  hasNumbers: boolean
+) => {
   let domainName = '';
 
   let characters: string = '';
@@ -266,7 +258,8 @@ export const generateRandomStringWithLettersAndNumbers = (length: number, hasLet
   let realLength: number = length;
 
   if (hasLetters) {
-    characters = characters + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    characters =
+      characters + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
     domainName += getDateTimeString(false);
   }
@@ -283,106 +276,105 @@ export const generateRandomStringWithLettersAndNumbers = (length: number, hasLet
     realLength = length - domainName.length;
 
     for (let i = 0; i < realLength; i++) {
-      domainName += characters.charAt(Math.floor(Math.random() * charactersLength));
+      domainName += characters.charAt(
+        Math.floor(Math.random() * charactersLength)
+      );
     }
   }
-  
+
   console.log('RNS Log - Generated Name: ' + domainName);
 
   return domainName;
 };
 
-
-//Validate given price is correct 
-export const validateNamePrice = (duration: BigNumber, currentNamePrice: BigNumber) => {
-
-  const expectPrice = calculateDiscountByDuration(duration);
+//Validate given price is correct
+export const validateNamePrice = (
+  duration: BigNumber,
+  currentNamePrice: BigNumber
+) => {
+  const expectPrice = calculateNamePriceByDuration(duration);
 
   console.log('Expected: ' + expectPrice + '. Current: ' + currentNamePrice);
 
-  expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(+currentNamePrice);
+  expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(
+    +currentNamePrice
+  );
 };
 
-
-
-
-
 const getDateTimeString = (idAsNumbers: boolean) => {
+  const currentMoment: Date = new Date();
 
-  
-  let currentMoment: Date = new Date();
-
-  const month = (currentMoment.getMonth() + 1);
+  const month = currentMoment.getMonth() + 1;
 
   const day = currentMoment.getDate() + '';
 
   let domainID: string = '';
 
   if (idAsNumbers)
-    domainID = '' + currentMoment.getDate() + month + currentMoment.getFullYear() + currentMoment.getHours() + currentMoment.getMinutes() + currentMoment.getSeconds();
-
-  else
-    domainID = '' + getDayID(day) + getMonthID(month);
+    domainID =
+      '' +
+      currentMoment.getDate() +
+      month +
+      currentMoment.getFullYear() +
+      currentMoment.getHours() +
+      currentMoment.getMinutes() +
+      currentMoment.getSeconds();
+  else domainID = '' + getDayID(day) + getMonthID(month);
 
   return domainID;
 };
 
-
 const getMonthID = (month: number) => {
-
   let moment: string = '';
 
   switch (month) {
     case 1:
-      moment += 'JA'
+      moment += 'JA';
       break;
     case 2:
-      moment += 'FE'
+      moment += 'FE';
       break;
     case 3:
-      moment += 'MA'
+      moment += 'MA';
       break;
     case 4:
-      moment += 'AP'
+      moment += 'AP';
       break;
     case 5:
-      moment += 'MY'
+      moment += 'MY';
       break;
     case 6:
-      moment += 'JU'
+      moment += 'JU';
       break;
     case 7:
-      moment += 'JL'
+      moment += 'JL';
       break;
     case 8:
-      moment += 'AG'
+      moment += 'AG';
       break;
     case 9:
-      moment += 'SP'
+      moment += 'SP';
       break;
     case 10:
-      moment += 'OC'
+      moment += 'OC';
       break;
     case 11:
-      moment += 'NO'
+      moment += 'NO';
       break;
     case 12:
-      moment += 'DE'
+      moment += 'DE';
       break;
   }
 
   return moment;
-
 };
 
 const getDayID = (dayAsString: string) => {
-
   let dayID: string = '';
 
   const firstDigit = parseInt(dayAsString.charAt(0) + '');
 
   dayID += getDayDigitID(firstDigit);
-
 
   if (dayAsString.length > 0) {
     const secondDigit = parseInt(dayAsString.charAt(1) + '');
@@ -391,44 +383,42 @@ const getDayID = (dayAsString: string) => {
   }
 
   return dayID;
-
-}
+};
 
 const getDayDigitID = (dayDigit: number) => {
-
   let moment: string = '';
 
   switch (dayDigit) {
     case 0:
-      moment += 'ZR'
+      moment += 'ZR';
       break;
     case 1:
-      moment += 'ON'
+      moment += 'ON';
       break;
     case 2:
-      moment += 'TW'
+      moment += 'TW';
       break;
     case 3:
-      moment += 'TR'
+      moment += 'TR';
       break;
     case 4:
-      moment += 'FO'
+      moment += 'FO';
       break;
     case 5:
-      moment += 'FV'
+      moment += 'FV';
       break;
     case 6:
-      moment += 'SI'
+      moment += 'SI';
       break;
     case 7:
-      moment += 'SV'
+      moment += 'SV';
       break;
     case 8:
-      moment += 'EI'
+      moment += 'EI';
       break;
     case 9:
-      moment += 'NI'
+      moment += 'NI';
       break;
   }
-  return moment
-}
+  return moment;
+};
