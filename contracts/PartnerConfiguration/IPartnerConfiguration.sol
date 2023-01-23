@@ -2,9 +2,8 @@
 pragma solidity ^0.8.16;
 
 /**
- * @title IPartnerConfiguration
+ * @title Defines the configuration for a partner in particular
  * @author Identity Team @IOVLabs
- * @dev Defines the configuration for a partner in particular
  */
 interface IPartnerConfiguration {
     /**
@@ -64,12 +63,12 @@ interface IPartnerConfiguration {
     event MinCommitmentAgeChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice returns the minimum length allowed for a domain name
+     * @notice returns the minimum characters count allowed for a domain name
      */
     function getMinLength() external view returns (uint256);
 
     /**
-     * @notice returns the maximum length allowed for a domain name
+     * @notice returns the maximum characters count allowed for a domain name
      */
     function getMaxLength() external view returns (uint256);
 
@@ -79,12 +78,12 @@ interface IPartnerConfiguration {
     function getUnicodeSupport() external view returns (bool);
 
     /**
-     * @notice returns the minimum duration allowed for a domain name
+     * @notice returns the minimum duration in years allowed for a domain name purchase
      */
     function getMinDuration() external view returns (uint256);
 
     /**
-     * @notice returns the maximum duration allowed for a domain name
+     * @notice returns the maximum duration in years allowed for a domain name purchase
      */
     function getMaxDuration() external view returns (uint256);
 
@@ -94,17 +93,20 @@ interface IPartnerConfiguration {
     function getFeePercentage() external view returns (uint256);
 
     /**
-     * @notice returns the discount assigned to the partner for each domain name registered
+     * @notice returns the discount assigned to the partner for each domain name registered as a percentage
      */
     function getDiscount() external view returns (uint256);
 
     /**
-     * @notice returns the minimum commitment age allowed for a domain name
+     * @notice returns the minimum commitment age allowed for a domain name registration. Represented in seconds.
      */
     function getMinCommitmentAge() external view returns (uint256);
 
     /**
      * @notice returns the price of a domain name
+     * @param name the name of the domain
+     * @param expires the expiration date of the domain. it is being ignored. left just for compatibility. just send 0.
+     * @param duration the duration of the domain
      */
     function getPrice(
         string calldata name,
@@ -121,7 +123,7 @@ interface IPartnerConfiguration {
 
     /**
      * @notice sets the discount assigned to the partner for each domain name registered
-     * @param discount the discount assigned to the partner for each domain name registered
+     * @param discount the discount assigned to the partner for each domain name registered. represented as a percentage 18 decimals precision representation
      * @custom:emits-event emits the DiscountChanged event on success. N.B: percentage value
      * should be multiplied with the precision value of 10^18, i.e percentageValue * 10^18
      */
@@ -137,7 +139,7 @@ interface IPartnerConfiguration {
 
     /**
      * @notice sets the maximum duration allowed for a domain name
-     * @param maxDuration the maximum duration allowed for a domain name in days
+     * @param maxDuration the maximum duration allowed for a domain name in years
      * @custom:emits-event emits the MaxDurationChanged event on success
      */
     function setMaxDuration(uint256 maxDuration) external;
@@ -151,21 +153,21 @@ interface IPartnerConfiguration {
 
     /**
      * @notice sets the maximum length allowed for a domain name
-     * @param maxLength the maximum length allowed for a domain name
+     * @param maxLength the maximum characters count allowed for a domain name
      * @custom:emits-event emits the MaxLengthChanged event on success
      */
     function setMaxLength(uint256 maxLength) external;
 
     /**
      * @notice sets the minimum duration allowed for a domain name
-     * @param minDuration the minimum duration allowed for a domain name in days
+     * @param minDuration the minimum duration allowed for a domain name in years
      * @custom:emits-event emits the MinDurationChanged event on success
      */
     function setMinDuration(uint256 minDuration) external;
 
     /**
      * @notice sets the minimum length allowed for a domain name
-     * @param minLength the minimum length allowed for a domain name
+     * @param minLength the minimum characters count allowed for a domain name
      * @custom:emits-event emits the MinLengthChanged event on success
      */
     function setMinLength(uint256 minLength) external;

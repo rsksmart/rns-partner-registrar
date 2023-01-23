@@ -13,8 +13,7 @@ import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
-    @title PartnerRenewer
-    @dev Implements the interface IBaseRenewer to renew names in RNS.
+    @title Implements the interface IBaseRenewer to renew names in RNS.
 */
 contract PartnerRenewer is
     IBaseRenewer,
@@ -50,6 +49,9 @@ contract PartnerRenewer is
         _;
     }
 
+    /**
+       @inheritdoc IBaseRenewer
+     */
     function setFeeManager(
         IFeeManager feeManager
     ) external onlyHighLevelOperator {
@@ -126,13 +128,9 @@ contract PartnerRenewer is
         _feeManager.deposit(partner, amount);
     }
 
-    // - Via ERC-20
-    /// @notice Renews a name in Node Owner.
-    /// @dev This method should be called if the owned.
-    /// @param name The name to register.
-    /// @param duration Time to register in years.
-    /// @param partner Partner address
-    /// @custom:emits-event emits the NameRenewed event
+    /**
+       @inheritdoc IBaseRenewer
+     */
     function renew(
         string calldata name,
         uint256 duration,

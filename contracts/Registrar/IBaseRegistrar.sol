@@ -5,8 +5,7 @@ import "../FeeManager/IFeeManager.sol";
 
 /**
     @author Identity Team @IOVLabs
-    @title IBaseRegistrar
-    @dev Defines the interface for a compatible Registrar
+    @title Defines the interface for a compatible Registrar
 */
 interface IBaseRegistrar {
     /**
@@ -24,7 +23,7 @@ interface IBaseRegistrar {
     event FeeManagerChanged(address hostContract, address feeManagerContract);
 
     /**
-        @notice sets the fee manager to use
+        @notice sets the fee manager to use. Mandatory for the renewer to work.
         @param feeManager the fee manager to use
         @custom:emits-event emits the FeeManagerSet event
     */
@@ -90,7 +89,7 @@ interface IBaseRegistrar {
     function commit(bytes32 commitment, address partner) external;
 
     /**
-        @notice reveals if the name is ready to be registered by calling register function.
+        @notice reveals if the name is ready to be registered by calling register function. Meant to be called after a commitment. 
         @param commitment the commitment of the name
         @return true if the name is ready to be registered
     */

@@ -16,8 +16,7 @@ import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
-    @title PartnerRegistrar
-    @dev Implements the interface IBaseRegistrar to register names in RNS.
+    @title Implements the interface IBaseRegistrar to register names in RNS. Takes into account the partners for the revenue sharing. 
 */
 contract PartnerRegistrar is
     IBaseRegistrar,

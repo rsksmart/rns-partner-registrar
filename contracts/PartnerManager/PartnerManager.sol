@@ -8,8 +8,7 @@ import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
-    @title PartnerManager
-    @dev Keeps track of the whitelisted partners and its configurations.
+    @title Keeps track of the whitelisted partners and its configurations.
 */
 contract PartnerManager is IPartnerManager, HasAccessControl {
     mapping(address => bool) private _partners;

@@ -7,17 +7,27 @@ import "../PartnerManager/IPartnerManager.sol";
 import "../Registrar/IBaseRegistrar.sol";
 import "../Renewer/IBaseRenewer.sol";
 
-error ZeroBalance();
-error NotAuthorized(address sender);
-error TransferFailed(address from, address to, uint256 amount);
-
 /**
     @author Identity Team @IOVLabs
-    @title FeeManager
-    @dev Keeps the balances of the collected revenew made by the partners.
+    @title  Keeps track of the balances of the collected revenue made by the partners.
 */
 contract FeeManager is IFeeManager {
     RIF private _rif;
+    /**
+     * @notice thrown when an account tries to withdraw with a zero balance
+     */
+    error ZeroBalance();
+    /**
+     * @notice thrown when an account tries to perform an action that is not authorised
+     */
+    error NotAuthorized(address sender);
+    /**
+     * @notice thrown when the transfer of tokens fails
+     * @param from address of the sender
+     * @param to address of the receiver
+     * @param amount amount of tokens
+     */
+    error TransferFailed(address from, address to, uint256 amount);
 
     mapping(address => uint256) private _balances;
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
@@ -73,20 +83,20 @@ contract FeeManager is IFeeManager {
      */
     function deposit(
         address partner,
-        uint256 cost
+        uint256 amount
     ) external override onlyAuthorised {
-        emit DepositSuccessful(cost, partner);
+        emit DepositSuccessful(amount, partner);
 
-        if (!_rif.transferFrom(msg.sender, address(this), cost)) {
-            revert TransferFailed(msg.sender, address(this), cost);
+        if (!_rif.transferFrom(msg.sender, address(this), amount)) {
+            revert TransferFailed(msg.sender, address(this), amount);
         }
 
-        uint256 partnerFee = (cost *
+        uint256 partnerFee = (amount *
             _getPartnerConfiguration(partner).getFeePercentage()) /
             _PERCENT100_WITH_PRECISION18;
         _balances[_getPartnerOwnerAccount(partner)] += partnerFee;
 
-        uint256 balance = cost - partnerFee;
+        uint256 balance = amount - partnerFee;
 
         if (!_rif.transfer(_pool, balance)) {
             revert TransferFailed(address(this), _pool, balance);
