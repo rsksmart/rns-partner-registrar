@@ -19,7 +19,7 @@ import {
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
-describe('Pucharse Name By 1st Time (Domain Registration)', () => {
+describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 1 - ... ... ...', async () => {
     //Test Case No. 1
     //User Role:                            RNS Owner
@@ -65,47 +65,49 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       true
     );
 
-    console.log('Nombre Generado: ' + domainName);
-
     const duration = BigNumber.from('1');
+
+    const buyerUser: SignerWithAddress = owner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
     //INPUT
     //1st - Domain Name to Purchase
     //2nd - Duration (years)
     //4th - Role User (Regular, Partner, RNS Owner)
-
-    const moneyBeforePurchase = await RIF.balanceOf(owner.address);
-
     await purchaseDomainWithoutCommit(
       domainName,
       duration,
       SECRET(),
-      owner,
+      buyerUser,
       PartnerRegistrar,
       RIF,
       partner.address,
       PartnerConfiguration
     );
 
-    //TODO - Expected Results
+    //Expected Results
+
     //Validate Domain Name ISN'T Available anymore
     await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
 
-    //Validate the Domain Name Owner Is the correct (SERGIO)
-    const TOKENID = nameToTokenId(domainName);
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
 
-    const ownerOfDomainPurchased = await NodeOwner.ownerOf(TOKENID); // ya vimos hace unos dias como transformar un nombre al formato TOKENID
+    //Validate the correct money amount from the buyer
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    expect(ownerOfDomainPurchased).to.be.equals(owner.address);
-
-    //Validate the correct money amount from the buyer (SERGIO)
-    const moneyAfterPurchase = await RIF.balanceOf(owner.address);
-
-    const expectedPrice = calculateNamePriceByDuration(duration);
-
-    const expectedBalance = moneyBeforePurchase.sub(expectedPrice);
-
-    expect(+moneyAfterPurchase).to.be.equals(+expectedBalance);
+    validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase
+    );
   }); //it
 
   it('Test Case No. 4 - ... ... ...', async () => {
@@ -134,7 +136,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Number of Steps:                   Three steps
     //Domain Name - Chars:               Valid (Within Allowed Range) - Only Numbers
     //Domain Name - Is Available?:       Available (Never Purchased)
-    //MinCommitmentAge:                  Equals To Zero
+    //MinCommitmentAge:                  Greater than zero
     //Duration:                          Between 3 and 9 Years
   }); //it
 
@@ -148,7 +150,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Duration:                          5 years
   }); //it
 
-  it.skip('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it.only('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)
@@ -172,11 +174,15 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       false
     );
 
-    console.log('Nombre Generado: ' + domainName);
-
     const duration = BigNumber.from('5');
 
     const commitAge = BigNumber.from('30');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
     //INPUT
     //1st - Domain Name to Purchase
@@ -196,11 +202,23 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     //TODO - Expected Results
     //Validate Domain Name ISN'T Available anymore
-    validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
 
-    //Validate the Domain Name Owner Is the correct (SERGIO)
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
 
-    //Validate the correct money amount from the buyer (SERGIO)
+    //Validate the correct money amount from the buyer
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase
+    );
   }); //it
 
   it('Test Case No. 9 - ... ... ...', async () => {
@@ -219,7 +237,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Number of Steps:                 Three steps
     //Domain Name - Chars:             Valid (Within Allowed Range) - Letters and Numbers
     //Domain Name - Is Available?:     Available (Never Purchased)
-    //MinCommitmentAge:                Equals To Zero
+    //MinCommitmentAge:                Greater than zero
     //Duration:                        2 years
   }); //it
 
@@ -344,4 +362,51 @@ const validatePurchasedDomainIsNotAvailable = async (
   const isNameAvailable = await NodeOwner.available(tokenName);
 
   expect(isNameAvailable, 'BUG: The Purchased Name IS Available!').to.be.false;
+};
+
+const validatePurchasedDomainISAvailable = async (
+  NodeOwner: NodeOwner,
+  domainName: string
+) => {
+  const tokenName = nameToTokenId(domainName);
+
+  const isNameAvailable = await NodeOwner.available(tokenName);
+
+  expect(
+    isNameAvailable,
+    'BUG: The NOT PURCHASED Purchased Name IS NOT Available!'
+  ).to.be.true;
+};
+
+//Validate the Domain Name Owner Is the correct (SERGIO)
+const validatePurchasedDomainHasCorrectOwner = async (
+  domainName: string,
+  NodeOwner: NodeOwner,
+  owner: SignerWithAddress
+) => {
+  const TOKENID = nameToTokenId(domainName);
+
+  const ownerOfDomainPurchased = await NodeOwner.ownerOf(TOKENID);
+
+  expect(
+    ownerOfDomainPurchased,
+    'BUG: The Purchased Domain has the incorrect Owner Address'
+  ).to.be.equals(owner.address);
+};
+
+//Validate the correct money amount from the buyer (SERGIO)
+
+const validateCorrectMoneyAmountWasPayed = async (
+  duration: BigNumber,
+  moneyAfterPurchase: BigNumber,
+  moneyBeforePurchase: BigNumber
+) => {
+  const expectedPrice = calculateNamePriceByDuration(duration);
+
+  const expectedBalance = moneyBeforePurchase.sub(expectedPrice);
+
+  expect(
+    +moneyAfterPurchase,
+    'BUG: The spent balance is incorrect!'
+  ).to.be.equals(+expectedBalance);
 };
