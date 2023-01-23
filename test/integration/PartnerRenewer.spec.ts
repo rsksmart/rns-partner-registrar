@@ -415,31 +415,16 @@ describe('Domain Renewal', () => {
   it('Should revert if token transfer approval fails', async () => {
     const {
       RIF,
-      FakeRIF,
       PartnerRenewer,
       PartnerRegistrar,
       nameOwner,
       partner,
-      PartnerManager,
       PartnerConfiguration,
       NodeOwner,
-      alternatePartnerConfiguration,
     } = await loadFixture(initialSetup);
 
-    await (
-      await PartnerManager.addPartner(partner.address, partner.address)
-    ).wait();
-
-    await (
-      await PartnerManager.setPartnerConfiguration(
-        partner.address,
-        alternatePartnerConfiguration.address
-      )
-    ).wait();
-
-    (await alternatePartnerConfiguration.setMinCommitmentAge(0)).wait();
-
     // First Register the name to be renewed
+    await (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
 
     RIF.transferFrom.returns(true);
     RIF.approve.returns(true);
@@ -476,10 +461,6 @@ describe('Domain Renewal', () => {
       NodeOwner,
       alternatePartnerConfiguration,
     } = await loadFixture(initialSetup);
-
-    await (
-      await PartnerManager.addPartner(partner.address, partner.address)
-    ).wait();
 
     await (
       await PartnerManager.setPartnerConfiguration(
@@ -538,14 +519,9 @@ describe('Renewal events', () => {
       nameOwner,
       partner,
       PartnerManager,
-      PartnerConfiguration,
       NodeOwner,
       alternatePartnerConfiguration,
     } = await loadFixture(initialSetup);
-
-    await (
-      await PartnerManager.addPartner(partner.address, partner.address)
-    ).wait();
 
     await (
       await PartnerManager.setPartnerConfiguration(

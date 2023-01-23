@@ -94,7 +94,7 @@ contract FeeManager is IFeeManager {
         uint256 partnerFee = (amount *
             _getPartnerConfiguration(partner).getFeePercentage()) /
             _PERCENT100_WITH_PRECISION18;
-        _balances[_getPartnerOwnerAccount(partner)] += partnerFee;
+        _balances[partner] += partnerFee;
 
         uint256 balance = amount - partnerFee;
 
@@ -107,12 +107,6 @@ contract FeeManager is IFeeManager {
         address partner
     ) private view returns (IPartnerConfiguration) {
         return _partnerManager.getPartnerConfiguration(partner);
-    }
-
-    function _getPartnerOwnerAccount(
-        address partner
-    ) private view returns (address) {
-        return _partnerManager.getPartnerOwnerAccount(partner);
     }
 
     /**

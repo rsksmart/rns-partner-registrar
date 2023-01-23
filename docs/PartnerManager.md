@@ -1,31 +1,25 @@
 # PartnerManager
 
-*Identity Team @IOVLabs*
+_Identity Team @IOVLabs_
 
 > Keeps track of the whitelisted partners and its configurations.
-
-
-
-
 
 ## Methods
 
 ### addPartner
 
 ```solidity
-function addPartner(address partner, address partnerOwnerAccount) external nonpayable
+function addPartner(address partner, address configurationContract) external nonpayable
 ```
 
-adds a partner to the whitelist
-
-
+adds a partner to the whitelist and sets its configuration
 
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| partner | address | address for the partner that will be whitelisted |
-| partnerOwnerAccount | address | address of the owner account for the partner that will be able to withdraw the collected funds |
+| Name                 | Type    | Description                                                          |
+| -------------------- | ------- | -------------------------------------------------------------------- |
+| partner              | address | address for the partner that will be whitelisted                     |
+| partnerConfiguration | address | address of the contract in that implements the partner configuration |
 
 ### getPartnerConfiguration
 
@@ -35,19 +29,17 @@ function getPartnerConfiguration(address partner) external view returns (contrac
 
 returns the configuration for a partner
 
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
+| Name    | Type    | Description             |
+| ------- | ------- | ----------------------- |
 | partner | address | address for the partner |
 
 #### Returns
 
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IPartnerConfiguration | undefined |
+| Name | Type                           | Description |
+| ---- | ------------------------------ | ----------- |
+| \_0  | contract IPartnerConfiguration | undefined   |
 
 ### getPartnerOwnerAccount
 
@@ -57,19 +49,17 @@ function getPartnerOwnerAccount(address partner) external view returns (address)
 
 returns the owner account of a partner
 
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
+| Name    | Type    | Description             |
+| ------- | ------- | ----------------------- |
 | partner | address | address for the partner |
 
 #### Returns
 
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| \_0  | address | undefined   |
 
 ### isPartner
 
@@ -79,19 +69,17 @@ function isPartner(address partner) external view returns (bool)
 
 returns true if the partner is whitelisted
 
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
+| Name    | Type    | Description             |
+| ------- | ------- | ----------------------- |
 | partner | address | address for the partner |
 
 #### Returns
 
 | Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
+| ---- | ---- | ----------- |
+| \_0  | bool | undefined   |
 
 ### owner
 
@@ -99,16 +87,13 @@ returns true if the partner is whitelisted
 function owner() external view returns (address)
 ```
 
-
-
-*Returns the address of the current owner.*
-
+_Returns the address of the current owner._
 
 #### Returns
 
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| \_0  | address | undefined   |
 
 ### removePartner
 
@@ -118,12 +103,10 @@ function removePartner(address partner) external nonpayable
 
 removes a partner from the whitelist
 
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
+| Name    | Type    | Description                                                     |
+| ------- | ------- | --------------------------------------------------------------- |
 | partner | address | address for the partner that will be removed from the whitelist |
 
 ### renounceOwnership
@@ -132,10 +115,7 @@ removes a partner from the whitelist
 function renounceOwnership() external nonpayable
 ```
 
-
-
-*Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.*
-
+_Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner._
 
 ### setPartnerConfiguration
 
@@ -145,14 +125,12 @@ function setPartnerConfiguration(address partner, contract IPartnerConfiguration
 
 sets the configuration for a partner
 
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| partner | address | address for the partner |
-| partnerConfiguration | contract IPartnerConfiguration | undefined |
+| Name                 | Type                           | Description             |
+| -------------------- | ------------------------------ | ----------------------- |
+| partner              | address                        | address for the partner |
+| partnerConfiguration | contract IPartnerConfiguration | undefined               |
 
 ### transferOwnership
 
@@ -160,17 +138,13 @@ sets the configuration for a partner
 function transferOwnership(address newOwner) external nonpayable
 ```
 
-
-
-*Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.*
+_Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner._
 
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| newOwner | address | undefined |
-
-
+| Name     | Type    | Description |
+| -------- | ------- | ----------- |
+| newOwner | address | undefined   |
 
 ## Events
 
@@ -180,16 +154,12 @@ function transferOwnership(address newOwner) external nonpayable
 event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| previousOwner `indexed` | address | undefined |
-| newOwner `indexed` | address | undefined |
+| Name                    | Type    | Description |
+| ----------------------- | ------- | ----------- |
+| previousOwner `indexed` | address | undefined   |
+| newOwner `indexed`      | address | undefined   |
 
 ### PartnerAdded
 
@@ -197,16 +167,12 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 event PartnerAdded(address indexed partner, address indexed ownerAccount)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| partner `indexed` | address | undefined |
-| ownerAccount `indexed` | address | undefined |
+| Name                   | Type    | Description |
+| ---------------------- | ------- | ----------- |
+| partner `indexed`      | address | undefined   |
+| ownerAccount `indexed` | address | undefined   |
 
 ### PartnerConfigurationChanged
 
@@ -216,14 +182,12 @@ event PartnerConfigurationChanged(address partner, address configurationContract
 
 event emitted when the configuration for a partner is set
 
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| partner  | address | undefined |
-| configurationContract  | address | undefined |
+| Name                  | Type    | Description |
+| --------------------- | ------- | ----------- |
+| partner               | address | undefined   |
+| configurationContract | address | undefined   |
 
 ### PartnerRemoved
 
@@ -231,16 +195,9 @@ event emitted when the configuration for a partner is set
 event PartnerRemoved(address indexed partner, address indexed ownerAccount)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| partner `indexed` | address | undefined |
-| ownerAccount `indexed` | address | undefined |
-
-
-
+| Name                   | Type    | Description |
+| ---------------------- | ------- | ----------- |
+| partner `indexed`      | address | undefined   |
+| ownerAccount `indexed` | address | undefined   |
