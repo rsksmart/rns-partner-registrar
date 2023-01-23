@@ -23,7 +23,7 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
     /**
        @inheritdoc IPartnerManager
      */
-    function isPartner(address partner) public view override returns (bool) {
+    function isPartner(address partner) external view override returns (bool) {
         return _partners[partner].isPartner;
     }
 
@@ -68,7 +68,7 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
             address(partnerConfiguration) != address(0),
             "PartnerManager: Invalid configuration"
         );
-        require(isPartner(partner), "PartnerManager: not a partner");
+        require(_partners[partner].isPartner, "PartnerManager: not a partner");
 
         _partners[partner].configuration = partnerConfiguration;
     }

@@ -16,10 +16,10 @@ adds a partner to the whitelist and sets its configuration
 
 #### Parameters
 
-| Name                 | Type    | Description                                                          |
-| -------------------- | ------- | -------------------------------------------------------------------- |
-| partner              | address | address for the partner that will be whitelisted                     |
-| partnerConfiguration | address | address of the contract in that implements the partner configuration |
+| Name                 | Type    | Description                                                                 |
+| -------------------- | ------- | --------------------------------------------------------------------------- |
+| partner              | address | address for the partner that will be whitelisted                            |
+| partnerConfiguration | address | address of the contract that implements the partner configuration interface |
 
 ### getPartnerConfiguration
 

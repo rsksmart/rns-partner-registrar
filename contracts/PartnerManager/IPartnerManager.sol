@@ -27,7 +27,7 @@ interface IPartnerManager {
         address indexed configurationContract
     );
     /**
-     * @notice event emitted when is removed from the whitelist
+     * @notice event emitted when a partner is removed from the whitelist
      * @param partner address for the partner
      */
     event PartnerRemoved(address indexed partner);
@@ -60,7 +60,8 @@ interface IPartnerManager {
     /**
      * @notice adds a partner to the whitelist and sets its configuration
      * @param partner address for the partner that will be whitelisted
-     * @param partnerConfiguration address of the contract in that implements the partner configuration
+     * @param partnerConfiguration address of the contract that implements the partner configuration interface
+     * @custom:emits-event emits the PartnerAdded event
      */
     function addPartner(
         address partner,
@@ -70,6 +71,7 @@ interface IPartnerManager {
     /**
      * @notice removes a partner from the whitelist
      * @param partner address for the partner that will be removed from the whitelist
+     * @custom:emits-event emits the PartnerRemoved event
      */
     function removePartner(address partner) external;
 }
