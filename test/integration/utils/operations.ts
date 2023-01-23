@@ -113,14 +113,9 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   ); // Contract Execution
 
 
-  
+
   //Validate given price is correct 
-  const expectPrice = calculateDiscountByDuration(duration);
-
-  console.log('Expected: ' + expectPrice + '. Current: ' +  currentNamePrice);
-
-  expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(+currentNamePrice);
-
+  validateNamePrice(duration, currentNamePrice)
 
 
 
@@ -163,14 +158,8 @@ export const purchaseDomainWithoutCommit = async (
   ); // Contract Execution
 
 
-   //Validate given price is correct 
-    const expectPrice = calculateDiscountByDuration(duration);
-
-    console.log('Expected: ' + expectPrice + '. Current: ' +  currentNamePrice);
-  
-    expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(+currentNamePrice);
-
-
+  //Validate given price is correct 
+  validateNamePrice(duration, currentNamePrice);
 
   //step 1
   await (
@@ -272,33 +261,174 @@ export const generateRandomStringWithLettersAndNumbers = (length: number, hasLet
 
   let domainName = '';
 
-  let characters:string = '';
+  let characters: string = '';
 
-  let realLength:number = length;
+  let realLength: number = length;
 
-  if (hasLetters){
+  if (hasLetters) {
     characters = characters + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    
-    domainName = domainName + 'A';
 
-    realLength--;
+    domainName += getDateTimeString(false);
   }
 
-  if (hasNumbers){
+  if (hasNumbers) {
     characters = characters + '0123456789';
-    
-    domainName = domainName + '1';
 
-    realLength--;
+    domainName += getDateTimeString(true);
   }
 
   const charactersLength = characters.length;
 
-  for (let i = 0; i < realLength; i++) {
-    domainName += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
+  if (domainName.length < length) {
+    realLength = length - domainName.length;
 
-  //TODO Poner Fecha y Hora para que nunca se repita
-    
+    for (let i = 0; i < realLength; i++) {
+      domainName += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+  }
+  
+  console.log('RNS Log - Generated Name: ' + domainName);
+
   return domainName;
 };
+
+
+//Validate given price is correct 
+export const validateNamePrice = (duration: BigNumber, currentNamePrice: BigNumber) => {
+
+  const expectPrice = calculateDiscountByDuration(duration);
+
+  console.log('Expected: ' + expectPrice + '. Current: ' + currentNamePrice);
+
+  expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(+currentNamePrice);
+};
+
+
+
+
+
+const getDateTimeString = (idAsNumbers: boolean) => {
+
+  
+  let currentMoment: Date = new Date();
+
+  const month = (currentMoment.getMonth() + 1);
+
+  const day = currentMoment.getDate() + '';
+
+  let domainID: string = '';
+
+  if (idAsNumbers)
+    domainID = '' + currentMoment.getDate() + month + currentMoment.getFullYear() + currentMoment.getHours() + currentMoment.getMinutes() + currentMoment.getSeconds();
+
+  else
+    domainID = '' + getDayID(day) + getMonthID(month);
+
+  return domainID;
+};
+
+
+const getMonthID = (month: number) => {
+
+  let moment: string = '';
+
+  switch (month) {
+    case 1:
+      moment += 'JA'
+      break;
+    case 2:
+      moment += 'FE'
+      break;
+    case 3:
+      moment += 'MA'
+      break;
+    case 4:
+      moment += 'AP'
+      break;
+    case 5:
+      moment += 'MY'
+      break;
+    case 6:
+      moment += 'JU'
+      break;
+    case 7:
+      moment += 'JL'
+      break;
+    case 8:
+      moment += 'AG'
+      break;
+    case 9:
+      moment += 'SP'
+      break;
+    case 10:
+      moment += 'OC'
+      break;
+    case 11:
+      moment += 'NO'
+      break;
+    case 12:
+      moment += 'DE'
+      break;
+  }
+
+  return moment;
+
+};
+
+const getDayID = (dayAsString: string) => {
+
+  let dayID: string = '';
+
+  const firstDigit = parseInt(dayAsString.charAt(0) + '');
+
+  dayID += getDayDigitID(firstDigit);
+
+
+  if (dayAsString.length > 0) {
+    const secondDigit = parseInt(dayAsString.charAt(1) + '');
+
+    dayID += getDayDigitID(secondDigit);
+  }
+
+  return dayID;
+
+}
+
+const getDayDigitID = (dayDigit: number) => {
+
+  let moment: string = '';
+
+  switch (dayDigit) {
+    case 0:
+      moment += 'ZR'
+      break;
+    case 1:
+      moment += 'ON'
+      break;
+    case 2:
+      moment += 'TW'
+      break;
+    case 3:
+      moment += 'TR'
+      break;
+    case 4:
+      moment += 'FO'
+      break;
+    case 5:
+      moment += 'FV'
+      break;
+    case 6:
+      moment += 'SI'
+      break;
+    case 7:
+      moment += 'SV'
+      break;
+    case 8:
+      moment += 'EI'
+      break;
+    case 9:
+      moment += 'NI'
+      break;
+  }
+  return moment
+}

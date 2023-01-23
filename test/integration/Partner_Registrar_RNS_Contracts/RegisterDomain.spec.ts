@@ -14,13 +14,14 @@ import {
   nameToTokenId,
   purchaseDomainUsingTransferAndCallWithCommit,
   generateRandomStringWithLettersAndNumbers,
-  purchaseDomainWithoutCommit,
+  purchaseDomainWithoutCommit, 
 } from '../utils/operations';
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
+
 describe('Pucharse Name By 1st Time (Domain Registration)', () => {
-  it('Test Case No. 1 - ... ... ...', async () => {
+  it.skip('Test Case No. 1 - ... ... ...', async () => {
     //Test Case No. 1
     //User Role:                            RNS Owner
     //Number of Steps:                      One step
@@ -28,6 +29,9 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:          Available (Never Purchased)
     //MinCommitmentAge:                     Equals To Zero
     //Duration:                             -1 year (-)
+
+    
+
   }); //it
 
 
@@ -69,11 +73,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     //TODO - Expected Results
     //Validate Domain Name ISN'T Available anymore
-    const tokenName = nameToTokenId(domainName);
-
-    const isNameAvailable = await NodeOwner.available(tokenName);
-
-    expect(isNameAvailable, 'The calculated domain price is incorrect!').to.be.false;
+    validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
 
 
     //Validate the Domain Name Owner Is the correct (SERGIO)
@@ -129,7 +129,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Duration:                          5 years
   }); //it
 
-  it.skip('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)
@@ -158,12 +158,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     //TODO - Expected Results
     //Validate Domain Name ISN'T Available anymore
-    const tokenName = nameToTokenId(domainName);
-
-    const isNameAvailable = await NodeOwner.available(tokenName);
-
-    expect(+isNameAvailable, 'The calculated domain price is incorrect!').to.be.false;
-
+    validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
 
     //Validate the Domain Name Owner Is the correct (SERGIO)
 
@@ -305,3 +300,17 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Duration:                      Greater Than Maximum (-)
   }); //it
 }); // describe
+
+
+
+//Validate Domain Name IS OR ISN'T Available anymore
+const validatePurchasedDomainIsNotAvailable =  async (NodeOwner:NodeOwner, domainName: string) => {
+
+  const tokenName = nameToTokenId(domainName);
+
+  const isNameAvailable = await NodeOwner.available(tokenName);
+
+  expect(isNameAvailable, 'BUG: The Purchased Name IS Available!').to.be.false;
+}
+
+
