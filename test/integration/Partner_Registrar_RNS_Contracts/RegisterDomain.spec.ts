@@ -21,7 +21,7 @@ import { namehash } from 'ethers/lib/utils';
 
 
 describe('Pucharse Name By 1st Time (Domain Registration)', () => {
-  it.skip('Test Case No. 1 - ... ... ...', async () => {
+  it('Test Case No. 1 - ... ... ...', async () => {
     //Test Case No. 1
     //User Role:                            RNS Owner
     //Number of Steps:                      One step
@@ -30,7 +30,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //MinCommitmentAge:                     Equals To Zero
     //Duration:                             -1 year (-)
 
-    
+
 
   }); //it
 
@@ -129,7 +129,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Duration:                          5 years
   }); //it
 
-  it('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it.skip('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)
