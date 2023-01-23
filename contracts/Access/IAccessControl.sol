@@ -2,8 +2,7 @@
 pragma solidity ^0.8.16;
 
 /**
- * @title IAccessControl
- * @notice Defines Access Control roles management
+ * @title Defines Access Control roles management
  * @dev Implement this interface if you need to manage access control roles
  */
 interface IAccessControl {

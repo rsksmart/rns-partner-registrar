@@ -41,37 +41,35 @@ contract RegistrarAccessControl is IAccessControl, AccessControl {
     /**
      * @inheritdoc IAccessControl
      */
-    function isOwnerRole(
-        address ownerAddr
-    ) external view override returns (bool) {
-        return hasRole(_OWNER, ownerAddr);
+    function isOwnerRole(address owner) external view override returns (bool) {
+        return hasRole(_OWNER, owner);
     }
 
     /**
      * @inheritdoc IAccessControl
      */
     function isHighLevelOperator(
-        address highLevelOperatorAddr
+        address highLevelOperator
     ) external view override returns (bool) {
-        return hasRole(_HIGH_LEVEL_OPERATOR, highLevelOperatorAddr);
+        return hasRole(_HIGH_LEVEL_OPERATOR, highLevelOperator);
     }
 
     /**
      * @inheritdoc IAccessControl
      */
     function addHighLevelOperator(
-        address highLevelOperatorAddr
+        address highLevelOperator
     ) external override onlyOwner {
-        grantRole(_HIGH_LEVEL_OPERATOR, highLevelOperatorAddr);
+        grantRole(_HIGH_LEVEL_OPERATOR, highLevelOperator);
     }
 
     /**
      * @inheritdoc IAccessControl
      */
     function removeHighLevelOperator(
-        address highLevelOperatorAddr
+        address highLevelOperator
     ) external override onlyOwner {
-        revokeRole(_HIGH_LEVEL_OPERATOR, highLevelOperatorAddr);
+        revokeRole(_HIGH_LEVEL_OPERATOR, highLevelOperator);
     }
 
     /**

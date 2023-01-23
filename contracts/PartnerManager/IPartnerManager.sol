@@ -5,8 +5,7 @@ import "../PartnerConfiguration/IPartnerConfiguration.sol";
 
 /**
     @author Identity Team @IOVLabs
-    @title IPartnerManager
-    @dev Keeps track of the whitelisted partners and its configurations.
+    @title Keeps track of the whitelisted partners and its configurations.
 */
 interface IPartnerManager {
     /**
@@ -32,6 +31,7 @@ interface IPartnerManager {
 
     /**
      * @notice returns the configuration for a partner
+     * @param partner address for the partner
      */
     function getPartnerConfiguration(
         address partner
@@ -39,21 +39,26 @@ interface IPartnerManager {
 
     /**
      * @notice returns true if the partner is whitelisted
+     * @param partner address for the partner
      */
     function isPartner(address partner) external view returns (bool);
 
     /**
      * @notice adds a partner to the whitelist
+     * @param partner address for the partner that will be whitelisted
+     * @param partnerOwnerAccount address of the owner account for the partner that will be able to withdraw the collected funds
      */
     function addPartner(address partner, address partnerOwnerAccount) external;
 
     /**
      * @notice removes a partner from the whitelist
+     * @param partner address for the partner that will be removed from the whitelist
      */
     function removePartner(address partner) external;
 
     /**
      * @notice returns the owner account of a partner
+     * @param partner address for the partner
      */
     function getPartnerOwnerAccount(
         address partner

@@ -11,7 +11,7 @@ error InvalidDuration(uint256 duration, string reason);
 error InvalidLength(uint256 length, string reason);
 
 /**
- * @title PartnerConfiguration
+ * @title Defines the configuration for a partner in particular
  * @author Identity Team @IOVLabs
  */
 contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
@@ -313,8 +313,8 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
        @inheritdoc IPartnerConfiguration
      */
     function getPrice(
-        string calldata /* name */,
-        uint256 /* expires */,
+        string calldata name,
+        uint256 expires,
         uint256 duration
     ) external view override returns (uint256) {
         uint256 actualPrice;

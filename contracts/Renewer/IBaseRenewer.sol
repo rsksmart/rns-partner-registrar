@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.16;
 
+import "../FeeManager/IFeeManager.sol";
+
 /**
- * @title IBaseRenewer
- * @dev Defines the common behavior for a Partner Renewer.
+ * @title Defines the common behavior for a Partner Renewer.
  */
 interface IBaseRenewer {
     /**
-     * @notice allows name owner to renew their name
-     * @param name the name of the partner
+     * @notice allows domain name owner to renew their ownership
+     * @param name the domain name to be renewed
      * @param duration the duration of the renewal
      * @param partner Partner address
      */
@@ -31,4 +32,11 @@ interface IBaseRenewer {
      * @param feeManagerContract the address of the fee manager being set
      */
     event FeeManagerChanged(address hostContract, address feeManagerContract);
+
+    /**
+        @notice sets the fee manager to use. Mandatory for the renewer to work.
+        @param feeManager the fee manager to use
+        @custom:emits-event emits the FeeManagerSet event
+    */
+    function setFeeManager(IFeeManager feeManager) external;
 }
