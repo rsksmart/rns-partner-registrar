@@ -78,7 +78,7 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   const commitment = await registrarAsNameOwner.makeCommitment(
     namehash(domainName),
     nameOwner.address,
-    SECRET(),
+    secret,
     OneYearDuration,
     nameOwner.address
   );
