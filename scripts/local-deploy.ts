@@ -17,24 +17,22 @@ import {
   PartnerConfiguration,
   PartnerManager,
   PartnerRegistrar,
-  PartnerRegistrarProxy,
-  PartnerRegistrarProxyFactory,
   PartnerRenewer,
-  PartnerRenewerProxy,
-  PartnerRenewerProxyFactory,
   Resolver,
   RNS,
+  RegistrarAccessControl,
 } from 'typechain-types';
 
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
-const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
+const FEE_PERCENTAGE = oneRBTC.mul(0); //0%
 
 async function main() {
   try {
-    const [owner, partner, userAccount, pool] = await ethers.getSigners();
+    const [owner, partner, partnerOwner, userAccount, pool] =
+      await ethers.getSigners();
 
     console.log('Deploying contracts with the account:', owner.address);
 
@@ -141,12 +139,25 @@ async function main() {
 
     console.log('RIF:', RIF.address);
 
+    const { contract: RegistrarAccessControlContract } =
+      await deployContract<RegistrarAccessControl>(
+        'RegistrarAccessControl',
+        {}
+      );
+    console.log(
+      'RegistrarAccessControl:',
+      RegistrarAccessControlContract.address
+    );
+
     const { contract: PartnerManagerContract } =
-      await deployContract<PartnerManager>('PartnerManager', {});
+      await deployContract<PartnerManager>('PartnerManager', {
+        accessControl: RegistrarAccessControlContract.address,
+      });
     console.log('PartnerManager:', PartnerManagerContract.address);
 
     const { contract: PartnerRegistrarContract } =
       await deployContract<PartnerRegistrar>('PartnerRegistrar', {
+        accessControl: RegistrarAccessControlContract.address,
         nodeOwner: NodeOwnerContract.address,
         rif: RIF.address,
         partnerManager: PartnerManagerContract.address,
@@ -156,6 +167,7 @@ async function main() {
 
     const { contract: PartnerRenewerContract } =
       await deployContract<PartnerRenewer>('PartnerRenewer', {
+        accessControl: RegistrarAccessControlContract.address,
         nodeOwner: NodeOwnerContract.address,
         rif: RIF.address,
         partnerManager: PartnerManagerContract.address,
@@ -185,6 +197,7 @@ async function main() {
 
     const { contract: DefaultPartnerConfiguration } =
       await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+        accessControl: RegistrarAccessControlContract.address,
         minLength: BigNumber.from(5),
         maxLength: BigNumber.from(20),
         isUnicodeSupported: true,
@@ -192,7 +205,7 @@ async function main() {
         maxDuration: BigNumber.from(5),
         feePercentage: FEE_PERCENTAGE,
         discount: BigNumber.from(0),
-        minCommitmentAge: 1,
+        minCommitmentAge: 0,
       });
 
     console.log(
@@ -200,90 +213,12 @@ async function main() {
       DefaultPartnerConfiguration.address
     );
 
-    const { contract: PartnerRegistrarProxyFactoryContract } =
-      await deployContract<PartnerRegistrarProxyFactory>(
-        'PartnerRegistrarProxyFactory',
-        {
-          _rif: RIF.address,
-          _partnerRegistrar: PartnerRegistrarContract.address,
-          _partnerRenewer: PartnerRenewerContract.address,
-        }
-      );
-
-    const { contract: PartnerRenewerProxyFactoryContract } =
-      await deployContract<PartnerRenewerProxyFactory>(
-        'PartnerRenewerProxyFactory',
-        {
-          _rif: RIF.address,
-          _partnerRegistrar: PartnerRegistrarContract.address,
-          _partnerRenewer: PartnerRenewerContract.address,
-        }
-      );
-
-    console.log(
-      'PartnerRenewerProxyFactoryContract:',
-      PartnerRenewerProxyFactoryContract.address
-    );
-
-    const FIFSADDRProxyName = 'FIFSADDR';
-    await (
-      await PartnerRegistrarProxyFactoryContract.createNewPartnerProxy(
-        partner.address,
-        FIFSADDRProxyName
-      )
-    ).wait();
-
-    const FIFSADDRpartnerProxyAddress = (
-      await PartnerRegistrarProxyFactoryContract.getPartnerProxy(
-        partner.address,
-        FIFSADDRProxyName
-      )
-    ).proxy;
-
-    console.log('FIFSADDRpartnerProxyAddress:', FIFSADDRpartnerProxyAddress);
-
-    const FIFSProxyName = 'FIFS';
-    await (
-      await PartnerRegistrarProxyFactoryContract.createNewPartnerProxy(
-        partner.address,
-        FIFSProxyName
-      )
-    ).wait();
-
-    const FIFSPartnerProxyAddress = (
-      await PartnerRegistrarProxyFactoryContract.getPartnerProxy(
-        partner.address,
-        FIFSProxyName
-      )
-    ).proxy;
-
-    const RenewerProxyName = 'Renewer';
-    await PartnerRenewerProxyFactoryContract.createNewPartnerProxy(
-      partner.address,
-      RenewerProxyName
-    );
-
-    const RenewerProxyAddress = (
-      await PartnerRenewerProxyFactoryContract.getPartnerProxy(
-        partner.address,
-        RenewerProxyName
-      )
-    ).proxy;
-
-    console.log('FIFSPartnerProxyAddress:', FIFSPartnerProxyAddress);
-
     console.log('setting up contracts');
 
     await (
       await PartnerManagerContract.addPartner(
-        FIFSADDRpartnerProxyAddress,
-        partner.address
-      )
-    ).wait();
-    await (
-      await PartnerManagerContract.addPartner(
-        RenewerProxyAddress,
-        partner.address
+        partner.address,
+        partnerOwner.address
       )
     ).wait();
 
@@ -295,7 +230,7 @@ async function main() {
       )
     ).wait();
 
-    console.log('partner added ', FIFSADDRpartnerProxyAddress);
+    console.log('partner added ', partner.address);
 
     await (
       await RNSContract.setSubnodeOwner(
@@ -330,18 +265,8 @@ async function main() {
     ).wait();
     console.log('node root resolver set');
     await (
-      await PartnerRegistrarContract.setFeeManager(FeeManager.address)
-    ).wait();
-    console.log('fee manager set');
-    await (
       await PartnerManagerContract.setPartnerConfiguration(
-        FIFSADDRpartnerProxyAddress,
-        DefaultPartnerConfiguration.address
-      )
-    ).wait();
-    await (
-      await PartnerManagerContract.setPartnerConfiguration(
-        RenewerProxyAddress,
+        partner.address,
         DefaultPartnerConfiguration.address
       )
     ).wait();
@@ -357,14 +282,14 @@ async function main() {
       nameResolver: NameResolver.address,
       multiChainResolver: MultiChainResolver.address,
       rif: RIF.address,
-      fifsRegistrar: FIFSPartnerProxyAddress,
-      fifsAddrRegistrar: FIFSADDRpartnerProxyAddress,
+      fifsRegistrar: PartnerRegistrarContract.address,
+      fifsAddrRegistrar: PartnerRegistrarContract.address,
       rskOwner: NodeOwnerContract.address,
-      renewer: RenewerProxyAddress,
+      renewer: PartnerRenewerContract.address,
       partnerManager: PartnerManagerContract.address,
       feeManager: FeeManager.address,
       defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
-      demoPartnerProxyInstance: FIFSADDRpartnerProxyAddress,
+      registrarAccessControl: RegistrarAccessControlContract.address,
     };
 
     fs.writeFileSync(

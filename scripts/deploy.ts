@@ -1,9 +1,15 @@
 import { ethers } from 'hardhat';
 import { Contract, BigNumber } from 'ethers';
-import { PartnerRegistrar } from '../typechain-types/contracts/Registrar/PartnerRegistrar';
-import { FeeManager } from '../typechain-types/contracts/FeeManager/FeeManager';
-import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
+import {
+  PartnerRegistrar,
+  FeeManager,
+  PartnerConfiguration,
+  PartnerManager,
+  PartnerRenewer,
+  RegistrarAccessControl,
+} from '../typechain-types';
 import fs from 'fs';
+import { namehash } from 'ethers/lib/utils';
 
 // TODO: define nodeOwner
 const RNS_NODE_OWNER =
@@ -15,6 +21,15 @@ const RIF_ADDRESS =
 
 // TODO: define POOL address
 const POOL = process.env.POOL || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+
+// TODO: define RNS address
+const RNS = process.env.RNS || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+
+// TODO: define the new owner of the RNS contracts
+const NEW_RNS_OWNER =
+  process.env.NEW_RNS_OWNER || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+
+const tldNode = namehash('rsk');
 
 async function deployContract<T extends Contract>(
   name: string,
@@ -37,11 +52,30 @@ async function main() {
 
     console.log('Account balance:', (await owner.getBalance()).toString());
 
-    const partnerManager = await deployContract('PartnerManager');
+    const accessControl = await deployContract<RegistrarAccessControl>(
+      'RegistrarAccessControl'
+    );
+
+    const partnerManager = await deployContract('PartnerManager', {
+      accessControl: accessControl.address,
+    });
 
     const partnerRegistrar = await deployContract<PartnerRegistrar>(
       'PartnerRegistrar',
       {
+        accessControl: accessControl.address,
+        nodeOwner: RNS_NODE_OWNER,
+        rif: RIF_ADDRESS,
+        partnerManager: partnerManager.address,
+        rns: RNS,
+        rootNode: tldNode,
+      }
+    );
+
+    const partnerRenewer = await deployContract<PartnerRenewer>(
+      'PartnerRenewer',
+      {
+        accessControl: accessControl.address,
         nodeOwner: RNS_NODE_OWNER,
         rif: RIF_ADDRESS,
         partnerManager: partnerManager.address,
@@ -51,30 +85,37 @@ async function main() {
     const feeManager = await deployContract<FeeManager>('FeeManager', {
       rif: RIF_ADDRESS,
       partnerRegistrar: partnerRegistrar.address,
+      partnerRenewer: partnerRenewer.address,
       partnerManager: partnerManager.address,
       pool: POOL,
     });
 
     await (await partnerRegistrar.setFeeManager(feeManager.address)).wait();
+    await (await partnerRenewer.setFeeManager(feeManager.address)).wait();
 
     const defaultPartnerConfiguration =
       await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+        accessControl: accessControl.address,
         minLength: BigNumber.from(3),
-        maxLength: BigNumber.from(0),
+        maxLength: BigNumber.from(7),
         isUnicodeSupported: false,
-        minDuration: BigNumber.from(0),
-        maxDuration: BigNumber.from(0),
-        feePercentage: BigNumber.from(10),
+        minDuration: BigNumber.from(1),
+        maxDuration: BigNumber.from(5),
+        feePercentage: BigNumber.from(0),
         discount: BigNumber.from(0),
-        minCommittmentAge: BigNumber.from(0),
+        minCommitmentAge: BigNumber.from(0),
       });
+
+    await (await accessControl.transferOwnership(NEW_RNS_OWNER)).wait();
 
     console.log('Writing contract addresses to file...');
     const content = {
       partnerRegistrar: partnerRegistrar.address,
+      partnerRenewer: partnerRenewer.address,
       partnerManager: partnerManager.address,
       feeManager: feeManager.address,
       defaultPartnerConfiguration: defaultPartnerConfiguration.address,
+      accessControl: accessControl.address,
     };
 
     fs.writeFileSync(
