@@ -47,6 +47,9 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
     partnerAddress
   ); // Contract Execution
 
+  //Validate given price is correct
+  validateNamePrice(duration, currentNamePrice);
+
   await (
     await RIFAsRegularUser.transferAndCall(
       registrar.address,

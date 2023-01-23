@@ -148,9 +148,68 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:       Available (Never Purchased)
     //MinCommitmentAge:                  Equals To Zero
     //Duration:                          5 years
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      20,
+      true,
+      true
+    );
+
+    const duration = BigNumber.from('5');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
+
+    //Expected Results
+
+    //Validate Domain Name ISN'T Available anymore
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
+
+    //Validate the correct money amount from the buyer
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase
+    );
   }); //it
 
-  it.only('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it.skip('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)
@@ -192,7 +251,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
       domainName,
       duration,
       SECRET(),
-      regularUser,
+      buyerUser,
       PartnerRegistrar,
       RIF,
       partner.address,
@@ -350,6 +409,75 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     //MinCommitmentAge:              Greater than zero
     //Duration:                      Greater Than Maximum (-)
   }); //it
+
+  it.only('Test Case No. 22 - ... ... ...', async () => {
+    //Test Case No. 22
+    //User Role:                      Regular User
+    //Number of Steps:                Two steps
+    //Domain Name - Chars:            Valid (Within Allowed Range) - Letters And Number
+    //Domain Name - Is Available?:    Available (Never Purchased)
+    //MinCommitmentAge:               Equals To Zero
+    //Duration:                       1 year
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      20,
+      true,
+      true
+    );
+
+    const duration = BigNumber.from('1');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
+
+    //Expected Results
+
+    //Validate Domain Name ISN'T Available anymore
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
+
+    //Validate the correct money amount from the buyer
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase
+    );
+  }); //it "
 }); // describe
 
 //Validate Domain Name IS OR ISN'T Available anymore
