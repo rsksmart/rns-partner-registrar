@@ -291,7 +291,8 @@ export const generateRandomStringWithLettersAndNumbers = (
 
   console.log('RNS Log - Generated Name: ' + domainName);
 
-  return domainName;
+  if (length == 0) return '';
+  else return domainName;
 };
 
 //Validate given price is correct

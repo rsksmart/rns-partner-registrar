@@ -20,7 +20,7 @@ import {
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
-describe('Pucharse Name By 1st Time (Domain Registration)', () => {
+describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 1 - ... ... ...', async () => {
     //Test Case No. 1
     //User Role:                            RNS Owner
@@ -29,6 +29,46 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:          Available (Never Purchased)
     //MinCommitmentAge:                     Equals To Zero
     //Duration:                             -1 year (-)
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      10,
+      true,
+      false
+    );
+
+    const duration = BigNumber.from('-1');
+
+    const buyerUser: SignerWithAddress = owner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //Enter Money Before Chus
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
   }); //it
 
   it('Test Case No. 2 - ... ... ...', async () => {
@@ -39,6 +79,47 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:         Available (Never Purchased)
     //MinCommitmentAge:                    Greater than zero
     //Duration:                            0 Years (-)
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      20,
+      false,
+      true
+    );
+
+    const duration = BigNumber.from('0');
+
+    const commitAge = BigNumber.from('30');
+
+    const buyerUser: SignerWithAddress = partner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      commitAge
+    );
   }); //it
 
   it('Test Case No. 3 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
@@ -735,41 +816,196 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 13 - ... ... ...', async () => {
     //Test Case No. 13
     //User Role:                       Partner Reseller
-    //Number of Steps:                 Two steps
+    //Number of Steps:                 One steps
     //Domain Name - Chars:             Greater Than The Maximum Allowed (-) - Only Numbers
     //Domain Name - Is Available?:     Available (Never Purchased)
     //MinCommitmentAge:                Equals To Zero
     //Duration:                        Between 3 and 4 Years
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      30,
+      false,
+      true
+    );
+
+    const duration = BigNumber.from('4');
+
+    const buyerUser: SignerWithAddress = partner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //Enter Money Before Chus
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
   }); //it
 
   it('Test Case No. 14 - ... ... ...', async () => {
     //Test Case No. 14
     //User Role:                       RNS Owner
-    //Number of Steps:                 One step
+    //Number of Steps:                 Two step
     //Domain Name - Chars:             Smaller Than 5 (Minimum Allowed) (-) - Letters and Numbers
     //Domain Name - Is Available?:     Available (Never Purchased)
     //MinCommitmentAge:                Equals To Zero
     //Duration:                        2 years
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      30,
+      true,
+      true
+    );
+
+    const duration = BigNumber.from('2');
+
+    const buyerUser: SignerWithAddress = owner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
   }); //it
 
   it('Test Case No. 15 - ... ... ...', async () => {
     //Test Case No. 15
     //User Role:                      Partner Reseller
-    //Number of Steps:                One step
-    //Domain Name - Chars:            Equals To Zero (Empty Domain Name) (-) - Only Letters
+    //Number of Steps:                Three steps
+    //Domain Name - Chars:            Empty Domain Name (-)
     //Domain Name - Is Available?:    Available (Never Purchased)
-    //MinCommitmentAge:               Equals To Zero
+    //MinCommitmentAge:               Greater Than Zero
     //Duration:                       5 years
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      0,
+      false,
+      false
+    );
+
+    const duration = BigNumber.from('5');
+
+    const commitAge = BigNumber.from('10');
+
+    const buyerUser: SignerWithAddress = partner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      commitAge
+    );
   }); //it
 
   it('Test Case No. 16 - ... ... ...', async () => {
     //Test Case No. 16
     //User Role:                       RNS Owner
     //Number of Steps:                 One step
-    //Domain Name - Chars:             Valid (Within Allowed Range) - With Special Chars (-)
+    //Domain Name - Chars:             Valid Length (Within Allowed Range) - With Special Chars (-)
     //Domain Name - Is Available?:     Available (Never Purchased)
-    //MinCommitmentAge:                Greater than zero
+    //MinCommitmentAge:                Equals To Zero
     //Duration:                        1 year
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+    } = await loadFixture(initialSetup);
+
+    const domainName = 'Bry$n#/1';
+
+    const duration = BigNumber.from('1');
+
+    const buyerUser: SignerWithAddress = owner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //Enter Money Before Chus
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
   }); //it
 
   it('Test Case No. 17 - ... ... ...', async () => {
@@ -780,26 +1016,144 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Domain Name - Is Available?:     Available (Never Purchased)
     //MinCommitmentAge:                Negative Number (-)
     //Duration:                        2 years
+
+    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration } =
+      await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      20,
+      true,
+      false
+    );
+
+    const duration = BigNumber.from('2');
+
+    const commitAge = BigNumber.from('-15');
+
+    const buyerUser: SignerWithAddress = partner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      commitAge
+    );
   }); //it
 
   it('Test Case No. 18 - ... ... ...', async () => {
     //Test Case No. 18
     //User Role:                      Regular User
-    //Number of Steps:                Three steps
+    //Number of Steps:                Two steps
     //Domain Name - Chars:            Valid (Within Allowed Range) - Only Numbers
     //Domain Name - Is Available?:    Available (Never Purchased)
     //MinCommitmentAge:               Empty Value (-)
-    //Duration:                       Between 3 and 9 Years
+    //Duration:                       Between 3 and 4 Years
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+      regularUser,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      10,
+      false,
+      true
+    );
+
+    const duration = BigNumber.from('4');
+
+    const commitAge = BigNumber.from('');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      commitAge
+    );
   }); //it
 
   it('Test Case No. 19 - ... ... ...', async () => {
     //Test Case No. 19
     //User Role:                      RNS Owner
-    //Number of Steps:                Two steps
+    //Number of Steps:                Three steps
     //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
     //Domain Name - Is Available?:    Available (Never Purchased)
     //MinCommitmentAge:               Greater Than Maximum (-)
     //Duration:                       5 years
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      20,
+      true,
+      true
+    );
+
+    const duration = BigNumber.from('5');
+
+    const commitAge = BigNumber.from('20');
+
+    const buyerUser: SignerWithAddress = owner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      commitAge
+    );
   }); //it
 
   it('Test Case No. 20 - ... ... ...', async () => {
@@ -818,8 +1172,48 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Number of Steps:               One step
     //Domain Name - Chars:           Valid (Within Allowed Range) - Letters and Numbers
     //Domain Name - Is Available?:   Available (Never Purchased)
-    //MinCommitmentAge:              Greater than zero
+    //MinCommitmentAge:              Equals To Zero
     //Duration:                      Greater Than Maximum (-)
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      20,
+      true,
+      true
+    );
+
+    const duration = BigNumber.from('');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //Enter Money Before Chus
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
   }); //it
 
   it('Test Case No. 22 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
