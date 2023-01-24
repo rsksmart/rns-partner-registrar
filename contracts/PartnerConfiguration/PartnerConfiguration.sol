@@ -347,7 +347,7 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
                 "Duration less than minimum duration"
             );
 
-        if ((_maxDuration != 0) && (duration > _maxDuration))
+        if (duration > _maxDuration)
             revert InvalidDuration(
                 duration,
                 "Duration is more than max duration"
@@ -356,7 +356,7 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
         if (name.strlen() < _minLength)
             revert InvalidName(name, "Name is less than minimum length");
 
-        if (_maxLength != 0 && name.strlen() > _maxLength)
+        if (name.strlen() > _maxLength)
             revert InvalidName(name, "Name is more than max length");
     }
 

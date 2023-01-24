@@ -7,6 +7,22 @@ pragma solidity ^0.8.16;
  */
 interface IFeeManager {
     /**
+     * @notice thrown when an account tries to withdraw with a zero balance
+     */
+    error ZeroBalance();
+    /**
+     * @notice thrown when an account tries to perform an action that is not authorised
+     */
+    error NotAuthorized(address sender);
+    /**
+     * @notice thrown when the transfer of tokens fails
+     * @param from address of the sender
+     * @param to address of the receiver
+     * @param amount amount of tokens
+     */
+    error TransferFailed(address from, address to, uint256 amount);
+
+    /**
      * @notice event emitted on successful withdrawal
      * @param amount amount of tokens withdrawn
      * @param to address tokens were deposited to
