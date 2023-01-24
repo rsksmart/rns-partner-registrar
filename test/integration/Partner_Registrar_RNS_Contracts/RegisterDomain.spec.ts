@@ -20,7 +20,7 @@ import {
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
-describe.skip('Pucharse Name By 1st Time (Domain Registration)', () => {
+describe('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 1 - ... ... ...', async () => {
     //Test Case No. 1
     //User Role:                            RNS Owner
@@ -135,6 +135,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration)', () => {
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //Enter Money Before Chus
 
     //INPUT
     //1st - Domain Name to Purchase
@@ -377,7 +379,7 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it.only('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)

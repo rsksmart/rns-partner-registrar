@@ -156,6 +156,9 @@ export const initialSetup = async () => {
   await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
   await (await FakeRIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
 
+  await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+  await (await FakeRIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+
   const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
       accessControl: accessControl.address,

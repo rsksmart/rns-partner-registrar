@@ -1,4 +1,4 @@
-import { getAddrRegisterData, oneRBTC } from 'test/utils/mock.utils';
+import { getAddrRegisterData, hashName, oneRBTC } from 'test/utils/mock.utils';
 import {
   ERC677Token,
   PartnerConfiguration,
@@ -6,7 +6,7 @@ import {
 } from 'typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
-import { namehash, keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { MockContract } from '@defi-wonderland/smock';
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { OneYearDuration, SECRET } from './constants';
@@ -39,7 +39,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const PartnerRegistrarAsRegularUser = registrar.connect(nameOwner);
-  const NameWithLettersOnlyHashed = namehash(domainName);
+  const NameWithLettersOnlyHashed = hashName(domainName);
   const currentNamePrice = await PartnerRegistrarAsRegularUser.price(
     NameWithLettersOnlyHashed,
     0,
@@ -59,7 +59,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   ).wait();
 };
 
-//Purchase 2 Step (Commit Greater Than Zero)
+//Purchase 2 Step (Commit Greater Than Zero) (OK) - Commit + Transfer
 export const purchaseDomainUsingTransferAndCallWithCommit = async (
   domainName: string,
   duration: BigNumber,
@@ -79,10 +79,10 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   const registrarAsNameOwner = registrar.connect(nameOwner);
 
   const commitment = await registrarAsNameOwner.makeCommitment(
-    namehash(domainName),
+    hashName(domainName),
     nameOwner.address,
     secret,
-    OneYearDuration,
+    duration,
     nameOwner.address
   );
 
@@ -105,7 +105,7 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const PartnerRegistrarAsRegularUser = registrar.connect(nameOwner);
-  const NameWithLettersOnlyHashed = namehash(domainName);
+  const NameWithLettersOnlyHashed = hashName(domainName);
   const currentNamePrice = await PartnerRegistrarAsRegularUser.price(
     NameWithLettersOnlyHashed,
     0,
@@ -118,14 +118,15 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
 
   await (
     await RIFAsRegularUser.transferAndCall(
+      //Test (< Price -- OK)
       registrar.address,
-      currentNamePrice,
+      currentNamePrice, //Playing With (> Price -- OK + User Balance Get The Extra)
       data
     )
   ).wait();
 };
 
-//Purchase 2 Step (Commit 0)
+//Purchase 2 Step (Commit 0) - Registrar + Approve
 export const purchaseDomainWithoutCommit = async (
   domainName: string,
   duration: BigNumber,
@@ -143,7 +144,7 @@ export const purchaseDomainWithoutCommit = async (
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const registrarAsNameOwner = registrar.connect(nameOwner);
-  const NameWithLettersOnlyHashed = namehash(domainName);
+  const NameWithLettersOnlyHashed = hashName(domainName);
 
   const currentNamePrice = await registrarAsNameOwner.price(
     NameWithLettersOnlyHashed,
@@ -193,10 +194,10 @@ export const purchaseDomainWithCommit = async (
   const registrarAsNameOwner = registrar.connect(nameOwner);
 
   const commitment = await registrarAsNameOwner.makeCommitment(
-    namehash(domainName),
+    hashName(domainName),
     nameOwner.address,
-    SECRET(),
-    OneYearDuration,
+    secret,
+    duration,
     nameOwner.address
   );
 
@@ -210,7 +211,7 @@ export const purchaseDomainWithCommit = async (
   await time.increase(+expectedCommitmentAge);
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
-  const NameWithLettersOnlyHashed = namehash(domainName);
+  const NameWithLettersOnlyHashed = hashName(domainName);
 
   const currentNamePrice = await registrarAsNameOwner.price(
     NameWithLettersOnlyHashed,

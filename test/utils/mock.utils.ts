@@ -18,6 +18,7 @@ import {
   ContractFactory,
 } from 'ethers';
 import { arrayify, hexZeroPad } from 'ethers/lib/utils';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 
 export const oneRBTC = ethers.BigNumber.from(10).pow(18);
 // mock contract default balance set to a very
@@ -189,4 +190,8 @@ export const getRenewData = (
   result.set(_partner, _duration.length + _signature.length);
   result.set(_name, _partner.length + _duration.length + _signature.length);
   return result;
+};
+
+export const hashName = (domain: string) => {
+  return keccak256(toUtf8Bytes(domain));
 };
