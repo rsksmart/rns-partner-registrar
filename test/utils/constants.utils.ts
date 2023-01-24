@@ -1,3 +1,5 @@
+import { ethers } from 'hardhat';
+
 // ERRORS
 export const UN_NECESSARY_MODIFICATION_ERROR_MSG =
   'Param being modified is same as new param';
@@ -25,6 +27,8 @@ export const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
 export const NAME_REGISTERED_EVENT = 'NameRegistered';
 export const PARTNER_CONFIGURATION_CHANGED_EVENT =
   'PartnerConfigurationChanged';
+export const PARTNER_ADDED_EVENT = 'PartnerAdded';
+export const PARTNER_REMOVED_EVENT = 'PartnerRemoved';
 
 // CONSTANT VALUES
 export const DEFAULT_MIN_LENGTH = 3;
@@ -35,3 +39,5 @@ export const DEFAULT_MIN_COMMITMENT_AGE = 0;
 export const DEFAULT_DISCOUNT = 0;
 export const DEFAULT_IS_UNICODE_SUPPORTED = false;
 export const DEFAULT_FEE_PERCENTAGE = 5;
+
+export const ADDRESS_ZERO = ethers.constants.AddressZero;

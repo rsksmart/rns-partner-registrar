@@ -1,25 +1,12 @@
-import { initialSetup } from '../utils/initialSetup';
-import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
-import {
-  SECRET,
-  MINIMUM_DOMAIN_NAME_LENGTH,
-  MAXIMUM_DOMAIN_NAME_LENGTH,
-} from '../utils/constants';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import {
-  calculateNamePriceByDuration,
-  purchaseDomainUsingTransferAndCallWithoutCommit,
-  nameToTokenId,
-} from '../utils/operations';
-import { PartnerRegistrar, NodeOwner } from 'typechain-types';
-import { namehash } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
 import {
   INVALID_ADDRESS_ERR,
+  PARTNER_ADDED_EVENT,
   PARTNER_ALREADY_EXISTS,
 } from '../../utils/constants.utils';
+import { initialSetup } from '../utils/initialSetup';
 
 describe('Partners Management - Creation and White List Partner', () => {
   it('Test Case No. 1 - should whitelist a partner and set its configuration', async () => {
@@ -28,31 +15,34 @@ describe('Partners Management - Creation and White List Partner', () => {
     //User Type (Of The New Account to Add):       Partner Reseller
     const { notWhitelistedPartner, PartnerConfiguration, PartnerManager } =
       await loadFixture(initialSetup);
+    const notWhitelistedPartnerAddress = notWhitelistedPartner.address;
 
     let isPartner = await PartnerManager.isPartner(
-      notWhitelistedPartner.address
+      notWhitelistedPartnerAddress
     );
 
     expect(isPartner).to.be.false;
 
     let partnerConfiguration = await PartnerManager.getPartnerConfiguration(
-      notWhitelistedPartner.address
+      notWhitelistedPartnerAddress
     );
 
     expect(partnerConfiguration).to.be.equal(ethers.constants.AddressZero);
 
-    await (
-      await PartnerManager.addPartner(
-        notWhitelistedPartner.address,
+    await expect(
+      PartnerManager.addPartner(
+        notWhitelistedPartnerAddress,
         PartnerConfiguration.address
       )
-    ).wait();
+    )
+      .to.emit(PartnerManager, PARTNER_ADDED_EVENT)
+      .withArgs(notWhitelistedPartnerAddress, PartnerConfiguration.address);
 
     partnerConfiguration = await PartnerManager.getPartnerConfiguration(
-      notWhitelistedPartner.address
+      notWhitelistedPartnerAddress
     );
 
-    isPartner = await PartnerManager.isPartner(notWhitelistedPartner.address);
+    isPartner = await PartnerManager.isPartner(notWhitelistedPartnerAddress);
 
     expect(isPartner).to.be.true;
 
@@ -66,29 +56,29 @@ describe('Partners Management - Creation and White List Partner', () => {
 
     const { notWhitelistedPartner, PartnerConfiguration, PartnerManager } =
       await loadFixture(initialSetup);
-
+    const notWhitelistedPartnerAddress = notWhitelistedPartner.address;
     const isPartner = await PartnerManager.isPartner(
-      notWhitelistedPartner.address
+      notWhitelistedPartnerAddress
     );
 
     expect(isPartner).to.be.false;
 
     const partnerConfiguration = await PartnerManager.getPartnerConfiguration(
-      notWhitelistedPartner.address
+      notWhitelistedPartnerAddress
     );
 
     expect(partnerConfiguration).to.be.equal(ethers.constants.AddressZero);
 
     await expect(
       PartnerManager.addPartner(
-        notWhitelistedPartner.address,
+        notWhitelistedPartnerAddress,
         PartnerConfiguration.address
       )
     ).to.eventually.be.fulfilled;
     //add it a second time
     await expect(
       PartnerManager.addPartner(
-        notWhitelistedPartner.address,
+        notWhitelistedPartnerAddress,
         PartnerConfiguration.address
       )
     ).to.eventually.rejectedWith(PARTNER_ALREADY_EXISTS);
@@ -98,8 +88,9 @@ describe('Partners Management - Creation and White List Partner', () => {
     //Test Case No. 3
     //User Role (LogIn):                          RNS Owner
     //User Type (Of the New Account to Add):      NO One - Empty (-)
-    const { notWhitelistedPartner, PartnerConfiguration, PartnerManager } =
-      await loadFixture(initialSetup);
+    const { PartnerConfiguration, PartnerManager } = await loadFixture(
+      initialSetup
+    );
 
     await expect(
       PartnerManager.addPartner('', PartnerConfiguration.address)
