@@ -2,6 +2,7 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import {
+  ADDRESS_ZERO,
   INVALID_ADDRESS_ERR,
   PARTNER_ADDED_EVENT,
   PARTNER_ALREADY_EXISTS,
@@ -27,7 +28,7 @@ describe('Partners Management - Creation and White List Partner', () => {
       notWhitelistedPartnerAddress
     );
 
-    expect(partnerConfiguration).to.be.equal(ethers.constants.AddressZero);
+    expect(partnerConfiguration).to.be.equal(ADDRESS_ZERO);
 
     await expect(
       PartnerManager.addPartner(
@@ -67,7 +68,7 @@ describe('Partners Management - Creation and White List Partner', () => {
       notWhitelistedPartnerAddress
     );
 
-    expect(partnerConfiguration).to.be.equal(ethers.constants.AddressZero);
+    expect(partnerConfiguration).to.be.equal(ADDRESS_ZERO);
 
     await expect(
       PartnerManager.addPartner(

@@ -10,6 +10,9 @@ export const ONLY_HIGH_LEVEL_OPERATOR_ERR = 'OnlyHighLevelOperator';
 export const PARTNER_ALREADY_EXISTS = 'PartnerManager: Partner already exists';
 export const INVALID_ADDRESS_ERR =
   'resolver or addr is not configured for ENS name (argument="name", value="", code=INVALID_ARGUMENT, version=contracts/5.7.0)';
+export const INVALID_PARTNER_CONFIGURATION_ERR =
+  'PartnerManager: Invalid configuration';
+export const INVALID_PARTNER_ERR = 'PartnerManager: Invalid partner';
 
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';
