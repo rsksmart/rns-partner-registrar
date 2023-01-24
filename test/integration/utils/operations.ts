@@ -219,6 +219,9 @@ export const purchaseDomainWithCommit = async (
     partnerAddress
   ); // Contract Execution
 
+  //Validate given price is correct
+  validateNamePrice(duration, currentNamePrice);
+
   //step 2
   await (
     await RIFAsRegularUser.approve(registrar.address, currentNamePrice)
