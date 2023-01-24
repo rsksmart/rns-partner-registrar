@@ -94,10 +94,6 @@ describe('Fee Manager', () => {
           PartnerConfiguration.address
         );
 
-        PartnerManager.getPartnerOwnerAccount.returns(
-          partnerOwnerAccount.address
-        );
-
         await expect(
           feeManager.connect(registrar).deposit(partner.address, depositAmount)
         ).to.not.be.reverted;
@@ -167,9 +163,6 @@ describe('Fee Manager', () => {
         PartnerManager.getPartnerConfiguration.returns(
           PartnerConfiguration.address
         );
-        PartnerManager.getPartnerOwnerAccount.returns(
-          partnerOwnerAccount.address
-        );
 
         await expect(
           feeManager.connect(registrar).deposit(partner.address, depositAmount)
@@ -207,9 +200,6 @@ describe('Fee Manager', () => {
         PartnerManager.getPartnerConfiguration.returns(
           PartnerConfiguration.address
         );
-        PartnerManager.getPartnerOwnerAccount.returns(
-          partnerOwnerAccount.address
-        );
 
         await expect(
           feeManager.connect(registrar).deposit(partner.address, depositAmount)
@@ -231,7 +221,6 @@ describe('Fee Manager', () => {
     let feeManager: MockContract<FeeManagerType>,
       registrar: SignerWithAddress,
       partner: SignerWithAddress,
-      partnerOwnerAccount: SignerWithAddress,
       RIF: FakeContract<RIFType>,
       PartnerManager: FakeContract<PartnerManager>,
       PartnerConfiguration: FakeContract<PartnerConfiguration>;
@@ -244,7 +233,6 @@ describe('Fee Manager', () => {
       RIF = vars.RIF;
       PartnerConfiguration = vars.PartnerConfiguration;
       PartnerManager = vars.PartnerManager;
-      partnerOwnerAccount = vars.partnerOwnerAccount;
 
       const depositAmount = oneRBTC.mul(5);
       const feePercentage = oneRBTC.mul(5);
@@ -254,9 +242,6 @@ describe('Fee Manager', () => {
       PartnerManager.getPartnerConfiguration.returns(
         PartnerConfiguration.address
       );
-      PartnerManager.getPartnerOwnerAccount.returns(
-        partnerOwnerAccount.address
-      );
 
       await expect(
         feeManager.connect(registrar).deposit(partner.address, depositAmount)
@@ -265,11 +250,11 @@ describe('Fee Manager', () => {
 
     it('should withdraw successfully', async () => {
       try {
-        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
-          .eventually.fulfilled;
-        expect(
-          await feeManager.getBalance(partnerOwnerAccount.address)
-        ).to.be.equals(ethers.constants.Zero);
+        await expect(feeManager.connect(partner).withdraw()).to.eventually
+          .fulfilled;
+        expect(await feeManager.getBalance(partner.address)).to.be.equals(
+          ethers.constants.Zero
+        );
       } catch (error) {
         console.log(error);
         throw error;
@@ -278,8 +263,8 @@ describe('Fee Manager', () => {
 
     it('should revert when user has no balance', async () => {
       try {
-        await expect(feeManager.connect(partnerOwnerAccount).withdraw()).to
-          .eventually.fulfilled;
+        await expect(feeManager.connect(partner).withdraw()).to.eventually
+          .fulfilled;
         await expect(
           feeManager.connect(partner).withdraw()
         ).to.be.revertedWithCustomError(feeManager, 'ZeroBalance');
@@ -292,14 +277,12 @@ describe('Fee Manager', () => {
     it('should revert if transfer fails', async () => {
       try {
         RIF.transfer.returns(false);
-        await expect(feeManager.connect(partnerOwnerAccount).withdraw())
+        await expect(feeManager.connect(partner).withdraw())
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(
             feeManager.address,
-            partnerOwnerAccount.address,
-            await feeManager
-              .connect(partnerOwnerAccount)
-              .getBalance(partnerOwnerAccount.address)
+            partner.address,
+            await feeManager.connect(partner).getBalance(partner.address)
           );
       } catch (error) {
         console.log(error);
@@ -329,10 +312,6 @@ describe('Fee Manager', () => {
         PartnerConfiguration.getFeePercentage.returns(feePercentage);
         PartnerManager.getPartnerConfiguration.returns(
           PartnerConfiguration.address
-        );
-
-        PartnerManager.getPartnerOwnerAccount.returns(
-          partnerOwnerAccount.address
         );
 
         await expect(
@@ -365,7 +344,6 @@ describe('Fee Manager', () => {
       PartnerManager.getPartnerConfiguration.returns(
         PartnerConfiguration.address
       );
-      PartnerManager.getPartnerOwnerAccount.returns(account3.address);
 
       await feeManager
         .connect(registrar)

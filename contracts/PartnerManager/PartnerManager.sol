@@ -11,20 +11,20 @@ import "../Access/HasAccessControl.sol";
     @title Keeps track of the whitelisted partners and its configurations.
 */
 contract PartnerManager is IPartnerManager, HasAccessControl {
-    mapping(address => bool) private _partners;
-    mapping(address => IPartnerConfiguration) private _partnerConfigurations;
-    mapping(address => address) private _partnerOwnerAccounts;
+    struct Partner {
+        bool isPartner;
+        IPartnerConfiguration configuration;
+    }
 
-    event PartnerAdded(address indexed partner, address indexed ownerAccount);
-    event PartnerRemoved(address indexed partner, address indexed ownerAccount);
+    mapping(address => Partner) private _partners;
 
     constructor(IAccessControl accessControl) HasAccessControl(accessControl) {}
 
     /**
        @inheritdoc IPartnerManager
      */
-    function isPartner(address partner) public view override returns (bool) {
-        return _partners[partner];
+    function isPartner(address partner) external view override returns (bool) {
+        return _partners[partner].isPartner;
     }
 
     /**
@@ -32,11 +32,14 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
      */
     function addPartner(
         address partner,
-        address partnerOwnerAccount
+        IPartnerConfiguration partnerConfiguration
     ) external override onlyHighLevelOperator {
-        _partners[partner] = true;
-        _partnerOwnerAccounts[partner] = partnerOwnerAccount;
-        emit PartnerAdded(partner, partnerOwnerAccount);
+        require(
+            !_partners[partner].isPartner,
+            "PartnerManager: Partner already exists"
+        );
+        _partners[partner] = Partner(true, partnerConfiguration);
+        emit PartnerAdded(partner, address(partnerConfiguration));
     }
 
     /**
@@ -45,9 +48,8 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
     function removePartner(
         address partner
     ) external override onlyHighLevelOperator {
-        _partners[partner] = false;
-
-        emit PartnerRemoved(partner, _partnerOwnerAccounts[partner]);
+        emit PartnerRemoved(partner);
+        delete _partners[partner];
     }
 
     /**
@@ -57,25 +59,18 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
         address partner,
         IPartnerConfiguration partnerConfiguration
     ) external override onlyHighLevelOperator {
-        if (
-            address(_partnerConfigurations[partner]) ==
-            address(partnerConfiguration)
-        ) {
-            revert("Param being modified is same as new param");
-        }
-
         emit PartnerConfigurationChanged(
             partner,
             address(partnerConfiguration)
         );
 
         require(
-            partnerConfiguration != IPartnerConfiguration(address(0)),
+            address(partnerConfiguration) != address(0),
             "PartnerManager: Invalid configuration"
         );
-        require(isPartner(partner), "PartnerManager: not a partner");
+        require(_partners[partner].isPartner, "PartnerManager: not a partner");
 
-        _partnerConfigurations[partner] = partnerConfiguration;
+        _partners[partner].configuration = partnerConfiguration;
     }
 
     /**
@@ -84,24 +79,6 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
     function getPartnerConfiguration(
         address partner
     ) public view override returns (IPartnerConfiguration) {
-        IPartnerConfiguration partnerConfiguration = _partnerConfigurations[
-            partner
-        ];
-
-        require(
-            address(partnerConfiguration) != address(0),
-            "Partner configuration not set"
-        );
-
-        return partnerConfiguration;
-    }
-
-    /**
-       @inheritdoc IPartnerManager
-     */
-    function getPartnerOwnerAccount(
-        address partner
-    ) external view override returns (address) {
-        return _partnerOwnerAccounts[partner];
+        return _partners[partner].configuration;
     }
 }

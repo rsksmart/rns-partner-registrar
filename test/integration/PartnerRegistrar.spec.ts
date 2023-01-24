@@ -23,7 +23,6 @@ describe('New Domain Registration (Integration)', () => {
       FeeManager,
       PartnerRegistrar,
       pool,
-      partnerOwnerAccount,
       partner,
     } = await loadFixture(initialSetup);
     const namePrice = await PartnerRegistrar.price(
@@ -70,7 +69,7 @@ describe('New Domain Registration (Integration)', () => {
     expect(+poolBalance).to.equal(+expectedPoolBalance);
 
     const partnerBalanceInFeeManager = await FeeManager.getBalance(
-      partnerOwnerAccount.address
+      partner.address
     );
     const expectedPartnerAccountBalance = expectedManagerBalance; //since it is the only operation...
     expect(+partnerBalanceInFeeManager).to.equal(
@@ -118,16 +117,6 @@ describe('New Domain Registration (Integration)', () => {
       NodeOwner,
       alternatePartnerConfiguration,
     } = await loadFixture(initialSetup);
-    await (
-      await PartnerManager.addPartner(partner.address, partner.address)
-    ).wait();
-
-    await (
-      await PartnerManager.setPartnerConfiguration(
-        partner.address,
-        alternatePartnerConfiguration.address
-      )
-    ).wait();
 
     RIF.transferFrom.returns(true);
     RIF.approve.returns(false);

@@ -17,6 +17,20 @@ interface IPartnerManager {
         address partner,
         address configurationContract
     );
+    /**
+     * @notice event emitted when a partner is whitelisted and its configuration is set
+     * @param partner address for the partner
+     * @param configurationContract address of the configuration contract
+     */
+    event PartnerAdded(
+        address indexed partner,
+        address indexed configurationContract
+    );
+    /**
+     * @notice event emitted when a partner is removed from the whitelist
+     * @param partner address for the partner
+     */
+    event PartnerRemoved(address indexed partner);
 
     /**
      * @notice sets the configuration for a partner
@@ -44,23 +58,20 @@ interface IPartnerManager {
     function isPartner(address partner) external view returns (bool);
 
     /**
-     * @notice adds a partner to the whitelist
+     * @notice adds a partner to the whitelist and sets its configuration
      * @param partner address for the partner that will be whitelisted
-     * @param partnerOwnerAccount address of the owner account for the partner that will be able to withdraw the collected funds
+     * @param partnerConfiguration address of the contract that implements the partner configuration interface
+     * @custom:emits-event emits the PartnerAdded event
      */
-    function addPartner(address partner, address partnerOwnerAccount) external;
+    function addPartner(
+        address partner,
+        IPartnerConfiguration partnerConfiguration
+    ) external;
 
     /**
      * @notice removes a partner from the whitelist
      * @param partner address for the partner that will be removed from the whitelist
+     * @custom:emits-event emits the PartnerRemoved event
      */
     function removePartner(address partner) external;
-
-    /**
-     * @notice returns the owner account of a partner
-     * @param partner address for the partner
-     */
-    function getPartnerOwnerAccount(
-        address partner
-    ) external view returns (address);
 }

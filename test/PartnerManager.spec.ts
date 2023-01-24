@@ -230,33 +230,6 @@ describe('partnerManager', () => {
         .withArgs(partner.address, account3.address);
     });
 
-    it('Should revert is the partner configuration to be set is same as existing', async () => {
-      const {
-        partnerManager,
-        account1: partner,
-        account3,
-        partnerOwnerAccount,
-      } = await loadFixture(testSetup);
-
-      await partnerManager.addPartner(
-        partner.address,
-        partnerOwnerAccount.address
-      );
-
-      await partnerManager.setPartnerConfiguration(
-        partner.address,
-        account3.address
-      );
-
-      // attempt to change partner configuration
-      await expect(
-        partnerManager.setPartnerConfiguration(
-          partner.address,
-          account3.address
-        )
-      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
-    });
-
     it('should revert if not partner address', async () => {
       const {
         partnerManager,

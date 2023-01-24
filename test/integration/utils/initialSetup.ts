@@ -21,7 +21,6 @@ export const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
   const partner = signers[1];
-  const partnerOwnerAccount = signers[2];
   const nameOwner = signers[3];
   const pool = signers[4];
   const regularUser = signers[5];
@@ -147,12 +146,6 @@ export const initialSetup = async () => {
   await (
     await PartnerManager.addPartner(
       partner.address,
-      partnerOwnerAccount.address
-    )
-  ).wait();
-  await (
-    await PartnerManager.setPartnerConfiguration(
-      partner.address,
       PartnerConfiguration.address
     )
   ).wait();
@@ -187,7 +180,6 @@ export const initialSetup = async () => {
     Resolver,
     RNS,
     owner,
-    partnerOwnerAccount,
     nameOwner,
     signers,
     pool,
