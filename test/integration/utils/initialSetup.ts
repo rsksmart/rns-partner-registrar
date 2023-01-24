@@ -24,6 +24,7 @@ export const initialSetup = async () => {
   const nameOwner = signers[3];
   const pool = signers[4];
   const regularUser = signers[5];
+  const notWhitelistedPartner = signers[6];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -189,5 +190,6 @@ export const initialSetup = async () => {
     partner,
     regularUser,
     alternatePartnerConfiguration,
+    notWhitelistedPartner,
   };
 };
