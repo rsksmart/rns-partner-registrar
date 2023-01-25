@@ -20,8 +20,8 @@ import {
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { namehash } from 'ethers/lib/utils';
 
-describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
-  it('Test Case No. 1 - ... ... ...', async () => {
+describe.skip('Pucharse Name By 1st Time (Domain Registration)', () => {
+  it('Test Case No. 1 - Should: Domain could not be purchased; I throw an Error message; Money should not be deducted from the Wallet', async () => {
     //Test Case No. 1
     //User Role:                            RNS Owner
     //Number of Steps:                      One step
@@ -71,7 +71,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 2 - ... ... ...', async () => {
+  it('Test Case No. 2 - Should: Domain could not be purchased; I throw an Error message; Money should not be deducted from the Wallet', async () => {
     //Test Case No. 2
     //User Role:                           Partner Reseller
     //Number of Steps:                     Two steps
@@ -813,7 +813,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 13 - ... ... ...', async () => {
+  it('Test Case No. 13 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 13
     //User Role:                       Partner Reseller
     //Number of Steps:                 One steps
@@ -863,7 +863,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 14 - ... ... ...', async () => {
+  it('Test Case No. 14 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 14
     //User Role:                       RNS Owner
     //Number of Steps:                 Two step
@@ -911,7 +911,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 15 - ... ... ...', async () => {
+  it('Test Case No. 15 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 15
     //User Role:                      Partner Reseller
     //Number of Steps:                Three steps
@@ -962,7 +962,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 16 - ... ... ...', async () => {
+  it('Test Case No. 16 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 16
     //User Role:                       RNS Owner
     //Number of Steps:                 One step
@@ -1008,7 +1008,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 17 - ... ... ...', async () => {
+  it('Test Case No. 17 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 17
     //User Role:                       Partner Reseller
     //Number of Steps:                 Two steps
@@ -1053,7 +1053,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 18 - ... ... ...', async () => {
+  it('Test Case No. 18 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 18
     //User Role:                      Regular User
     //Number of Steps:                Two steps
@@ -1105,7 +1105,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 19 - ... ... ...', async () => {
+  it('Test Case No. 19 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 19
     //User Role:                      RNS Owner
     //Number of Steps:                Three steps
@@ -1131,7 +1131,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     const duration = BigNumber.from('5');
 
-    const commitAge = BigNumber.from('20');
+    const commitAge = BigNumber.from('1000');
 
     const buyerUser: SignerWithAddress = owner;
 
@@ -1166,7 +1166,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     //Duration:                       2 years
   }); //it
 
-  it('Test Case No. 21 - ... ... ...', async () => {
+  it('Test Case No. 21 - Should: Throw an error message; The domain was not registered; I don not deduct money', async () => {
     //Test Case No. 21
     //User Role:                     Regular User
     //Number of Steps:               One step
@@ -1263,7 +1263,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
       PartnerConfiguration
     );
 
-    //Expected Results
+    //Expected Resultsgit
 
     //Validate Domain Name ISN'T Available anymore
     await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);

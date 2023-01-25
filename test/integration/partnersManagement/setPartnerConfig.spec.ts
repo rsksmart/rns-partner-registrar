@@ -14,7 +14,7 @@ describe('Partners Management - Add and replace partner config', () => {
   it('Test Case No. 1 - should allow changing a partner configuration contract', async () => {
     //Test Case No. 1
     //User Role (LogIn):                           RNS Owner
-    //User Type (Of The New Account to Add):       Partner Reseller
+    //User Type (Of The New Account to Add):       Partner Reseller (White List)
 
     const {
       notWhitelistedPartner,
@@ -73,7 +73,7 @@ describe('Partners Management - Add and replace partner config', () => {
   it('Test Case No. 2 - should reject adding a configuration for a partner that is not whitelisted', async () => {
     //Test Case No. 2
     //User Role (LogIn):                           RNS Owner
-    //User Type (Of The New Account to Add):       non whitelisted partner account
+    //User Type (Of The New Account to Add):       Partner Account (NOT White List)
     const { notWhitelistedPartner, PartnerManager, PartnerConfiguration } =
       await loadFixture(initialSetup);
     const notWhitelistedPartnerAddress = notWhitelistedPartner.address;
@@ -89,7 +89,7 @@ describe('Partners Management - Add and replace partner config', () => {
   it('Test Case No. 3 - should reject setting a partner configuration with an empty address', async () => {
     //Test Case No. 3
     //User Role (LogIn):                           RNS Owner
-    //User Type (Of The New Account to Add):       NO One - Empty (-)
+    //User Type (Of The New Account to Add):       Empty Account (-)
 
     const { notWhitelistedPartner, PartnerConfiguration, PartnerManager } =
       await loadFixture(initialSetup);
@@ -108,7 +108,7 @@ describe('Partners Management - Add and replace partner config', () => {
   }); //it
 
   it('Test Case No. 4 - should reject setting a partner configuration with a ZERO address', async () => {
-    //Test Case No. 3
+    //Test Case No. 4
     //User Role (LogIn):                           RNS Owner
     //User Type (Of The New Account to Add):       ZERO address account
 

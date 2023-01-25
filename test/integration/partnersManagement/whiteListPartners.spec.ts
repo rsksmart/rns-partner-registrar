@@ -13,7 +13,7 @@ describe('Partners Management - Creation and White List Partner', () => {
   it('Test Case No. 1 - should whitelist a partner and set its configuration', async () => {
     //Test Case No. 1
     //User Role (LogIn):                           RNS Owner
-    //User Type (Of The New Account to Add):       Partner Reseller
+    //User Type (Of The New Account to Add):       Partner Reseller (1st Time)
     const { notWhitelistedPartner, PartnerConfiguration, PartnerManager } =
       await loadFixture(initialSetup);
     const notWhitelistedPartnerAddress = notWhitelistedPartner.address;
@@ -53,7 +53,7 @@ describe('Partners Management - Creation and White List Partner', () => {
   it('Test Case No. 2 - should revert if the same partner is added more than once', async () => {
     //Test Case No. 2
     //User Role (LogIn):                         RNS Owner
-    //User Type (Of the New Account to Add):     Partner Reseller
+    //User Type (Of the New Account to Add):     Partner Reseller (Repeated)
 
     const { notWhitelistedPartner, PartnerConfiguration, PartnerManager } =
       await loadFixture(initialSetup);
@@ -88,7 +88,7 @@ describe('Partners Management - Creation and White List Partner', () => {
   it('Test Case No. 3 - should be rejected given that an invalid address was set as a partner account', async () => {
     //Test Case No. 3
     //User Role (LogIn):                          RNS Owner
-    //User Type (Of the New Account to Add):      NO One - Empty (-)
+    //User Type (Of the New Account to Add):      Empty Invalid Address (-)
     const { PartnerConfiguration, PartnerManager } = await loadFixture(
       initialSetup
     );

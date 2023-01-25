@@ -11,7 +11,7 @@ describe('Partners Management - Remove Partner', () => {
   it('Test Case No. 1 - should remove a previously added partner', async () => {
     //Test Case No. 1
     //User Role (LogIn):                   RNS Owner
-    //Type Of Account To Remove:           Partner Reseller
+    //Type Of Account To Remove:           Partner Reseller (Just Added)
 
     const { notWhitelistedPartner, PartnerConfiguration, PartnerManager } =
       await loadFixture(initialSetup);
@@ -46,7 +46,7 @@ describe('Partners Management - Remove Partner', () => {
   it('Test Case No. 2 - it should allow the fulfillment of a removal transaction even tho the partner was not whitelisted', async () => {
     //Test Case No. 2
     //User Role (LogIn):                   RNS Owner
-    //Type Of Account To Remove:           Regular User
+    //Type Of Account To Remove:           Partner Reseller (NOT White List)
     const { notWhitelistedPartner, PartnerManager } = await loadFixture(
       initialSetup
     );
@@ -72,7 +72,7 @@ describe('Partners Management - Remove Partner', () => {
   it('Test Case No. 3 - should revert given that an empty address was provided', async () => {
     //Test Case No. 3
     //User Role (LogIn):                    RNS Owner
-    //Type Of Account To Remove:            NO One - Empty (-)
+    //Type Of Account To Remove:            Empty Address (-)
 
     const { PartnerManager } = await loadFixture(initialSetup);
 
