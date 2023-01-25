@@ -123,7 +123,7 @@ describe('RegistrarAccessControl', async () => {
 
   describe('Owner', () => {
     describe('transferOwnership', () => {
-      it('should tranfer the ownership to new owner address', async () => {
+      it('should transfer the ownership to new owner address', async () => {
         const { accessControl, otherUsers, owner } = await loadFixture(setup);
 
         const newOwnerAddr = otherUsers[0].address;
