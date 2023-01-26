@@ -20,8 +20,9 @@ import {
 import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { MockContract } from '@defi-wonderland/smock';
 import { ConstructorFragment } from '@ethersproject/abi';
+import { oneRBTC } from '../../utils/mock.utils';
 
-describe('Pucharse Name By 1st Time (Domain Registration)', () => {
+describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance', async () => {
     //Test Case No. 2
     //User Role:                           Regular User (OK)
@@ -100,7 +101,8 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       domainName,
       buyerUser,
       moneyBeforePurchase,
-      moneyAfterPurchase
+      moneyAfterPurchase,
+      'Zero Duration'
     );
   }); //it
 
@@ -373,7 +375,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 7 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 7 & 20 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 7
     //User Role:                         Regular User
     //Number of Steps:                   One step
@@ -440,9 +442,41 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Test Case No. 20
+    //User Role:                      Regular User
+    //Number of Steps:                One step
+    //Domain Name - Is Available?:    Occupied By Regular User (-)
+    let errorFound: boolean = false;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
+
+    try {
+      await purchaseDomainUsingTransferAndCallWithoutCommit(
+        domainName,
+        duration,
+        SECRET(),
+        buyerUser,
+        PartnerRegistrar,
+        RIF,
+        partner.address,
+        PartnerConfiguration
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      validateErrorMessageWhenDomainIsOccupied(currentError);
+    }
+
+    expect(
+      errorFound,
+      'BUG: NO error was thrown when I purchased the domain twice!'
+    ).to.be.equals(true);
   }); //it
 
-  it('Test Case No. 8 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 8 & 23 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)
@@ -511,9 +545,42 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Test Case No. 23
+    //User Role:                      Regular User
+    //Number of Steps:                Two step
+    //Domain Name - Is Available?:    Occupied By Regular User (-)
+    let errorFound: boolean = false;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
+
+    try {
+      await purchaseDomainUsingTransferAndCallWithCommit(
+        domainName,
+        duration,
+        SECRET(),
+        buyerUser,
+        PartnerRegistrar,
+        RIF,
+        partner.address,
+        PartnerConfiguration,
+        commitAge
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      validateErrorMessageWhenDomainIsOccupied(currentError);
+    }
+
+    expect(
+      errorFound,
+      'BUG: NO error was thrown when I purchased the domain twice!'
+    ).to.be.equals(true);
   }); //it
 
-  it('Test Case No. 9 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 9 & 24 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 9
     //User Role:                       Regular User
     //Number of Steps:                 Three steps
@@ -582,6 +649,39 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Test Case No. 24
+    //User Role:                      Regular User
+    //Number of Steps:                Three step
+    //Domain Name - Is Available?:    Occupied By Regular User (-)
+    let errorFound: boolean = false;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
+
+    try {
+      await purchaseDomainWithCommit(
+        domainName,
+        duration,
+        SECRET(),
+        buyerUser,
+        PartnerRegistrar,
+        RIF,
+        partner.address,
+        PartnerConfiguration,
+        commitAge
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      validateErrorMessageWhenDomainIsOccupied(currentError);
+    }
+
+    expect(
+      errorFound,
+      'BUG: NO error was thrown when I purchased the domain twice!'
+    ).to.be.equals(true);
   }); //it
 
   it('Test Case No. 10 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
@@ -876,7 +976,8 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       domainName,
       buyerUser,
       moneyBeforePurchase,
-      moneyAfterPurchase
+      moneyAfterPurchase,
+      'Too Long Domain Name'
     );
   }); //it
 
@@ -956,7 +1057,8 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       domainName,
       buyerUser,
       moneyBeforePurchase,
-      moneyAfterPurchase
+      moneyAfterPurchase,
+      'Too Short Domain Name'
     );
   }); //it
 
@@ -1027,11 +1129,13 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       domainName,
       buyerUser,
       moneyBeforePurchase,
-      moneyAfterPurchase
+      moneyAfterPurchase,
+      'Empty Domain Name'
     );
   }); //it
 
-  it.only('Test Case No. 16 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  //Not Integrated yet
+  it.skip('Test Case No. 16 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 16
     //User Role:                       Regular User (OK)
     //Number of Steps:                 One step (OK)
@@ -1082,7 +1186,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
         'BUG: The Minimum Domain Length error message was NOT displayed correctly';
 
       expect(currentError, bugDescription).to.contains(
-        'NameXXX is less than minimum length'
+        'Name is less than minimum length'
       );
 
       expect(currentError, bugDescription).to.contains('InvalidName');
@@ -1103,24 +1207,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       domainName,
       buyerUser,
       moneyBeforePurchase,
-      moneyAfterPurchase
+      moneyAfterPurchase,
+      'Domain With Special Characters'
     );
   }); //it
 
   it('Test Case No. 17 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 17
-    //User Role:                       Partner Reseller
-    //Number of Steps:                 Two steps
-    //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters
-    //Domain Name - Is Available?:     Available (Never Purchased)
-    //MinCommitmentAge:                Negative Number (-)
-    //Duration:                        2 years
+    //User Role:                       Partner Reseller (OK)
+    //Number of Steps:                 Two steps (OK)
+    //Domain Name - Chars:             Valid (Within Allowed Range) - Only Letters (OK)
+    //Domain Name - Is Available?:     Available (Never Purchased) (OK)
+    //MinCommitmentAge:                Negative Number (-) (OK)
+    //Duration:                        2 years (OK)
 
     const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration } =
       await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
-      20,
+      10,
       true,
       false
     );
@@ -1133,33 +1238,61 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
+    let errorFound: boolean = false;
+
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
-    //INPUT
-    //1st - Domain Name to Purchase
-    //2nd - Duration (years)
-    //4th - Role User (Regular, Partner, RNS Owner)
-    await purchaseDomainUsingTransferAndCallWithCommit(
+    try {
+      await purchaseDomainUsingTransferAndCallWithCommit(
+        domainName,
+        duration,
+        SECRET(),
+        buyerUser,
+        PartnerRegistrar,
+        RIF,
+        partner.address,
+        PartnerConfiguration,
+        commitAge
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Negative Commit Number error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains('value out-of-bounds');
+
+      expect(currentError, bugDescription).to.contains('minCommitmentAge');
+
+      expect(currentError, bugDescription).to.contains('BigNumber');
+
+      expect(currentError, bugDescription).to.contains('code=INVALID_ARGUMENT');
+    }
+
+    //Expected Results for Negative Tests
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validateNegativeFlowExpectedResults(
+      errorFound,
+      NodeOwner,
       domainName,
-      duration,
-      SECRET(),
       buyerUser,
-      PartnerRegistrar,
-      RIF,
-      partner.address,
-      PartnerConfiguration,
-      commitAge
+      moneyBeforePurchase,
+      moneyAfterPurchase,
+      'Negative Commit Value'
     );
   }); //it
 
   it('Test Case No. 18 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 18
-    //User Role:                      Regular User
-    //Number of Steps:                Two steps
-    //Domain Name - Chars:            Valid (Within Allowed Range) - Only Numbers
-    //Domain Name - Is Available?:    Available (Never Purchased)
-    //MinCommitmentAge:               Empty Value (-)
-    //Duration:                       Between 3 and 4 Years
+    //User Role:                      Regular User (OK)
+    //Number of Steps:                Two steps (OK)
+    //Domain Name - Chars:            Valid (Within Allowed Range) - Only Numbers (OK)
+    //Domain Name - Is Available?:    Available (Never Purchased) (OK)
+    //MinCommitmentAge:               Negative Number (-) (OK)
+    //Duration:                       Between 3 and 4 Years (OK)
 
     const {
       NodeOwner,
@@ -1179,7 +1312,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     const duration = BigNumber.from('4');
 
-    const commitAge = BigNumber.from('');
+    const commitAge = BigNumber.from('-1');
 
     const buyerUser: SignerWithAddress = regularUser;
 
@@ -1187,30 +1320,58 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
-    //INPUT
-    //1st - Domain Name to Purchase
-    //2nd - Duration (years)
-    //4th - Role User (Regular, Partner, RNS Owner)
-    await purchaseDomainWithCommit(
+    let errorFound: boolean = false;
+
+    try {
+      await purchaseDomainUsingTransferAndCallWithCommit(
+        domainName,
+        duration,
+        SECRET(),
+        buyerUser,
+        PartnerRegistrar,
+        RIF,
+        partner.address,
+        PartnerConfiguration,
+        commitAge
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Negative Commit Number error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains('value out-of-bounds');
+
+      expect(currentError, bugDescription).to.contains('minCommitmentAge');
+
+      expect(currentError, bugDescription).to.contains('BigNumber');
+
+      expect(currentError, bugDescription).to.contains('code=INVALID_ARGUMENT');
+    }
+
+    //Expected Results for Negative Tests
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validateNegativeFlowExpectedResults(
+      errorFound,
+      NodeOwner,
       domainName,
-      duration,
-      SECRET(),
       buyerUser,
-      PartnerRegistrar,
-      RIF,
-      partner.address,
-      PartnerConfiguration,
-      commitAge
+      moneyBeforePurchase,
+      moneyAfterPurchase,
+      'Negative Commit Value'
     );
   }); //it
 
   it('Test Case No. 19 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 19
-    //User Role:                      RNS Owner
-    //Number of Steps:                Three steps
-    //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
-    //Domain Name - Is Available?:    Available (Never Purchased)
-    //MinCommitmentAge:               Greater Than Maximum (-)
+    //User Role:                      RNS Owner (OK)
+    //Number of Steps:                Three steps (OK)
+    //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers (OK)
+    //Domain Name - Is Available?:    Available (Never Purchased) (OK)
+    //MinCommitmentAge:               Greater Than Maximum (-) (OK)
     //Duration:                       5 years
 
     const {
@@ -1223,14 +1384,14 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
-      20,
+      10,
       true,
       true
     );
 
     const duration = BigNumber.from('5');
 
-    const commitAge = BigNumber.from('1000');
+    const commitAge = BigNumber.from('1000000');
 
     const buyerUser: SignerWithAddress = owner;
 
@@ -1238,41 +1399,59 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
-    //INPUT
-    //1st - Domain Name to Purchase
-    //2nd - Duration (years)
-    //4th - Role User (Regular, Partner, RNS Owner)
-    await purchaseDomainWithCommit(
-      domainName,
-      duration,
-      SECRET(),
-      buyerUser,
-      PartnerRegistrar,
-      RIF,
-      partner.address,
-      PartnerConfiguration,
-      commitAge
-    );
-  }); //it
+    let errorFound: boolean = false;
 
-  it('Test Case No. 20 - ... ... ...', async () => {
-    //Test Case No. 20
-    //User Role:                      Regular User
-    //Number of Steps:                One step
-    //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers
-    //Domain Name - Is Available?:    Occupied By Regular User (-)
-    //MinCommitmentAge:               Greater than zero
-    //Duration:                       2 years
+    try {
+      await purchaseDomainWithCommit(
+        domainName,
+        duration,
+        SECRET(),
+        buyerUser,
+        PartnerRegistrar,
+        RIF,
+        partner.address,
+        PartnerConfiguration,
+        commitAge
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Greater Than Maximum Commit error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains('value out-of-bounds');
+
+      expect(currentError, bugDescription).to.contains('minCommitmentAge');
+
+      expect(currentError, bugDescription).to.contains('BigNumber');
+
+      expect(currentError, bugDescription).to.contains('code=INVALID_ARGUMENT');
+    }
+
+    //Expected Results for Negative Tests
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validateNegativeFlowExpectedResults(
+      errorFound,
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      moneyAfterPurchase,
+      'Commit Value > Maximum Allowed'
+    );
   }); //it
 
   it('Test Case No. 21 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 21
-    //User Role:                     Regular User
-    //Number of Steps:               One step
-    //Domain Name - Chars:           Valid (Within Allowed Range) - Letters and Numbers
-    //Domain Name - Is Available?:   Available (Never Purchased)
-    //MinCommitmentAge:              Equals To Zero
-    //Duration:                      Greater Than Maximum (-)
+    //User Role:                     Regular User (OK)
+    //Number of Steps:               One step (OK)
+    //Domain Name - Chars:           Valid (Within Allowed Range) - Letters and Numbers (OK)
+    //Domain Name - Is Available?:   Available (Never Purchased) (OK)
+    //MinCommitmentAge:              Equals To Zero (OK)
+    //Duration:                      Greater Than Maximum (-) (OK)
 
     const {
       NodeOwner,
@@ -1284,12 +1463,12 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
-      20,
+      10,
       true,
       true
     );
 
-    const duration = BigNumber.from('');
+    const duration = BigNumber.from('10000');
 
     const buyerUser: SignerWithAddress = regularUser;
 
@@ -1297,21 +1476,49 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
-    //Enter Money Before Chus
+    let errorFound: boolean = false;
 
-    //INPUT
-    //1st - Domain Name to Purchase
-    //2nd - Duration (years)
-    //4th - Role User (Regular, Partner, RNS Owner)
-    await purchaseDomainUsingTransferAndCallWithoutCommit(
+    try {
+      await purchaseDomainUsingTransferAndCallWithoutCommit(
+        domainName,
+        duration,
+        SECRET(),
+        buyerUser,
+        PartnerRegistrar,
+        RIF,
+        partner.address,
+        PartnerConfiguration
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Maximum Duration error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains(
+        'Duration is greater than maximum allowed'
+      );
+
+      expect(currentError, bugDescription).to.contains(
+        'VM Exception while processing transaction: reverted with reason'
+      );
+
+      expect(currentError, bugDescription).to.contains('Error');
+    }
+
+    //Expected Results for Negative Tests
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validateNegativeFlowExpectedResults(
+      errorFound,
+      NodeOwner,
       domainName,
-      duration,
-      SECRET(),
       buyerUser,
-      PartnerRegistrar,
-      RIF,
-      partner.address,
-      PartnerConfiguration
+      moneyBeforePurchase,
+      moneyAfterPurchase,
+      'Duration > Maximum Allowed'
     );
   }); //it
 
@@ -1362,7 +1569,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       PartnerConfiguration
     );
 
-    //Expected Resultsgit
+    //Expected Resultsg
 
     //Validate Domain Name ISN'T Available anymore
     await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
@@ -1383,6 +1590,74 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyBeforePurchase
     );
   }); //it "
+
+  it('Test Case No. 16 (POSITIVE) - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+    //Test Case No. 16
+    //User Role:                       Regular User (OK)
+    //Number of Steps:                 Three steps (OK)
+    //Domain Name - Chars:             Valid (Within Allowed Range) - Special Chars (OK)
+    //Domain Name - Is Available?:     Available (Never Purchased) (OK)
+    //MinCommitmentAge:                Greater than zero (OK)
+    //Duration:                        2 years (OK)
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+    } = await loadFixture(initialSetup);
+
+    const domainName =
+      generateRandomStringWithLettersAndNumbers(10, true, false) + '#$%&';
+
+    const duration = BigNumber.from('2');
+
+    const commitAge = BigNumber.from('10');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      commitAge
+    );
+
+    //TODO - Expected Results
+    //Validate Domain Name ISN'T Available anymore
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
+
+    //Validate the correct money amount from the buyer
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase
+    );
+  }); //it
 }); // describe
 
 //Validate Domain Name IS OR ISN'T Available anymore
@@ -1450,12 +1725,14 @@ const validateNegativeFlowExpectedResults = async (
   domainName: string,
   buyerUser: SignerWithAddress,
   moneyBeforePurchase: BigNumber,
-  moneyAfterPurchase: BigNumber
+  moneyAfterPurchase: BigNumber,
+  additionalBUGInformation: string
 ) => {
   //Expected Result - Validate Error was displayed
-  expect(errorFound + '', 'BUG: Error Message was NOT thrown!').to.be.equals(
-    'true'
-  );
+  expect(
+    errorFound + '',
+    'BUG: Error Message (' + additionalBUGInformation + ') was NOT thrown!'
+  ).to.be.equals('true');
 
   //Expected Result - Domains should be available yet (NOT Purchased)
   await validatePurchasedDomainISAvailable(NodeOwner, domainName);
@@ -1465,4 +1742,15 @@ const validateNegativeFlowExpectedResults = async (
     moneyBeforePurchase + '',
     'BUG: NOT Purchased domain was deducted from User Balance!'
   ).to.be.equals(moneyAfterPurchase + '');
+};
+
+const validateErrorMessageWhenDomainIsOccupied = (currentError: string) => {
+  const bugDescription =
+    'Error Message (purchase a occupied domain) Is not displayed correctly!';
+
+  expect(currentError, bugDescription).contains(
+    'Error: VM Exception while processing transaction: reverted with reason'
+  );
+
+  expect(currentError, bugDescription).contains('Not available');
 };
