@@ -1,8 +1,10 @@
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
 import { oneRBTC } from 'test/utils/mock.utils';
+import { generateRandomStringWithLettersAndNumbers } from './operations';
 
-export const SECRET = keccak256(toUtf8Bytes('1234'));
+export const SECRET = () =>
+  keccak256(toUtf8Bytes(generateRandomStringWithLettersAndNumbers(5)));
 export const NAME = 'cheta';
 
 export const LABEL = keccak256(toUtf8Bytes(NAME));
