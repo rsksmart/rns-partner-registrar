@@ -30,7 +30,7 @@ const FEE_PERCENTAGE = oneRBTC.mul(0); //0%
 
 // TODO: define tRIF address
 const tRIF_ADDRESS =
-  process.env.tRIF_ADDRESS || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+  process.env.tRIF_ADDRESS || '0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE';
 
 async function main() {
   try {
