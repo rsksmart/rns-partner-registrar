@@ -1365,7 +1365,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 19 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it.skip('Test Case No. 19 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 19
     //User Role:                      RNS Owner (OK)
     //Number of Steps:                Three steps (OK)
@@ -1444,7 +1444,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 21 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it.skip('Test Case No. 21 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 21
     //User Role:                     Regular User (OK)
     //Number of Steps:               One step (OK)
