@@ -27,7 +27,7 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
     uint256 internal constant _PRECISION18 = 10 ** 18;
     string internal constant _UN_NECESSARY_MODIFICATION_ERROR_MSG =
-        "Param being modified is same as new param";
+        "old value is same as new value";
     string internal constant _VALUE_OUT_OF_BOUND_ERROR_MSG =
         "Value must be within range 0 to 100000000000000000000";
 
