@@ -6,7 +6,6 @@ import { deployContract, Factory } from 'utils/deployment.utils';
 import { namehash } from 'ethers/lib/utils';
 import NodeOwnerAbi from '../test/external-abis/NodeOwner.json';
 import ResolverAbi from '../test/external-abis/ResolverV1.json';
-import MultichainResolverAbi from '../test/external-abis/MultiChainResolver.json';
 import NameResolverAbi from '../test/external-abis/NameResolver.json';
 import ReverseSetupAbi from '../test/external-abis/ReverseSetup.json';
 import { oneRBTC } from 'test/utils/mock.utils';
@@ -22,7 +21,6 @@ import {
   RNS,
   RegistrarAccessControl,
 } from 'typechain-types';
-import { partnerConfiguration } from 'typechain-types/contracts';
 
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
@@ -30,10 +28,13 @@ const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
 const FEE_PERCENTAGE = oneRBTC.mul(0); //0%
 
+// TODO: define tRIF address
+const tRIF_ADDRESS =
+  process.env.tRIF_ADDRESS || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+
 async function main() {
   try {
-    const [owner, highLevelOperator, partner, userAccount, pool, partnerOwner] =
-      await ethers.getSigners();
+    const [owner, highLevelOperator, pool] = await ethers.getSigners();
 
     /* ********** RNS OLD SUITE DEPLOY STARTS HERE ********** */
 
@@ -121,15 +122,6 @@ async function main() {
 
     console.log('ReverseSetup:', ReverseSetup.address);
 
-    const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
-      beneficiary: owner.address,
-      initialAmount: oneRBTC.mul(100000000000000),
-      tokenName: 'ERC677',
-      tokenSymbol: 'MOCKCOIN',
-    });
-
-    console.log('RIF:', RIF.address);
-
     console.log('******* setting up old suite contracts contracts *********');
 
     await (
@@ -200,7 +192,7 @@ async function main() {
         {
           accessControl: RegistrarAccessControlContract.address,
           nodeOwner: NodeOwnerContract.address,
-          rif: RIF.address,
+          rif: tRIF_ADDRESS,
           partnerManager: PartnerManagerContract.address,
           rns: RNSContract.address,
           rootNode: tldNode,
@@ -217,7 +209,7 @@ async function main() {
         {
           accessControl: RegistrarAccessControlContract.address,
           nodeOwner: NodeOwnerContract.address,
-          rif: RIF.address,
+          rif: tRIF_ADDRESS,
           partnerManager: PartnerManagerContract.address,
         },
         undefined,
@@ -229,7 +221,7 @@ async function main() {
     const { contract: FeeManager } = await deployContract<FeeManager>(
       'FeeManager',
       {
-        rif: RIF.address,
+        rif: tRIF_ADDRESS,
         partnerRegistrar: PartnerRegistrarContract.address,
         partnerRenewer: PartnerRenewerContract.address,
         partnerManager: PartnerManagerContract.address,
@@ -304,7 +296,7 @@ async function main() {
       reverseRegistrar: ReverseRegistrar.address,
       publicResolver: ResolverContract.address,
       nameResolver: NameResolver.address,
-      rif: RIF.address,
+      tRif: tRIF_ADDRESS,
       fifsRegistrar: PartnerRegistrarContract.address,
       fifsAddrRegistrar: PartnerRegistrarContract.address,
       rskOwner: NodeOwnerContract.address,

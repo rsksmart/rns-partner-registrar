@@ -15,3 +15,4 @@ artifacts
 .eslintcache
 contracts.json
 deployedAddresses.json
+testnetDeployedAddresses.json
