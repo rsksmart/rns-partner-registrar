@@ -296,7 +296,7 @@ describe('New Domain Registration', () => {
         NodeOwner.address,
         partner.address
       )
-    ).to.be.revertedWith('Partner Registrar: Not a partner');
+    ).to.be.revertedWith('Not a partner');
   });
 
   it('Should fail if new domain length is less than accepted value', async () => {
