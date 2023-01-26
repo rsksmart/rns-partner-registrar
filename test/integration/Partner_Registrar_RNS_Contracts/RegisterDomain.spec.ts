@@ -22,7 +22,7 @@ import { MockContract } from '@defi-wonderland/smock';
 import { ConstructorFragment } from '@ethersproject/abi';
 import { oneRBTC } from '../../utils/mock.utils';
 
-describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
+describe('Pucharse Name By 1st Time (Domain Registration)', () => {
   it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance', async () => {
     //Test Case No. 2
     //User Role:                           Regular User (OK)
@@ -1365,13 +1365,13 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it.skip('Test Case No. 19 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it('Test Case No. 19 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 19
     //User Role:                      RNS Owner (OK)
     //Number of Steps:                Three steps (OK)
     //Domain Name - Chars:            Valid (Within Allowed Range) - Letters and Numbers (OK)
     //Domain Name - Is Available?:    Available (Never Purchased) (OK)
-    //MinCommitmentAge:               Greater Than Maximum (-) (OK)
+    //MinCommitmentAge:               NO Commitment Provided (-) (OK)
     //Duration:                       5 years
 
     const {
@@ -1411,7 +1411,8 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
         RIF,
         partner.address,
         PartnerConfiguration,
-        commitAge
+        commitAge,
+        false
       );
     } catch (error) {
       errorFound = true;
@@ -1419,20 +1420,17 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
       const currentError = error + '';
 
       const bugDescription =
-        'BUG: The Greater Than Maximum Commit error message was NOT displayed correctly';
+        'BUG: The NO Provided Commit error message was NOT displayed correctly';
 
-      expect(currentError, bugDescription).to.contains('value out-of-bounds');
+      expect(currentError, bugDescription).to.contains('No commitment found');
 
-      expect(currentError, bugDescription).to.contains('minCommitmentAge');
-
-      expect(currentError, bugDescription).to.contains('BigNumber');
-
-      expect(currentError, bugDescription).to.contains('code=INVALID_ARGUMENT');
+      expect(currentError, bugDescription).to.contains(
+        'Error: VM Exception while processing transaction: reverted with reason string'
+      );
     }
 
     //Expected Results for Negative Tests
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
-
     await validateNegativeFlowExpectedResults(
       errorFound,
       NodeOwner,
@@ -1440,11 +1438,11 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
       buyerUser,
       moneyBeforePurchase,
       moneyAfterPurchase,
-      'Commit Value > Maximum Allowed'
+      'No Commitment Provided'
     );
   }); //it
 
-  it.skip('Test Case No. 21 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it('Test Case No. 21 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 21
     //User Role:                     Regular User (OK)
     //Number of Steps:               One step (OK)
@@ -1468,7 +1466,7 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
       true
     );
 
-    const duration = BigNumber.from('10000');
+    const duration = BigNumber.from('6');
 
     const buyerUser: SignerWithAddress = regularUser;
 
@@ -1498,14 +1496,16 @@ describe.only('Pucharse Name By 1st Time (Domain Registration)', () => {
         'BUG: The Maximum Duration error message was NOT displayed correctly';
 
       expect(currentError, bugDescription).to.contains(
-        'Duration is greater than maximum allowed'
+        'Duration is more than max duration'
       );
 
       expect(currentError, bugDescription).to.contains(
-        'VM Exception while processing transaction: reverted with reason'
+        'VM Exception while processing transaction: reverted with custom error'
       );
 
       expect(currentError, bugDescription).to.contains('Error');
+
+      expect(currentError, bugDescription).to.contains('InvalidDuration');
     }
 
     //Expected Results for Negative Tests

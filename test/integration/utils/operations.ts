@@ -183,9 +183,11 @@ export const purchaseDomainWithCommit = async (
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
-  expectedCommitmentAge: BigNumber // in seconds
+  expectedCommitmentAge: BigNumber, // in seconds
+  timeTravel: boolean = true
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
+
   if (+currentMinCommitAge == 0) {
     await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge);
   }
@@ -207,7 +209,9 @@ export const purchaseDomainWithCommit = async (
       .commit(commitment, partnerAddress)
   ).wait();
 
-  await time.increase(+expectedCommitmentAge);
+  if (timeTravel) {
+    await time.increase(+expectedCommitmentAge);
+  }
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const NameWithLettersOnlyHashed = hashName(domainName);
@@ -254,8 +258,8 @@ export const nameToTokenId = (name: string) => {
 // generate a random string of a given length including numbers and letters
 export const generateRandomStringWithLettersAndNumbers = (
   length: number,
-  hasLetters: boolean,
-  hasNumbers: boolean
+  hasLetters: boolean = true,
+  hasNumbers: boolean = false
 ) => {
   let domainName = '';
 
