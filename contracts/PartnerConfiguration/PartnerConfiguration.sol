@@ -90,6 +90,7 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
         uint256 minLength
     ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _minLength;
+        uint256 maxLength = _maxLength;
 
         emit MinLengthChanged(preModifiedValue, minLength);
 
@@ -101,7 +102,7 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
             revert InvalidLength(minLength, "Minimum length cannot be 0");
         }
 
-        if (_maxLength != 0 && minLength > _maxLength) {
+        if (maxLength != 0 && minLength > maxLength) {
             revert InvalidLength(
                 minLength,
                 "Minimum length cannot be more than the max length"
@@ -180,6 +181,7 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
         uint256 minDuration
     ) external override onlyHighLevelOperator {
         uint256 preModifiedValue = _minDuration;
+        uint256 maxDuration = _maxDuration;
 
         emit MinDurationChanged(preModifiedValue, minDuration);
 
@@ -191,7 +193,7 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
             revert InvalidDuration(minDuration, "Minimum duration cannot be 0");
         }
 
-        if (_maxDuration != 0 && minDuration > _maxDuration) {
+        if (maxDuration != 0 && minDuration > maxDuration) {
             revert InvalidDuration(
                 minDuration,
                 "Minimum duration cannot be more than the maximum duration"
@@ -313,8 +315,8 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
        @inheritdoc IPartnerConfiguration
      */
     function getPrice(
-        string calldata name,
-        uint256 expires,
+        string calldata /* name */,
+        uint256 /* expires */,
         uint256 duration
     ) external view override returns (uint256) {
         uint256 actualPrice;
@@ -361,13 +363,14 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
     }
 
     function _applyDiscount(uint256 price) private view returns (uint256) {
+        uint256 discount = _discount;
         // 100% discount applied
         if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
 
         // No discount to be applied
-        if (_discount == 0) return price;
+        if (discount == 0) return price;
 
-        uint256 discountedPrice = (price * _discount) /
+        uint256 discountedPrice = (price * discount) /
             _PERCENT100_WITH_PRECISION18;
         uint256 finalPrice = price - discountedPrice;
 
