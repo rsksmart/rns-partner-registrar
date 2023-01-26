@@ -6,7 +6,6 @@ import { deployContract, Factory } from 'utils/deployment.utils';
 import { namehash } from 'ethers/lib/utils';
 import NodeOwnerAbi from '../test/external-abis/NodeOwner.json';
 import ResolverAbi from '../test/external-abis/ResolverV1.json';
-import MultichainResolverAbi from '../test/external-abis/MultiChainResolver.json';
 import NameResolverAbi from '../test/external-abis/NameResolver.json';
 import ReverseSetupAbi from '../test/external-abis/ReverseSetup.json';
 import { oneRBTC } from 'test/utils/mock.utils';
@@ -29,12 +28,20 @@ const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
 const FEE_PERCENTAGE = oneRBTC.mul(0); //0%
 
+// TODO: define tRIF address
+const tRIF_ADDRESS =
+  process.env.tRIF_ADDRESS || '0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE';
+
 async function main() {
   try {
-    const [owner, partner, partnerOwner, userAccount, pool] =
-      await ethers.getSigners();
+    const [owner, highLevelOperator, pool] = await ethers.getSigners();
 
-    console.log('Deploying contracts with the account:', owner.address);
+    /* ********** RNS OLD SUITE DEPLOY STARTS HERE ********** */
+
+    console.log(
+      'Deploying old suite contracts with the account:',
+      owner.address
+    );
 
     const { contract: RNSContract } = await deployContract<RNS>(
       'RNS',
@@ -44,7 +51,6 @@ async function main() {
         RNSAbi.bytecode
       )) as Factory<RNS>
     );
-
     console.log('RNS:', RNSContract.address);
 
     const { contract: NodeOwnerContract } = await deployContract<NodeOwner>(
@@ -73,20 +79,6 @@ async function main() {
     console.log('ResolverV1:', ResolverContract.address);
 
     await (await ResolverContract.initialize(RNSContract.address)).wait();
-
-    const { contract: MultiChainResolver } = await deployContract<Contract>(
-      'MultiChainResolver',
-      {
-        _rns: RNSContract.address,
-        _publicResolver: ResolverContract.address,
-      },
-      (await ethers.getContractFactory(
-        MultichainResolverAbi.abi,
-        MultichainResolverAbi.bytecode
-      )) as Factory<Contract>
-    );
-
-    console.log('MultiChainResolver:', MultiChainResolver.address);
 
     const { contract: NameResolver } = await deployContract<Contract>(
       'NameResolver',
@@ -130,97 +122,7 @@ async function main() {
 
     console.log('ReverseSetup:', ReverseSetup.address);
 
-    const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
-      beneficiary: owner.address,
-      initialAmount: oneRBTC.mul(100000000000000),
-      tokenName: 'ERC677',
-      tokenSymbol: 'MOCKCOIN',
-    });
-
-    console.log('RIF:', RIF.address);
-
-    const { contract: RegistrarAccessControlContract } =
-      await deployContract<RegistrarAccessControl>(
-        'RegistrarAccessControl',
-        {}
-      );
-    console.log(
-      'RegistrarAccessControl:',
-      RegistrarAccessControlContract.address
-    );
-
-    const { contract: PartnerManagerContract } =
-      await deployContract<PartnerManager>('PartnerManager', {
-        accessControl: RegistrarAccessControlContract.address,
-      });
-    console.log('PartnerManager:', PartnerManagerContract.address);
-
-    const { contract: PartnerRegistrarContract } =
-      await deployContract<PartnerRegistrar>('PartnerRegistrar', {
-        accessControl: RegistrarAccessControlContract.address,
-        nodeOwner: NodeOwnerContract.address,
-        rif: RIF.address,
-        partnerManager: PartnerManagerContract.address,
-        rns: RNSContract.address,
-        rootNode: tldNode,
-      });
-
-    const { contract: PartnerRenewerContract } =
-      await deployContract<PartnerRenewer>('PartnerRenewer', {
-        accessControl: RegistrarAccessControlContract.address,
-        nodeOwner: NodeOwnerContract.address,
-        rif: RIF.address,
-        partnerManager: PartnerManagerContract.address,
-      });
-
-    console.log('PartnerRegistrar:', PartnerRegistrarContract.address);
-
-    const { contract: FeeManager } = await deployContract<FeeManager>(
-      'FeeManager',
-      {
-        rif: RIF.address,
-        partnerRegistrar: PartnerRegistrarContract.address,
-        partnerRenewer: PartnerRenewerContract.address,
-        partnerManager: PartnerManagerContract.address,
-        pool: pool.address,
-      }
-    );
-
-    console.log('FeeManager:', FeeManager.address);
-
-    await (
-      await PartnerRegistrarContract.setFeeManager(FeeManager.address)
-    ).wait();
-    await (
-      await PartnerRenewerContract.setFeeManager(FeeManager.address)
-    ).wait();
-
-    const { contract: DefaultPartnerConfiguration } =
-      await deployContract<PartnerConfiguration>('PartnerConfiguration', {
-        accessControl: RegistrarAccessControlContract.address,
-        minLength: BigNumber.from(5),
-        maxLength: BigNumber.from(20),
-        isUnicodeSupported: true,
-        minDuration: BigNumber.from(1),
-        maxDuration: BigNumber.from(5),
-        feePercentage: FEE_PERCENTAGE,
-        discount: BigNumber.from(0),
-        minCommitmentAge: 0,
-      });
-
-    console.log(
-      'DefaultPartnerConfiguration:',
-      DefaultPartnerConfiguration.address
-    );
-
-    console.log('setting up contracts');
-
-    await (
-      await PartnerManagerContract.addPartner(
-        partner.address,
-        partnerOwner.address
-      )
-    ).wait();
+    console.log('******* setting up old suite contracts contracts *********');
 
     await (
       await RNSContract.setSubnodeOwner(
@@ -229,8 +131,6 @@ async function main() {
         NodeOwnerContract.address
       )
     ).wait();
-
-    console.log('partner added ', partner.address);
 
     await (
       await RNSContract.setSubnodeOwner(
@@ -247,16 +147,6 @@ async function main() {
     console.log('reverse run');
 
     await (
-      await NodeOwnerContract.addRegistrar(PartnerRegistrarContract.address)
-    ).wait();
-    console.log('rootNodeId set');
-    await (
-      await NodeOwnerContract.addRenewer(PartnerRenewerContract.address)
-    ).wait();
-
-    console.log('PartnerRegistrar added to nodeowner');
-
-    await (
       await RNSContract.setDefaultResolver(ResolverContract.address)
     ).wait();
     console.log('default resolver set');
@@ -264,14 +154,140 @@ async function main() {
       await NodeOwnerContract.setRootResolver(ResolverContract.address)
     ).wait();
     console.log('node root resolver set');
+
+    /* ********** RNS OLD SUITE DEPLOY ENDS HERE ********** */
+
+    /* ********** RNS NEW SUITE DEPLOY STARTS HERE ********** */
+    console.log(
+      'Deploying new suite contracts with the account:',
+      highLevelOperator.address
+    );
+
+    const { contract: RegistrarAccessControlContract } =
+      await deployContract<RegistrarAccessControl>(
+        'RegistrarAccessControl',
+        {},
+        undefined,
+        highLevelOperator
+      );
+    console.log(
+      'RegistrarAccessControl:',
+      RegistrarAccessControlContract.address
+    );
+
+    const { contract: PartnerManagerContract } =
+      await deployContract<PartnerManager>(
+        'PartnerManager',
+        {
+          accessControl: RegistrarAccessControlContract.address,
+        },
+        undefined,
+        highLevelOperator
+      );
+    console.log('PartnerManager:', PartnerManagerContract.address);
+
+    const { contract: PartnerRegistrarContract } =
+      await deployContract<PartnerRegistrar>(
+        'PartnerRegistrar',
+        {
+          accessControl: RegistrarAccessControlContract.address,
+          nodeOwner: NodeOwnerContract.address,
+          rif: tRIF_ADDRESS,
+          partnerManager: PartnerManagerContract.address,
+          rns: RNSContract.address,
+          rootNode: tldNode,
+        },
+        undefined,
+        highLevelOperator
+      );
+
+    console.log('PartnerRegistrar:', PartnerRegistrarContract.address);
+
+    const { contract: PartnerRenewerContract } =
+      await deployContract<PartnerRenewer>(
+        'PartnerRenewer',
+        {
+          accessControl: RegistrarAccessControlContract.address,
+          nodeOwner: NodeOwnerContract.address,
+          rif: tRIF_ADDRESS,
+          partnerManager: PartnerManagerContract.address,
+        },
+        undefined,
+        highLevelOperator
+      );
+
+    console.log('PartnerRenewer:', PartnerRenewerContract.address);
+
+    const { contract: FeeManager } = await deployContract<FeeManager>(
+      'FeeManager',
+      {
+        rif: tRIF_ADDRESS,
+        partnerRegistrar: PartnerRegistrarContract.address,
+        partnerRenewer: PartnerRenewerContract.address,
+        partnerManager: PartnerManagerContract.address,
+        pool: pool.address,
+      },
+      undefined,
+      highLevelOperator
+    );
+
+    console.log('FeeManager:', FeeManager.address);
+
     await (
-      await PartnerManagerContract.setPartnerConfiguration(
-        partner.address,
-        DefaultPartnerConfiguration.address
-      )
+      await PartnerRegistrarContract.setFeeManager(FeeManager.address)
     ).wait();
-    console.log('partner configuration set');
-    await (await RIF.transfer(userAccount.address, oneRBTC.mul(100))).wait();
+    await (
+      await PartnerRenewerContract.setFeeManager(FeeManager.address)
+    ).wait();
+
+    const { contract: DefaultPartnerConfiguration } =
+      await deployContract<PartnerConfiguration>(
+        'PartnerConfiguration',
+        {
+          accessControl: RegistrarAccessControlContract.address,
+          minLength: BigNumber.from(5),
+          maxLength: BigNumber.from(20),
+          isUnicodeSupported: true,
+          minDuration: BigNumber.from(1),
+          maxDuration: BigNumber.from(5),
+          feePercentage: FEE_PERCENTAGE,
+          discount: BigNumber.from(0),
+          minCommitmentAge: 0,
+        },
+        undefined,
+        highLevelOperator
+      );
+
+    console.log(
+      'DefaultPartnerConfiguration:',
+      DefaultPartnerConfiguration.address
+    );
+
+    console.log('******* setting up new suite contracts contracts *********');
+
+    await (
+      await NodeOwnerContract.addRegistrar(PartnerRegistrarContract.address)
+    ).wait();
+
+    console.log('new partner registrar added');
+
+    await (
+      await NodeOwnerContract.addRenewer(PartnerRenewerContract.address)
+    ).wait();
+
+    console.log('new partner renewer added');
+
+    // Ownership transfer
+    console.log(
+      `Transferring ownership of new suite contracts to the account: ${owner.address} from ${highLevelOperator.address}`
+    );
+    await (
+      await RegistrarAccessControlContract.transferOwnership(owner.address)
+    ).wait();
+
+    console.log('New suite ownership transferred');
+
+    /* ********** RNS NEW SUITE DEPLOY ENDS HERE ********** */
 
     console.log('Writing contract addresses to file...');
     const content = {
@@ -280,8 +296,7 @@ async function main() {
       reverseRegistrar: ReverseRegistrar.address,
       publicResolver: ResolverContract.address,
       nameResolver: NameResolver.address,
-      multiChainResolver: MultiChainResolver.address,
-      rif: RIF.address,
+      tRif: tRIF_ADDRESS,
       fifsRegistrar: PartnerRegistrarContract.address,
       fifsAddrRegistrar: PartnerRegistrarContract.address,
       rskOwner: NodeOwnerContract.address,
@@ -293,19 +308,13 @@ async function main() {
     };
 
     fs.writeFileSync(
-      './deployedAddresses.json',
+      './testnetDeployedAddresses.json',
       JSON.stringify(content, null, 2)
     );
 
-    console.log(
-      'owner balance ',
-      owner.address,
-      ' ',
-      (await RIF.balanceOf(owner.address)).toString()
-    );
-    console.log('Done.');
-  } catch (err) {
-    throw err;
+    console.log('Script successfully executed!');
+  } catch (error) {
+    throw error;
   }
 }
 

@@ -9,16 +9,19 @@ export interface Factory<C extends Contract> extends ContractFactory {
 export const deployContract = async <C extends Contract, A = {}>(
   contractName: string,
   constructorArgs: A,
-  factory?: Factory<C>
+  factory?: Factory<C>,
+  signer?: SignerWithAddress
 ): Promise<{
-  contract: C;
+  contract: Contract;
   signers: SignerWithAddress[];
   contractFactory: Factory<C>;
 }> => {
   const options = Object.values(constructorArgs);
   const contractFactory =
     factory ?? ((await ethers.getContractFactory(contractName)) as Factory<C>);
-  const contract = await contractFactory.deploy(...options);
+  const contract = signer
+    ? await contractFactory.connect(signer).deploy(...options)
+    : await contractFactory.deploy(...options);
   await contract.deployed();
 
   return {
