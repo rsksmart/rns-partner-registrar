@@ -35,7 +35,7 @@ describe('New Domain Registration (Integration)', () => {
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       OneYearDuration,
       nameOwner.address,
       partner.address
@@ -91,7 +91,7 @@ describe('New Domain Registration (Integration)', () => {
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET,
+      SECRET(),
       OneYearDuration,
       nameOwner.address,
       partner.address
@@ -125,7 +125,7 @@ describe('New Domain Registration (Integration)', () => {
       PartnerRegistrar.register(
         'cheta',
         nameOwner.address,
-        SECRET,
+        SECRET(),
         OneYearDuration,
         NodeOwner.address,
         partner.address
@@ -153,11 +153,11 @@ describe('New Domain Registration (Integration)', () => {
 
     // set minCommitmentAge of partner so as not skip the commit step in the registration flow
     await (await PartnerConfiguration.setMinCommitmentAge(1)).wait();
-
+    const secret = SECRET();
     const commitment = await PartnerRegistrar.connect(nameOwner).makeCommitment(
       LABEL,
       nameOwner.address,
-      SECRET,
+      secret,
       OneYearDuration,
       nameOwner.address
     );
@@ -180,7 +180,7 @@ describe('New Domain Registration (Integration)', () => {
     const data = getAddrRegisterData(
       NAME,
       nameOwner.address,
-      SECRET,
+      secret,
       OneYearDuration,
       nameOwner.address,
       partner.address

@@ -16,6 +16,7 @@ import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 import { FEE_PERCENTAGE, rootNodeId, tldAsSha3, tldNode } from './constants';
+import { BigNumber } from 'ethers';
 
 export const initialSetup = async () => {
   const signers = await ethers.getSigners();
@@ -24,6 +25,7 @@ export const initialSetup = async () => {
   const nameOwner = signers[3];
   const pool = signers[4];
   const regularUser = signers[5];
+  const notWhitelistedPartner = signers[6];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -156,14 +158,17 @@ export const initialSetup = async () => {
   await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
   await (await FakeRIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
 
+  await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+  await (await FakeRIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+
   const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
       accessControl: accessControl.address,
       minLength: 5,
       maxLength: 20,
       isUnicodeSupported: false,
-      minDuration: 1,
-      maxDuration: 5,
+      minDuration: BigNumber.from('1'),
+      maxDuration: BigNumber.from('5'),
       feePercentage: FEE_PERCENTAGE,
       discount: 0,
       minCommitmentAge: 0,
@@ -186,5 +191,6 @@ export const initialSetup = async () => {
     partner,
     regularUser,
     alternatePartnerConfiguration,
+    notWhitelistedPartner,
   };
 };
