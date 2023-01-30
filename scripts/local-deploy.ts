@@ -290,6 +290,7 @@ async function main() {
       feeManager: FeeManager.address,
       defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
       registrarAccessControl: RegistrarAccessControlContract.address,
+      partner: partner.address,
     };
 
     fs.writeFileSync(
