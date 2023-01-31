@@ -1,8 +1,14 @@
-import { getAddrRegisterData, hashName, oneRBTC } from 'test/utils/mock.utils';
+import {
+  getAddrRegisterData,
+  getRenewData,
+  hashName,
+  oneRBTC,
+} from 'test/utils/mock.utils';
 import {
   ERC677Token,
   PartnerConfiguration,
   PartnerRegistrar,
+  PartnerRenewer,
 } from 'typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
@@ -432,4 +438,42 @@ const getDayDigitID = (dayDigit: number) => {
       break;
   }
   return moment;
+};
+
+const oneStepDomainOwnershipRenewal = async (
+  domain: string,
+  duration: BigNumber,
+  namePrice: BigNumber,
+  partnerAddress: string,
+  nameOwner: SignerWithAddress,
+  PartnerRenewer: PartnerRenewer,
+  RIF: MockContract<ERC677Token>
+) => {
+  const renewData = getRenewData(domain, duration, partnerAddress);
+  const RIFAsNameOwner = RIF.connect(nameOwner);
+  await (
+    await RIFAsNameOwner.transferAndCall(
+      PartnerRenewer.address,
+      namePrice,
+      renewData
+    )
+  ).wait();
+};
+
+const TwoStepsDomainOwnershipRenewal = async (
+  domain: string,
+  duration: BigNumber,
+  namePrice: BigNumber,
+  partnerAddress: string,
+  nameOwner: SignerWithAddress,
+  PartnerRenewer: PartnerRenewer,
+  RIF: MockContract<ERC677Token>
+) => {
+  const RIFAsNameOwner = RIF.connect(nameOwner);
+  await (
+    await RIFAsNameOwner.approve(PartnerRenewer.address, namePrice)
+  ).wait();
+
+  const PartnerRenewerAsNameOwner = PartnerRenewer.connect(nameOwner);
+  await (await PartnerRenewer.renew(domain, duration, partnerAddress)).wait()``;
 };

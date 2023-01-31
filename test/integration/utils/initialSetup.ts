@@ -190,5 +190,6 @@ export const initialSetup = async () => {
     regularUser,
     alternatePartnerConfiguration,
     notWhitelistedPartner,
+    PartnerRenewer,
   };
 };
