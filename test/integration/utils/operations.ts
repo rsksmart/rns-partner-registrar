@@ -475,5 +475,5 @@ const TwoStepsDomainOwnershipRenewal = async (
   ).wait();
 
   const PartnerRenewerAsNameOwner = PartnerRenewer.connect(nameOwner);
-  await (await PartnerRenewer.renew(domain, duration, partnerAddress)).wait()``;
+  await (await PartnerRenewer.renew(domain, duration, partnerAddress)).wait();
 };
