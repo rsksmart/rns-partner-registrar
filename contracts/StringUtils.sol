@@ -44,7 +44,6 @@ library StringUtils {
                     return true;
                 }
                 i += 3;
-               
             } else if (b < 0xF8) {
                 // console.logString("four bytes emoji");
                 // console.logString(iToHex(b));

@@ -15,7 +15,6 @@ describe('Has Emoji', () => {
     }
   });
 
-
   it.only('should return false for all the characters except emojis', async () => {
     const { contract: StringUtilsContract } =
       await deployContract<StringUtilsTest>('StringUtilsTest', {});
@@ -23,7 +22,7 @@ describe('Has Emoji', () => {
     for (const emoji of allUTExceptEmojis()) {
       const result = await StringUtilsContract.hasEmoji(emoji);
 
-      if(result) {
+      if (result) {
         console.log(emoji);
       }
     }

@@ -9,6 +9,4 @@ contract StringUtilsTest {
     function hasEmoji(string memory s) external view returns (bool) {
         return s.hasEmoji();
     }
-
-    
 }
