@@ -19,6 +19,8 @@ import {
 } from 'ethers';
 import { arrayify, hexZeroPad } from 'ethers/lib/utils';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import emojis from './emojis.json';
+import characters from './characters.json';
 
 export const oneRBTC = ethers.BigNumber.from(10).pow(18);
 // mock contract default balance set to a very
@@ -195,3 +197,17 @@ export const getRenewData = (
 export const hashName = (domain: string) => {
   return keccak256(toUtf8Bytes(domain));
 };
+
+export const allEmojis = () => {
+  return emojis.map((emoji) => emoji.emoji);
+};
+
+export const allUtf8 = () => { 
+   return characters.flat();
+}
+
+export const allUTExceptEmojis = () => { 
+    const allCharacters = allUtf8();
+    const emojiChars = allEmojis();
+    return allCharacters.filter((char) => !emojiChars.includes(char));
+}
