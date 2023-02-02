@@ -138,6 +138,10 @@ export const initialSetup = async () => {
 
   await (await NodeOwner.addRegistrar(PartnerRegistrar.address)).wait();
 
+  await (await NodeOwner.addRenewer(PartnerRenewer.address)).wait();
+
+  await (await PartnerRenewer.setFeeManager(FeeManager.address)).wait();
+
   await (await RNS.setDefaultResolver(Resolver.address)).wait();
 
   await (await NodeOwner.setRootResolver(Resolver.address)).wait();

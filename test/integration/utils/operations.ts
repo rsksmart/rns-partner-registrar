@@ -440,15 +440,18 @@ const getDayDigitID = (dayDigit: number) => {
   return moment;
 };
 
-const oneStepDomainOwnershipRenewal = async (
+export const oneStepDomainOwnershipRenewal = async (
   domain: string,
   duration: BigNumber,
   namePrice: BigNumber,
   partnerAddress: string,
   nameOwner: SignerWithAddress,
   PartnerRenewer: PartnerRenewer,
-  RIF: MockContract<ERC677Token>
+  RIF: MockContract<ERC677Token>,
+  numberOfMonths: BigNumber
 ) => {
+  simulateMonthsTime(numberOfMonths);
+
   const renewData = getRenewData(domain, duration, partnerAddress);
   const RIFAsNameOwner = RIF.connect(nameOwner);
   await (
@@ -458,17 +461,22 @@ const oneStepDomainOwnershipRenewal = async (
       renewData
     )
   ).wait();
-};
 
-const TwoStepsDomainOwnershipRenewal = async (
+  console.log('RNS Log - One Step Renewal executed! ');
+}; // End - One Step Renewal
+
+export const TwoStepsDomainOwnershipRenewal = async (
   domain: string,
   duration: BigNumber,
   namePrice: BigNumber,
   partnerAddress: string,
   nameOwner: SignerWithAddress,
   PartnerRenewer: PartnerRenewer,
-  RIF: MockContract<ERC677Token>
+  RIF: MockContract<ERC677Token>,
+  numberOfMonths: BigNumber
 ) => {
+  simulateMonthsTime(numberOfMonths);
+
   const RIFAsNameOwner = RIF.connect(nameOwner);
   await (
     await RIFAsNameOwner.approve(PartnerRenewer.address, namePrice)
@@ -476,4 +484,16 @@ const TwoStepsDomainOwnershipRenewal = async (
 
   const PartnerRenewerAsNameOwner = PartnerRenewer.connect(nameOwner);
   await (await PartnerRenewer.renew(domain, duration, partnerAddress)).wait();
-};
+
+  console.log('RNS Log - Two Step Renewal executed! ');
+}; // End - Two Steps Renewal
+
+export const simulateMonthsTime = async (numberOfMonths: BigNumber) => {
+  const secontAtYear = BigNumber.from('31536000'); //31536000 = 1 Year
+
+  const numberOfYears = numberOfMonths.div(BigNumber.from('12'));
+
+  const timeToSimulate = secontAtYear.mul(numberOfYears);
+
+  await time.increase(timeToSimulate);
+}; // End - Time Simulation

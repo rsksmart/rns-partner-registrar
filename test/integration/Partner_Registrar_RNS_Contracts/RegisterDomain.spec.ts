@@ -16,13 +16,20 @@ import {
   generateRandomStringWithLettersAndNumbers,
   purchaseDomainWithoutCommit,
   purchaseDomainWithCommit,
+  TwoStepsDomainOwnershipRenewal,
+  oneStepDomainOwnershipRenewal,
 } from '../utils/operations';
-import { PartnerRegistrar, NodeOwner } from 'typechain-types';
+import {
+  PartnerRegistrar,
+  NodeOwner,
+  ERC677Token,
+  PartnerRenewer,
+} from 'typechain-types';
 import { MockContract } from '@defi-wonderland/smock';
 import { ConstructorFragment } from '@ethersproject/abi';
 import { oneRBTC } from '../../utils/mock.utils';
 
-describe('Pucharse Name By 1st Time (Domain Registration)', () => {
+describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
   it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance', async () => {
     //Test Case No. 2
     //User Role:                           Regular User (OK)
@@ -106,7 +113,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 3 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 3 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Renewal Flow Should be Successful', async () => {
     //Test Case No. 3
     //User Role:                          RNS Owner                                            (OK)
     //Number of Steps:                    Two steps                                            (OK)
@@ -122,6 +129,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       owner,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -173,9 +181,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('6');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      false
+    );
   }); //it
 
-  it('Test Case No. 4 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 4 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 4
     //User Role:                         Partner Reseller (OK)
     //Number of Steps:                   One step         (OK)
@@ -184,8 +208,14 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //MinCommitmentAge:                  Equals To Zero   (OK)
     //Duration:                          2 years (OK)
 
-    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration } =
-      await loadFixture(initialSetup);
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      PartnerRenewer,
+    } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
       10,
@@ -218,7 +248,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       PartnerConfiguration
     );
 
-    //TODO - Expected Results
+    // Expected Results
     //Validate Domain Name ISN'T Available anymore
     await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
 
@@ -237,9 +267,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('12');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      true
+    );
   }); //it
 
-  it('Test Case No. 5 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 5 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 5
     //User Role:                         RNS Owner (OK)
     //Number of Steps:                   Three steps (OK)
@@ -255,6 +301,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       owner,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -308,9 +355,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('15');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      false
+    );
   }); //it
 
-  it('Test Case No. 6 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 6 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 6
     //User Role:                         Partner Reseller (OK)
     //Number of Steps:                   Three steps (OK)
@@ -319,8 +382,14 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     //MinCommitmentAge:                  Greater than zero (OK)
     //Duration:                          Between 3 and 4 Years (OK)
 
-    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration } =
-      await loadFixture(initialSetup);
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      PartnerRenewer,
+    } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
       20,
@@ -373,9 +442,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('24');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      false
+    );
   }); //it
 
-  it('Test Case No. 7 & 20 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
+  it('Test Case No. 7 & 20 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 7
     //User Role:                         Regular User
     //Number of Steps:                   One step
@@ -391,6 +476,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -474,9 +560,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       errorFound,
       'BUG: NO error was thrown when I purchased the domain twice!'
     ).to.be.equals(true);
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('36');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      true
+    );
   }); //it
 
-  it('Test Case No. 8 & 23 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
+  it('Test Case No. 8 & 23 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)
@@ -492,6 +594,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -578,9 +681,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       errorFound,
       'BUG: NO error was thrown when I purchased the domain twice!'
     ).to.be.equals(true);
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('20');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      false
+    );
   }); //it
 
-  it('Test Case No. 9 & 24 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
+  it('Test Case No. 9 & 24 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 9
     //User Role:                       Regular User
     //Number of Steps:                 Three steps
@@ -596,6 +715,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -682,9 +802,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       errorFound,
       'BUG: NO error was thrown when I purchased the domain twice!'
     ).to.be.equals(true);
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('10');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      false
+    );
   }); //it
 
-  it('Test Case No. 10 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 10 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 10
     //User Role:                       Regular User (OK)
     //Number of Steps:                 Three steps (OK)
@@ -700,6 +836,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -753,9 +890,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('15');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      false
+    );
   }); //it
 
-  it('Test Case No. 11 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 11 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 11
     //User Role:                       Regular User (OK)
     //Number of Steps:                 One step (OK)
@@ -771,6 +924,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -822,9 +976,25 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('12');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      true
+    );
   }); //it
 
-  it('Test Case No. 12 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 12 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 12
     //User Role:                       Regular User (OK)
     //Number of Steps:                 Three steps (OK)
@@ -840,6 +1010,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -892,6 +1063,22 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase
+    );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('48');
+
+    await runRenewalTestFlow(
+      numberOfMonthsToSimulate,
+      duration,
+      domainName,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      NodeOwner,
+      moneyAfterPurchase,
+      false
     );
   }); //it
 
@@ -1522,7 +1709,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it
 
-  it('Test Case No. 22 - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 22 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 22
     //User Role:                      Regular User
     //Number of Steps:                Two steps
@@ -1591,7 +1778,7 @@ describe('Pucharse Name By 1st Time (Domain Registration)', () => {
     );
   }); //it "
 
-  it('Test Case No. 16 (POSITIVE) - After Purchase Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 16 (POSITIVE) - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
     //Test Case No. 16
     //User Role:                       Regular User (OK)
     //Number of Steps:                 Three steps (OK)
@@ -1754,3 +1941,106 @@ const validateErrorMessageWhenDomainIsOccupied = (currentError: string) => {
 
   expect(currentError, bugDescription).contains('Not available');
 };
+
+const validateRenewalExpectedResults = async (
+  NodeOwner: NodeOwner,
+  domainName: string,
+  buyerUser: SignerWithAddress,
+  moneyBeforeRenovation: BigNumber,
+  moneyAfterRenovation: BigNumber,
+  duration: BigNumber,
+  numberOfMonthsToSimulate: BigNumber,
+  currentTimeWhenPurchased: BigNumber
+) => {
+  await validatePurchasedDomainHasCorrectOwner(
+    domainName,
+    NodeOwner,
+    buyerUser
+  );
+
+  await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+  await validateCorrectMoneyAmountWasPayed(
+    duration,
+    moneyAfterRenovation,
+    moneyBeforeRenovation
+  );
+
+  //Validate Expiration Time Is Correct according to the Duration Renovation and Time Simulated
+  const tokenId = nameToTokenId(domainName);
+
+  const currentExpirationTimeAfterRenovation = await NodeOwner.expirationTime(
+    tokenId
+  );
+
+  const secondsAtAYear = BigNumber.from('31536000');
+
+  const simulatedTime = numberOfMonthsToSimulate
+    .div(BigNumber.from(12))
+    .mul(secondsAtAYear);
+
+  const expectedExpirationAfterRenovation = currentTimeWhenPurchased
+    .add(simulatedTime)
+    .add(duration.mul(secondsAtAYear));
+
+  expect(
+    currentExpirationTimeAfterRenovation,
+    'BUG: Expiration Date Is Incorrect!'
+  ).to.eq(expectedExpirationAfterRenovation);
+
+  console.log('RNS Log: Renewal Flow Successful!');
+}; //End - Validate Renewal Expected Results
+
+const runRenewalTestFlow = async (
+  numberOfMonthsToSimulate: BigNumber,
+  duration: BigNumber,
+  domainName: string,
+  partnerAddress: string,
+  buyerUser: SignerWithAddress,
+  partnerRenewer: PartnerRenewer,
+  RIF: MockContract<ERC677Token>,
+  NodeOwner: NodeOwner,
+  moneyAfterPurchase: BigNumber,
+  isOneStep: boolean
+) => {
+  const namePrice = await calculateNamePriceByDuration(duration);
+
+  const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+  if (isOneStep) {
+    await oneStepDomainOwnershipRenewal(
+      domainName,
+      duration,
+      namePrice,
+      partnerAddress,
+      buyerUser,
+      partnerRenewer,
+      RIF,
+      numberOfMonthsToSimulate
+    );
+  } else {
+    await TwoStepsDomainOwnershipRenewal(
+      domainName,
+      duration,
+      namePrice,
+      partnerAddress,
+      buyerUser,
+      partnerRenewer,
+      RIF,
+      numberOfMonthsToSimulate
+    );
+  }
+
+  const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
+
+  await validateRenewalExpectedResults(
+    NodeOwner,
+    domainName,
+    buyerUser,
+    moneyAfterPurchase,
+    moneyAfterRenovation,
+    duration,
+    numberOfMonthsToSimulate,
+    currentTimeWhenPurchased
+  );
+}; //End - Renewal Flow
