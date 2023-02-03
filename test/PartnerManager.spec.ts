@@ -1,10 +1,8 @@
 import { ethers } from 'hardhat';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from '../chairc';
-import { PartnerManager__factory } from '../typechain-types/factories/contracts/partnerManager/PartnerManager__factory';
-import { PartnerManager } from '../typechain-types/contracts/PartnerManager';
+import { PartnerManager__factory } from 'typechain-types';
 import {
-  UN_NECESSARY_MODIFICATION_ERROR_MSG,
   PARTNER_CONFIGURATION_CHANGED_EVENT,
   ONLY_HIGH_LEVEL_OPERATOR_ERR,
 } from './utils/constants.utils';

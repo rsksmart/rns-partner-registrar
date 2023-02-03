@@ -54,10 +54,7 @@ contract PartnerRegistrar is
     }
 
     modifier onlyPartner(address partner) {
-        require(
-            _partnerManager.isPartner(partner),
-            "Partner Registrar: Not a partner"
-        );
+        require(_partnerManager.isPartner(partner), "Not a partner");
         _;
     }
 
@@ -65,7 +62,7 @@ contract PartnerRegistrar is
         IFeeManager feeManager
     ) external onlyHighLevelOperator {
         if (address(_feeManager) == address(feeManager)) {
-            revert("Param being modified is same as new param");
+            revert("old value is same as new value");
         }
 
         emit FeeManagerChanged(address(this), address(feeManager));

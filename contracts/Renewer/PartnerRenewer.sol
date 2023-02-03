@@ -56,7 +56,7 @@ contract PartnerRenewer is
         IFeeManager feeManager
     ) external onlyHighLevelOperator {
         if (address(_feeManager) == address(feeManager)) {
-            revert("Param being modified is same as new param");
+            revert("old value is same as new value");
         }
         emit FeeManagerChanged(address(this), address(feeManager));
 
