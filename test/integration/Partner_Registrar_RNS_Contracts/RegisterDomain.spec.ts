@@ -1848,7 +1848,7 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
 }); // describe
 
 //Validate Domain Name IS OR ISN'T Available anymore
-const validatePurchasedDomainIsNotAvailable = async (
+export const validatePurchasedDomainIsNotAvailable = async (
   NodeOwner: NodeOwner,
   domainName: string
 ) => {
@@ -1859,7 +1859,7 @@ const validatePurchasedDomainIsNotAvailable = async (
   expect(isNameAvailable, 'BUG: The Purchased Name IS Available!').to.be.false;
 };
 
-const validatePurchasedDomainISAvailable = async (
+export const validatePurchasedDomainISAvailable = async (
   NodeOwner: NodeOwner,
   domainName: string
 ) => {
@@ -1874,7 +1874,7 @@ const validatePurchasedDomainISAvailable = async (
 };
 
 //Validate the Domain Name Owner Is the correct (SERGIO)
-const validatePurchasedDomainHasCorrectOwner = async (
+export const validatePurchasedDomainHasCorrectOwner = async (
   domainName: string,
   NodeOwner: NodeOwner,
   owner: SignerWithAddress
@@ -1891,7 +1891,7 @@ const validatePurchasedDomainHasCorrectOwner = async (
 
 //Validate the correct money amount from the buyer (SERGIO)
 
-const validateCorrectMoneyAmountWasPayed = async (
+export const validateCorrectMoneyAmountWasPayed = async (
   duration: BigNumber,
   moneyAfterPurchase: BigNumber,
   moneyBeforePurchase: BigNumber
@@ -1906,7 +1906,7 @@ const validateCorrectMoneyAmountWasPayed = async (
   ).to.be.equals(expectedBalance + '');
 };
 
-const validateNegativeFlowExpectedResults = async (
+export const validateNegativeFlowExpectedResults = async (
   errorFound: boolean,
   NodeOwner: NodeOwner,
   domainName: string,
@@ -1991,7 +1991,7 @@ const validateRenewalExpectedResults = async (
   console.log('RNS Log: Renewal Flow Successful!');
 }; //End - Validate Renewal Expected Results
 
-const runRenewalTestFlow = async (
+export const runRenewalTestFlow = async (
   numberOfMonthsToSimulate: BigNumber,
   duration: BigNumber,
   domainName: string,

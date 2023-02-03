@@ -448,10 +448,12 @@ export const oneStepDomainOwnershipRenewal = async (
   nameOwner: SignerWithAddress,
   PartnerRenewer: PartnerRenewer,
   RIF: MockContract<ERC677Token>,
-  numberOfMonths: BigNumber
+  numberOfMonths: BigNumber,
+  makeTimePass = true
 ) => {
-  simulateMonthsTime(numberOfMonths);
-
+  if (makeTimePass) {
+    simulateMonthsTime(numberOfMonths);
+  }
   const renewData = getRenewData(domain, duration, partnerAddress);
   const RIFAsNameOwner = RIF.connect(nameOwner);
   await (
@@ -473,9 +475,12 @@ export const TwoStepsDomainOwnershipRenewal = async (
   nameOwner: SignerWithAddress,
   PartnerRenewer: PartnerRenewer,
   RIF: MockContract<ERC677Token>,
-  numberOfMonths: BigNumber
+  numberOfMonths: BigNumber,
+  makeTimePass = true
 ) => {
-  simulateMonthsTime(numberOfMonths);
+  if (makeTimePass) {
+    simulateMonthsTime(numberOfMonths);
+  }
 
   const RIFAsNameOwner = RIF.connect(nameOwner);
   await (
