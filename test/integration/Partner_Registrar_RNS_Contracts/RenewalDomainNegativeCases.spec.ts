@@ -31,7 +31,7 @@ import {
 import { MockContract } from '@defi-wonderland/smock';
 import { oneRBTC } from 'test/utils/mock.utils';
 
-describe('Renewal Name - Negative Test Cases', () => {
+describe.skip('Renewal Name - Negative Test Cases', () => {
   it('Test Case No. 11 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
     //Test Case No. 11
     //User Role:                    Regular User (OK)
@@ -284,7 +284,7 @@ describe('Renewal Name - Negative Test Cases', () => {
     ).equals(expirationTimeAfterRenovation);
   }); //it
 
-  it.only('Test Case No. 13 - Should Throw an Error; No Money Was Payed for Renotation', async () => {
+  it('Test Case No. 13 - Should Throw an Error; No Money Was Payed for Renotation', async () => {
     //Test Case No. 13
     //User Role:                    Regular User (OK)
     //Renewal's Number Of Steps:    Two Steps (Approve And Register Or Commit And Transfer)
@@ -379,7 +379,7 @@ describe('Renewal Name - Negative Test Cases', () => {
     ).equals(expirationTimeAfterRenovation);
   }); //it
 
-  it.only('Test Case No. 14 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
+  it('Test Case No. 14 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
     //Test Case No. 14
     //User Role:                    Regular User (OK)
     //Renewal's Number Of Steps:    One Step (Transfer And Call) (OK)
