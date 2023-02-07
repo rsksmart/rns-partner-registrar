@@ -296,7 +296,7 @@ describe('New Domain Registration', () => {
         NodeOwner.address,
         partner.address
       )
-    ).to.be.revertedWith('Not a partner');
+    ).to.be.revertedWith('Partner Registrar: Not a partner');
   });
 
   it('Should fail if new domain length is less than accepted value', async () => {
@@ -656,5 +656,17 @@ describe('Access Control', () => {
         alternateFeeManager.address
       )
     ).to.be.fulfilled;
+  });
+});
+
+describe('Partner Manager', () => {
+  it('Should return the partner manager', async () => {
+    const { PartnerRegistrar, PartnerManager } = await loadFixture(
+      initialSetup
+    );
+
+    expect(await PartnerRegistrar.getPartnerManager()).to.be.equal(
+      PartnerManager.address
+    );
   });
 });
