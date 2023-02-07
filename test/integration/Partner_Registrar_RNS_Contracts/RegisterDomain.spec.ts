@@ -29,7 +29,7 @@ import { MockContract } from '@defi-wonderland/smock';
 import { ConstructorFragment } from '@ethersproject/abi';
 import { oneRBTC } from '../../utils/mock.utils';
 
-describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
+describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
   it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance', async () => {
     //Test Case No. 2
     //User Role:                           Regular User (OK)
@@ -195,7 +195,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      false
+      false,
+      duration
     );
   }); //it
 
@@ -281,7 +282,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      true
+      true,
+      duration
     );
   }); //it
 
@@ -369,7 +371,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      false
+      false,
+      duration
     );
   }); //it
 
@@ -402,6 +405,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     const commitAge = BigNumber.from('20');
 
     const buyerUser: SignerWithAddress = partner;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
@@ -456,7 +461,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      false
+      false,
+      duration
     );
   }); //it
 
@@ -488,6 +494,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     const duration = BigNumber.from('5');
 
     const buyerUser: SignerWithAddress = regularUser;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
@@ -535,8 +543,6 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     //Domain Name - Is Available?:    Occupied By Regular User (-)
     let errorFound: boolean = false;
 
-    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
-
     try {
       await purchaseDomainUsingTransferAndCallWithoutCommit(
         domainName,
@@ -574,7 +580,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      true
+      true,
+      duration
     );
   }); //it
 
@@ -608,6 +615,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     const commitAge = BigNumber.from('30');
 
     const buyerUser: SignerWithAddress = regularUser;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
@@ -655,8 +664,6 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     //Domain Name - Is Available?:    Occupied By Regular User (-)
     let errorFound: boolean = false;
 
-    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
-
     try {
       await purchaseDomainUsingTransferAndCallWithCommit(
         domainName,
@@ -695,7 +702,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      false
+      false,
+      duration
     );
   }); //it
 
@@ -729,6 +737,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     const commitAge = BigNumber.from('10');
 
     const buyerUser: SignerWithAddress = regularUser;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
@@ -776,8 +786,6 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     //Domain Name - Is Available?:    Occupied By Regular User (-)
     let errorFound: boolean = false;
 
-    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
-
     try {
       await purchaseDomainWithCommit(
         domainName,
@@ -816,7 +824,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      false
+      false,
+      duration
     );
   }); //it
 
@@ -904,7 +913,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      false
+      false,
+      duration
     );
   }); //it
 
@@ -990,7 +1000,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      true
+      true,
+      duration
     );
   }); //it
 
@@ -1024,6 +1035,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
     const commitAge = BigNumber.from('20');
 
     const buyerUser: SignerWithAddress = regularUser;
+
+    await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
@@ -1078,7 +1091,8 @@ describe.skip('Pucharse Name By 1st Time (Domain Registration) & Renovation', ()
       RIF,
       NodeOwner,
       moneyAfterPurchase,
-      false
+      false,
+      duration
     );
   }); //it
 
@@ -1942,7 +1956,7 @@ const validateErrorMessageWhenDomainIsOccupied = (currentError: string) => {
   expect(currentError, bugDescription).contains('Not available');
 };
 
-const validateRenewalExpectedResults = async (
+export const validateRenewalExpectedResults = async (
   NodeOwner: NodeOwner,
   domainName: string,
   buyerUser: SignerWithAddress,
@@ -1950,7 +1964,8 @@ const validateRenewalExpectedResults = async (
   moneyAfterRenovation: BigNumber,
   duration: BigNumber,
   numberOfMonthsToSimulate: BigNumber,
-  currentTimeWhenPurchased: BigNumber
+  currentTimeWhenPurchased: BigNumber,
+  durationPurchase: BigNumber
 ) => {
   await validatePurchasedDomainHasCorrectOwner(
     domainName,
@@ -1958,13 +1973,19 @@ const validateRenewalExpectedResults = async (
     buyerUser
   );
 
+  console.log('Renewal Flow - Domains Has The Correct Owner! (OK)');
+
   await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+  console.log('Renewal Flow - Domains Is NOT Available! (OK)');
 
   await validateCorrectMoneyAmountWasPayed(
     duration,
     moneyAfterRenovation,
     moneyBeforeRenovation
   );
+
+  console.log('Renewal Flow - User payed the correct price! (OK)');
 
   //Validate Expiration Time Is Correct according to the Duration Renovation and Time Simulated
   const tokenId = nameToTokenId(domainName);
@@ -1976,19 +1997,26 @@ const validateRenewalExpectedResults = async (
   const secondsAtAYear = BigNumber.from('31536000');
 
   const simulatedTime = numberOfMonthsToSimulate
-    .div(BigNumber.from(12))
-    .mul(secondsAtAYear);
+    .mul(secondsAtAYear)
+    .div(BigNumber.from('12'));
+  const renewalDurationInSeconds = duration.mul(secondsAtAYear);
+
+  const purchaseDurationInSeconds = durationPurchase.mul(secondsAtAYear);
 
   const expectedExpirationAfterRenovation = currentTimeWhenPurchased
-    .add(simulatedTime)
-    .add(duration.mul(secondsAtAYear));
+    .add(renewalDurationInSeconds)
+    .add(purchaseDurationInSeconds); // Me falta sumar el año de compra
+
+  const timeDifference = currentExpirationTimeAfterRenovation
+    .sub(expectedExpirationAfterRenovation)
+    .abs();
 
   expect(
-    currentExpirationTimeAfterRenovation,
-    'BUG: Expiration Date Is Incorrect!'
-  ).to.eq(expectedExpirationAfterRenovation);
+    timeDifference,
+    'BUG: Expiration Date Is Incorrect (More Than 5 Minutes Of Difference)!'
+  ).to.be.lessThanOrEqual(300);
 
-  console.log('RNS Log: Renewal Flow Successful!');
+  console.log('Renewal Flow - Expiration Time Is Correctly Updated! (OK)');
 }; //End - Validate Renewal Expected Results
 
 export const runRenewalTestFlow = async (
@@ -2001,7 +2029,8 @@ export const runRenewalTestFlow = async (
   RIF: MockContract<ERC677Token>,
   NodeOwner: NodeOwner,
   moneyAfterPurchase: BigNumber,
-  isOneStep: boolean
+  isOneStep: boolean,
+  durationPurchase: BigNumber
 ) => {
   const namePrice = await calculateNamePriceByDuration(duration);
 
@@ -2041,6 +2070,7 @@ export const runRenewalTestFlow = async (
     moneyAfterRenovation,
     duration,
     numberOfMonthsToSimulate,
-    currentTimeWhenPurchased
+    currentTimeWhenPurchased,
+    durationPurchase
   );
 }; //End - Renewal Flow

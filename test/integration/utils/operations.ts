@@ -488,7 +488,9 @@ export const TwoStepsDomainOwnershipRenewal = async (
   ).wait();
 
   const PartnerRenewerAsNameOwner = PartnerRenewer.connect(nameOwner);
-  await (await PartnerRenewer.renew(domain, duration, partnerAddress)).wait();
+  await (
+    await PartnerRenewerAsNameOwner.renew(domain, duration, partnerAddress)
+  ).wait();
 
   console.log('RNS Log - Two Step Renewal executed! ');
 }; // End - Two Steps Renewal
@@ -496,9 +498,9 @@ export const TwoStepsDomainOwnershipRenewal = async (
 export const simulateMonthsTime = async (numberOfMonths: BigNumber) => {
   const secontAtYear = BigNumber.from('31536000'); //31536000 = 1 Year
 
-  const numberOfYears = numberOfMonths.div(BigNumber.from('12'));
-
-  const timeToSimulate = secontAtYear.mul(numberOfYears);
+  const timeToSimulate = numberOfMonths
+    .mul(secontAtYear)
+    .div(BigNumber.from('12'));
 
   await time.increase(timeToSimulate);
 }; // End - Time Simulation

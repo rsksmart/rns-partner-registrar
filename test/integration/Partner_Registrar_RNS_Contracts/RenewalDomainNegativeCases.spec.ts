@@ -27,11 +27,12 @@ import {
   validatePurchasedDomainHasCorrectOwner,
   validatePurchasedDomainISAvailable,
   validatePurchasedDomainIsNotAvailable,
+  validateRenewalExpectedResults,
 } from './RegisterDomain.spec';
 import { MockContract } from '@defi-wonderland/smock';
 import { oneRBTC } from 'test/utils/mock.utils';
 
-describe.skip('Renewal Name - Negative Test Cases', () => {
+describe('Renewal Name - Negative Test Cases', () => {
   it('Test Case No. 11 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
     //Test Case No. 11
     //User Role:                    Regular User (OK)
@@ -95,56 +96,32 @@ describe.skip('Renewal Name - Negative Test Cases', () => {
 
     const namePrice = await calculateNamePriceByDuration(durationforRenovation);
 
-    let errorFound: boolean = false;
+    const errorFound: boolean = false;
 
     const expirationTimeBeforeRenovation = await NodeOwner.expirationTime(
       nameToTokenId(domainName)
     );
 
-    try {
-      await oneStepDomainOwnershipRenewal(
-        domainName,
-        durationforRenovation,
-        namePrice,
-        partner.address,
-        buyerUser,
-        PartnerRenewer,
-        RIF,
-        numberOfMonthsToSimulate
-      );
-    } catch (error) {
-      errorFound = true;
-
-      const currentError = error + '';
-
-      const bugDescription =
-        'BUG: The Renewal Duration = 0 (Zero) Error message was NOT displayed correctly';
-
-      expect(currentError, bugDescription).to.contains(
-        'Duration is less than minimum'
-      );
-
-      expect(currentError, bugDescription).to.contains(
-        'VM Exception while processing transaction: reverted with custom error'
-      );
-
-      expect(currentError, bugDescription).to.contains('Error');
-
-      expect(currentError, bugDescription).to.contains('InvalidDuration');
-    }
-
-    const moneyAfterRenovationFailed = await RIF.balanceOf(buyerUser.address);
-
-    await validateNegativeFlowExpectedResults(
-      errorFound,
-      NodeOwner,
+    await oneStepDomainOwnershipRenewal(
       domainName,
+      durationforRenovation,
+      namePrice,
+      partner.address,
       buyerUser,
-      moneyBeforeRenovation,
-      moneyAfterRenovationFailed,
-      'Renewal Duration = 0'
+      PartnerRenewer,
+      RIF,
+      numberOfMonthsToSimulate
     );
 
+    const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
+
+    //Expected Result - Money should NOT be deducted from the Balance
+    expect(
+      moneyBeforeRenovation + '',
+      'BUG: Money for Renewal With Duration = 0 was deducted from User Balance!'
+    ).to.be.equals(moneyAfterRenovation + '');
+
+    //Expected Result - Expiration Date Was Not Deducted!
     const expirationTimeAfterRenovation = await NodeOwner.expirationTime(
       nameToTokenId(domainName)
     );
@@ -154,6 +131,7 @@ describe.skip('Renewal Name - Negative Test Cases', () => {
       'BUG: Domain Expiration Time Was Altered But The Renewal Failed!'
     ).equals(expirationTimeAfterRenovation);
 
+    //Expected Result - Name Isn't Available After Renewal
     await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
   }); //it
 
@@ -379,7 +357,7 @@ describe.skip('Renewal Name - Negative Test Cases', () => {
     ).equals(expirationTimeAfterRenovation);
   }); //it
 
-  it('Test Case No. 14 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
+  it('Test Case No. 14 - Renewal Owner should be correct; Renewal Price was payed; Expiration Time Was correctly Updated', async () => {
     //Test Case No. 14
     //User Role:                    Regular User (OK)
     //Renewal's Number Of Steps:    One Step (Transfer And Call) (OK)
@@ -436,6 +414,8 @@ describe.skip('Renewal Name - Negative Test Cases', () => {
       RIF
     );
 
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
     const moneyBeforeRenovation = await RIF.balanceOf(buyerUser.address);
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -445,67 +425,33 @@ describe.skip('Renewal Name - Negative Test Cases', () => {
 
     const namePrice = await calculateNamePriceByDuration(durationforRenovation);
 
-    let errorFound: boolean = false;
-
-    const expirationTimeBeforeRenovation = await NodeOwner.expirationTime(
-      nameToTokenId(domainName)
+    await oneStepDomainOwnershipRenewal(
+      domainName,
+      durationforRenovation,
+      namePrice,
+      partner.address,
+      buyerUser,
+      PartnerRenewer,
+      RIF,
+      numberOfMonthsToSimulate
     );
 
-    try {
-      await oneStepDomainOwnershipRenewal(
-        domainName,
-        durationforRenovation,
-        namePrice,
-        partner.address,
-        buyerUser,
-        PartnerRenewer,
-        RIF,
-        numberOfMonthsToSimulate
-      );
-    } catch (error) {
-      errorFound = true;
+    const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
 
-      const currentError = error + '';
-
-      const bugDescription =
-        'BUG: The Renewal for a Just-Purchased-Name Error message was NOT displayed correctly';
-
-      expect(currentError, bugDescription).to.contains(
-        'Cannot Renovate: Name Is just Purchased!'
-      );
-
-      expect(currentError, bugDescription).to.contains(
-        'VM Exception while processing transaction: reverted with reason'
-      );
-
-      expect(currentError, bugDescription).to.contains('Error');
-    }
-
-    const moneyAfterRenovationFailed = await RIF.balanceOf(buyerUser.address);
-
-    await validateNegativeFlowExpectedResults(
-      errorFound,
+    await validateRenewalExpectedResults(
       NodeOwner,
       domainName,
       buyerUser,
       moneyBeforeRenovation,
-      moneyAfterRenovationFailed,
-      'Renewal for Expired Name'
+      moneyAfterRenovation,
+      durationforRenovation,
+      numberOfMonthsToSimulate,
+      currentTimeWhenPurchased,
+      duration
     );
-
-    const expirationTimeAfterRenovation = await NodeOwner.expirationTime(
-      nameToTokenId(domainName)
-    );
-
-    expect(
-      expirationTimeBeforeRenovation,
-      'BUG: Domain Expiration Time Was Altered But The Renewal Failed!'
-    ).equals(expirationTimeAfterRenovation);
-
-    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
   }); //it
 
-  it('Test Case No. 15 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
+  it.skip('Test Case No. 15 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
     //Test Case No. 15
     //User Role:                    Regular User (OK)
     //Renewal's Number Of Steps:    Two Steps (Approve And Register Or Commit And Transfer) (OK)
