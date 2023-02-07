@@ -7,7 +7,7 @@ export const ONLY_OWNER_ERR = 'OnlyOwner';
 export const VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG =
   'Value must be within range 0 to 100000000000000000000'; // 100000000000000000000 here is the precision representation of 100%
 export const ONLY_HIGH_LEVEL_OPERATOR_ERR = 'OnlyHighLevelOperator';
-export const PARTNER_ALREADY_EXISTS = 'PartnerManager: Partner already exists';
+export const PARTNER_ALREADY_EXISTS = 'Partner already exists';
 export const INVALID_ADDRESS_ERR =
   'resolver or addr is not configured for ENS name (argument="name", value="", code=INVALID_ARGUMENT, version=contracts/5.7.0)';
 export const INVALID_PARTNER_CONFIGURATION_ERR =
