@@ -16,7 +16,7 @@ import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
-    @title Implements the interface IBaseRegistrar to register names in RNS. Takes into account the partners for the revenue sharing. 
+    @title Implements the interface IBaseRegistrar to register names in RNS. Takes into account the partners for the revenue sharing.
 */
 contract PartnerRegistrar is
     IBaseRegistrar,
@@ -27,7 +27,7 @@ contract PartnerRegistrar is
 
     NodeOwner private _nodeOwner;
     IERC677 private _rif;
-    IPartnerManager private _partnerManager;
+    IPartnerManager public partnerManager;
     IFeeManager private _feeManager;
     RNS private _rns;
     bytes32 private _rootNode;
@@ -42,20 +42,20 @@ contract PartnerRegistrar is
         IAccessControl accessControl,
         NodeOwner nodeOwner,
         IERC677 rif,
-        IPartnerManager partnerManager,
+        IPartnerManager _partnerManager,
         RNS rns,
         bytes32 rootNode
     ) HasAccessControl(accessControl) {
         _nodeOwner = nodeOwner;
         _rif = rif;
-        _partnerManager = partnerManager;
+        partnerManager = _partnerManager;
         _rns = rns;
         _rootNode = rootNode;
     }
 
     modifier onlyPartner(address partner) {
         require(
-            _partnerManager.isPartner(partner),
+            partnerManager.isPartner(partner),
             "Partner Registrar: Not a partner"
         );
         _;
@@ -319,8 +319,8 @@ contract PartnerRegistrar is
     function _getPartnerConfiguration(
         address partner
     ) private view returns (IPartnerConfiguration) {
-        require(_partnerManager.isPartner(partner), "Not a partner");
+        require(partnerManager.isPartner(partner), "Not a partner");
 
-        return _partnerManager.getPartnerConfiguration(partner);
+        return partnerManager.getPartnerConfiguration(partner);
     }
 }
