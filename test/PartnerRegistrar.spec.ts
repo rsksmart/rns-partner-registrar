@@ -658,3 +658,15 @@ describe('Access Control', () => {
     ).to.be.fulfilled;
   });
 });
+
+describe('Partner Manager', () => {
+  it('Should return the partner manager', async () => {
+    const { PartnerRegistrar, PartnerManager } = await loadFixture(
+      initialSetup
+    );
+
+    expect(await PartnerRegistrar.getPartnerManager()).to.be.equal(
+      PartnerManager.address
+    );
+  });
+});

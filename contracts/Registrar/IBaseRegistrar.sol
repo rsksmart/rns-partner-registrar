@@ -2,6 +2,7 @@
 pragma solidity ^0.8.16;
 
 import "../FeeManager/IFeeManager.sol";
+import "../PartnerManager/IPartnerManager.sol";
 
 /**
     @author Identity Team @IOVLabs
@@ -21,6 +22,11 @@ interface IBaseRegistrar {
      * @param feeManagerContract the address of the fee manager being set
      */
     event FeeManagerChanged(address hostContract, address feeManagerContract);
+
+    /**
+        @notice returns the partner manager that the registrar has been configured to use
+    */
+    function getPartnerManager() external view returns (IPartnerManager);
 
     /**
         @notice sets the fee manager to use. Mandatory for the renewer to work.
@@ -89,7 +95,7 @@ interface IBaseRegistrar {
     function commit(bytes32 commitment, address partner) external;
 
     /**
-        @notice reveals if the name is ready to be registered by calling register function. Meant to be called after a commitment. 
+        @notice reveals if the name is ready to be registered by calling register function. Meant to be called after a commitment.
         @param commitment the commitment of the name
         @return true if the name is ready to be registered
     */

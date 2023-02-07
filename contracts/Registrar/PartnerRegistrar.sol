@@ -27,7 +27,7 @@ contract PartnerRegistrar is
 
     NodeOwner private _nodeOwner;
     IERC677 private _rif;
-    IPartnerManager public partnerManager;
+    IPartnerManager private _partnerManager;
     IFeeManager private _feeManager;
     RNS private _rns;
     bytes32 private _rootNode;
@@ -42,23 +42,27 @@ contract PartnerRegistrar is
         IAccessControl accessControl,
         NodeOwner nodeOwner,
         IERC677 rif,
-        IPartnerManager _partnerManager,
+        IPartnerManager partnerManager,
         RNS rns,
         bytes32 rootNode
     ) HasAccessControl(accessControl) {
         _nodeOwner = nodeOwner;
         _rif = rif;
-        partnerManager = _partnerManager;
+        _partnerManager = partnerManager;
         _rns = rns;
         _rootNode = rootNode;
     }
 
     modifier onlyPartner(address partner) {
         require(
-            partnerManager.isPartner(partner),
+            _partnerManager.isPartner(partner),
             "Partner Registrar: Not a partner"
         );
         _;
+    }
+
+    function getPartnerManager() external view returns (IPartnerManager) {
+        return _partnerManager;
     }
 
     function setFeeManager(
@@ -319,8 +323,8 @@ contract PartnerRegistrar is
     function _getPartnerConfiguration(
         address partner
     ) private view returns (IPartnerConfiguration) {
-        require(partnerManager.isPartner(partner), "Not a partner");
+        require(_partnerManager.isPartner(partner), "Not a partner");
 
-        return partnerManager.getPartnerConfiguration(partner);
+        return _partnerManager.getPartnerConfiguration(partner);
     }
 }
