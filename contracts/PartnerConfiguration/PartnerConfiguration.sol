@@ -15,7 +15,6 @@ error InvalidLength(uint256 length, string reason);
  * @author Identity Team @IOVLabs
  */
 contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
-    bool private _isUnicodeSupported;
     uint256 private _minLength;
     uint256 private _maxLength;
     uint256 private _minDuration;
@@ -37,7 +36,6 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
         IAccessControl accessControl,
         uint256 minLength,
         uint256 maxLength,
-        bool isUnicodeSupported,
         uint256 minDuration,
         uint256 maxDuration,
         uint256 feePercentage,
@@ -68,7 +66,6 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
 
         _minLength = minLength;
         _maxLength = maxLength;
-        _isUnicodeSupported = isUnicodeSupported;
         _minDuration = minDuration;
         _maxDuration = maxDuration;
         _feePercentage = feePercentage;
@@ -141,30 +138,6 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
         }
 
         _maxLength = maxLength;
-    }
-
-    /**
-       @inheritdoc IPartnerConfiguration
-     */
-    function getUnicodeSupport() external view override returns (bool) {
-        return _isUnicodeSupported;
-    }
-
-    /**
-       @inheritdoc IPartnerConfiguration
-     */
-    function setUnicodeSupport(
-        bool flag
-    ) external override onlyHighLevelOperator {
-        bool preModifiedValue = _isUnicodeSupported;
-
-        emit UnicodeSupportChanged(preModifiedValue, flag);
-
-        if (preModifiedValue == flag) {
-            revert(_UN_NECESSARY_MODIFICATION_ERROR_MSG);
-        }
-
-        _isUnicodeSupported = flag;
     }
 
     /**

@@ -17,7 +17,6 @@ export const INVALID_PARTNER_ERR = 'PartnerManager: Invalid partner';
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';
 export const MAX_DURATION_CHANGED_EVENT = 'MaxDurationChanged';
-export const UNICODE_SUPPORT_CHANGED_EVENT = 'UnicodeSupportChanged';
 export const MIN_LENGTH_CHANGED_EVENT = 'MinLengthChanged';
 export const MAX_LENGTH_CHANGED_EVENT = 'MaxLengthChanged';
 export const FEE_PERCENTAGE_CHANGED_EVENT = 'FeePercentageChanged';
@@ -40,7 +39,6 @@ export const DEFAULT_MIN_DURATION = 1;
 export const DEFAULT_MAX_DURATION = 2;
 export const DEFAULT_MIN_COMMITMENT_AGE = 0;
 export const DEFAULT_DISCOUNT = 0;
-export const DEFAULT_IS_UNICODE_SUPPORTED = false;
 export const DEFAULT_FEE_PERCENTAGE = 5;
 
 export const ADDRESS_ZERO = ethers.constants.AddressZero;

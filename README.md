@@ -60,7 +60,7 @@ The Partner Registrar has five(5) main components
 ### Partner Registrar
 - Emit events on registration for easier tracking and analytics
 - Update Fee Manager
-- Allows registration of new domains from only whitelisted partner using    their custom configuration (i.e domain name length, pricing, unicode support etc)
+- Allows registration of new domains from only whitelisted partner using    their custom configuration (i.e domain name length, pricing etc)
 
 ### Fee Manager
 - Receives all fees from the Registrar

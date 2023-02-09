@@ -21,13 +21,6 @@ interface IPartnerConfiguration {
     event MaxLengthChanged(uint256 previousValue, uint256 newValue);
 
     /**
-     * @notice event emitted when unicode support status is changed
-     * @param previousValue the old state of unicode support, a boolean
-     * @param newValue the new state of unicode support, a boolean
-     */
-    event UnicodeSupportChanged(bool previousValue, bool newValue);
-
-    /**
      * @notice event emitted when the minimum duration is changed
      * @param previousValue the old duration
      * @param newValue the new duration
@@ -71,11 +64,6 @@ interface IPartnerConfiguration {
      * @notice returns the maximum characters count allowed for a domain name
      */
     function getMaxLength() external view returns (uint256);
-
-    /**
-     * @notice returns support for unicode domains
-     */
-    function getUnicodeSupport() external view returns (bool);
 
     /**
      * @notice returns the minimum duration in years allowed for a domain name purchase
@@ -143,13 +131,6 @@ interface IPartnerConfiguration {
      * @custom:emits-event emits the MaxDurationChanged event on success
      */
     function setMaxDuration(uint256 maxDuration) external;
-
-    /**
-     * @notice sets support for unicode domains
-     * @param flag true if unicode domains are supported, false otherwise
-     * @custom:emits-event emits the UnicodeSupportChanged event on success
-     */
-    function setUnicodeSupport(bool flag) external;
 
     /**
      * @notice sets the maximum length allowed for a domain name
