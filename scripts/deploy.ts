@@ -98,7 +98,6 @@ async function main() {
         accessControl: accessControl.address,
         minLength: BigNumber.from(3),
         maxLength: BigNumber.from(7),
-        isUnicodeSupported: false,
         minDuration: BigNumber.from(1),
         maxDuration: BigNumber.from(5),
         feePercentage: BigNumber.from(0),

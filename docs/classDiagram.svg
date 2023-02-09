@@ -97,7 +97,6 @@
 <text text-anchor="start" x="2935.77" y="-1205.9" font-family="Times,serif" font-size="14.00">External:</text>
 <text text-anchor="start" x="2935.77" y="-1189.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;getMinLength(): uint256</text>
 <text text-anchor="start" x="2935.77" y="-1172.3" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;getMaxLength(): uint256</text>
-<text text-anchor="start" x="2935.77" y="-1155.5" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;getUnicodeSupport(): bool</text>
 <text text-anchor="start" x="2935.77" y="-1138.7" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;getMinDuration(): uint256</text>
 <text text-anchor="start" x="2935.77" y="-1121.9" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;getMaxDuration(): uint256</text>
 <text text-anchor="start" x="2935.77" y="-1105.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;getFeePercentage(): uint256</text>
@@ -108,7 +107,6 @@
 <text text-anchor="start" x="2935.77" y="-1021.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;setDiscount(discount: uint256)</text>
 <text text-anchor="start" x="2935.77" y="-1004.3" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;setFeePercentage(feePercentage: uint256)</text>
 <text text-anchor="start" x="2935.77" y="-987.5" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;setMaxDuration(maxDuration: uint256)</text>
-<text text-anchor="start" x="2935.77" y="-970.7" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;setUnicodeSupport(flag: bool)</text>
 <text text-anchor="start" x="2935.77" y="-953.9" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;setMaxLength(maxLength: uint256)</text>
 <text text-anchor="start" x="2935.77" y="-937.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;setMinDuration(minDuration: uint256)</text>
 <text text-anchor="start" x="2935.77" y="-920.3" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&#160;setMinLength(minLength: uint256)</text>
@@ -116,7 +114,6 @@
 <text text-anchor="start" x="2935.77" y="-886.7" font-family="Times,serif" font-size="14.00">Public:</text>
 <text text-anchor="start" x="2935.77" y="-869.9" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; MinLengthChanged(previousValue: uint256, newValue: uint256)</text>
 <text text-anchor="start" x="2935.77" y="-853.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; MaxLengthChanged(previousValue: uint256, newValue: uint256)</text>
-<text text-anchor="start" x="2935.77" y="-836.3" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; UnicodeSupportChanged(previousValue: bool, newValue: bool)</text>
 <text text-anchor="start" x="2935.77" y="-819.5" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; MinDurationChanged(previousValue: uint256, newValue: uint256)</text>
 <text text-anchor="start" x="2935.77" y="-802.7" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; MaxDurationChanged(previousValue: uint256, newValue: uint256)</text>
 <text text-anchor="start" x="2935.77" y="-785.9" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;&lt;&lt;event&gt;&gt; FeePercentageChanged(previousValue: uint256, newValue: uint256)</text>
@@ -232,8 +229,6 @@
 <text text-anchor="start" x="2613.84" y="-590.5" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;setMinLength(minLength: uint256)</text>
 <text text-anchor="start" x="2613.84" y="-573.7" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;getMaxLength(): uint256</text>
 <text text-anchor="start" x="2613.84" y="-556.9" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;setMaxLength(maxLength: uint256)</text>
-<text text-anchor="start" x="2613.84" y="-540.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;getUnicodeSupport(): bool</text>
-<text text-anchor="start" x="2613.84" y="-523.3" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;setUnicodeSupport(flag: bool)</text>
 <text text-anchor="start" x="2613.84" y="-506.5" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;getMinDuration(): uint256</text>
 <text text-anchor="start" x="2613.84" y="-489.7" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;setMinDuration(minDuration: uint256)</text>
 <text text-anchor="start" x="2613.84" y="-472.9" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;getMaxDuration(): uint256</text>
@@ -247,7 +242,7 @@
 <text text-anchor="start" x="2613.84" y="-338.5" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;getPrice(name: string, expires: uint256, duration: uint256): uint256</text>
 <text text-anchor="start" x="2613.84" y="-321.7" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;validateName(name: string, duration: uint256)</text>
 <text text-anchor="start" x="2613.84" y="-304.9" font-family="Times,serif" font-size="14.00">Public:</text>
-<text text-anchor="start" x="2613.84" y="-288.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;constructor(minLength: uint256, maxLength: uint256, isUnicodeSupported: bool, minDuration: uint256, maxDuration: uint256, feePercentage: uint256, discount: uint256, minCommitmentAge: uint256)</text>
+<text text-anchor="start" x="2613.84" y="-288.1" font-family="Times,serif" font-size="14.00"> &#160;&#160;&#160;constructor(minLength: uint256, maxLength: uint256, minDuration: uint256, maxDuration: uint256, feePercentage: uint256, discount: uint256, minCommitmentAge: uint256)</text>
 </g>
 <!-- 5&#45;&gt;4 -->
 <g id="edge8" class="edge">

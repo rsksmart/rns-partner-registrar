@@ -11,7 +11,6 @@ import {
   UN_NECESSARY_MODIFICATION_ERROR_MSG,
   MIN_DURATION_CHANGED_EVENT,
   MAX_DURATION_CHANGED_EVENT,
-  UNICODE_SUPPORT_CHANGED_EVENT,
   MIN_LENGTH_CHANGED_EVENT,
   MAX_LENGTH_CHANGED_EVENT,
   FEE_PERCENTAGE_CHANGED_EVENT,
@@ -23,7 +22,6 @@ import {
   DEFAULT_MAX_DURATION,
   DEFAULT_MIN_COMMITMENT_AGE,
   DEFAULT_DISCOUNT,
-  DEFAULT_IS_UNICODE_SUPPORTED,
   DEFAULT_FEE_PERCENTAGE,
   VALUE_OUT_OF_PERCENT_RANGE_ERROR_MSG,
   ONLY_HIGH_LEVEL_OPERATOR_ERR,
@@ -46,7 +44,6 @@ const initialSetup = async () => {
         accessControl.address,
         DEFAULT_MIN_LENGTH,
         DEFAULT_MAX_LENGTH,
-        DEFAULT_IS_UNICODE_SUPPORTED,
         DEFAULT_MIN_DURATION,
         DEFAULT_MAX_DURATION,
         DEFAULT_FEE_PERCENTAGE,
@@ -76,7 +73,6 @@ describe('Partner Configuration', () => {
           accessControl.address,
           0,
           DEFAULT_MAX_LENGTH,
-          DEFAULT_IS_UNICODE_SUPPORTED,
           DEFAULT_MIN_DURATION,
           DEFAULT_MAX_DURATION,
           DEFAULT_FEE_PERCENTAGE,
@@ -95,7 +91,6 @@ describe('Partner Configuration', () => {
           accessControl.address,
           DEFAULT_MIN_LENGTH,
           2,
-          DEFAULT_IS_UNICODE_SUPPORTED,
           DEFAULT_MIN_DURATION,
           DEFAULT_MAX_DURATION,
           DEFAULT_FEE_PERCENTAGE,
@@ -114,7 +109,6 @@ describe('Partner Configuration', () => {
           accessControl.address,
           DEFAULT_MIN_LENGTH,
           DEFAULT_MAX_LENGTH,
-          DEFAULT_IS_UNICODE_SUPPORTED,
           0,
           DEFAULT_MAX_DURATION,
           DEFAULT_FEE_PERCENTAGE,
@@ -133,7 +127,6 @@ describe('Partner Configuration', () => {
           accessControl.address,
           DEFAULT_MIN_LENGTH,
           DEFAULT_MAX_LENGTH,
-          DEFAULT_IS_UNICODE_SUPPORTED,
           3,
           2,
           DEFAULT_FEE_PERCENTAGE,
@@ -155,12 +148,6 @@ describe('Partner Configuration', () => {
       const { PartnerConfiguration } = await loadFixture(initialSetup);
       expect(await PartnerConfiguration.getMaxLength()).to.equal(
         DEFAULT_MAX_LENGTH
-      );
-    });
-    it('Should return the default flag for unicode support', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
-      expect(await PartnerConfiguration.getUnicodeSupport()).to.equal(
-        DEFAULT_IS_UNICODE_SUPPORTED
       );
     });
     it('Should return the default min duration', async () => {
@@ -362,12 +349,6 @@ describe('Partner Configuration', () => {
         NEW_MAX_LENGTH
       );
     });
-    it('Should set a new flag for unicode support', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
-      const tx = await PartnerConfiguration.setUnicodeSupport(true);
-      tx.wait();
-      expect(await PartnerConfiguration.getUnicodeSupport()).to.be.true;
-    });
     it('Should set a new min duration', async () => {
       const { PartnerConfiguration } = await loadFixture(initialSetup);
       const NEW_MIN_DURATION = 2;
@@ -433,16 +414,6 @@ describe('Partner Configuration', () => {
         .withArgs(DEFAULT_MAX_DURATION, NEW_MAX_DURATION);
     });
 
-    it('Should emit the UnicodeSupportChanged event with the correct params', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
-      const NEW_IS_UNICODE_SUPPORTED = !DEFAULT_IS_UNICODE_SUPPORTED;
-      await expect(
-        PartnerConfiguration.setUnicodeSupport(NEW_IS_UNICODE_SUPPORTED)
-      )
-        .to.emit(PartnerConfiguration, UNICODE_SUPPORT_CHANGED_EVENT)
-        .withArgs(DEFAULT_IS_UNICODE_SUPPORTED, NEW_IS_UNICODE_SUPPORTED);
-    });
-
     it('Should emit the MinLengthChanged event with the correct params', async () => {
       const { PartnerConfiguration } = await loadFixture(initialSetup);
       const NEW_MIN_LENGTH = DEFAULT_MIN_LENGTH + 1;
@@ -497,13 +468,6 @@ describe('Partner Configuration', () => {
       const { PartnerConfiguration } = await loadFixture(initialSetup);
       await expect(
         PartnerConfiguration.setMaxDuration(DEFAULT_MAX_DURATION)
-      ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
-    });
-
-    it('Should emit the UnicodeSupportChanged event with the correct params', async () => {
-      const { PartnerConfiguration } = await loadFixture(initialSetup);
-      await expect(
-        PartnerConfiguration.setUnicodeSupport(DEFAULT_IS_UNICODE_SUPPORTED)
       ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
     });
 
@@ -587,13 +551,6 @@ describe('Partner Configuration', () => {
       );
 
       await expect(
-        PartnerConfiguration.connect(unAuthorizedCaller).setUnicodeSupport(true)
-      ).to.be.revertedWithCustomError(
-        PartnerConfiguration,
-        ONLY_HIGH_LEVEL_OPERATOR_ERR
-      );
-
-      await expect(
         PartnerConfiguration.connect(unAuthorizedCaller).setMinCommitmentAge(1)
       ).to.be.revertedWithCustomError(
         PartnerConfiguration,
@@ -643,12 +600,6 @@ describe('Partner Configuration', () => {
       await expect(
         PartnerConfiguration.connect(highLevelOperator).setMaxLength(
           DEFAULT_MAX_LENGTH + 1
-        )
-      ).to.be.fulfilled;
-
-      await expect(
-        PartnerConfiguration.connect(highLevelOperator).setUnicodeSupport(
-          !DEFAULT_IS_UNICODE_SUPPORTED
         )
       ).to.be.fulfilled;
 

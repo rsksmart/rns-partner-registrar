@@ -200,7 +200,6 @@ async function main() {
         accessControl: RegistrarAccessControlContract.address,
         minLength: BigNumber.from(5),
         maxLength: BigNumber.from(20),
-        isUnicodeSupported: true,
         minDuration: BigNumber.from(1),
         maxDuration: BigNumber.from(5),
         feePercentage: FEE_PERCENTAGE,
