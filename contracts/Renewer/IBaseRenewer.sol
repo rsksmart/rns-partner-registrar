@@ -11,8 +11,8 @@ interface IBaseRenewer {
         @notice calculates the price of a name
         @param name the name to register
         @param duration the duration of the registration in years
-        @return the price of the name
         @param partner Partner address
+        @return the price of the name
     */
     function price(
         string calldata name,
