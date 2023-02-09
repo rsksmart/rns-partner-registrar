@@ -133,12 +133,17 @@ contract PartnerRenewer is
      */
     function price(
         string calldata name,
-        uint256 expires,
         uint256 duration,
         address partner
     ) external view returns (uint256) {
+        bytes32 label = keccak256(abi.encodePacked(name));
+
         return
-            _getPartnerConfiguration(partner).getPrice(name, expires, duration);
+            _getPartnerConfiguration(partner).getPrice(
+                name,
+                _nodeOwner.expirationTime(uint256(label)),
+                duration
+            );
     }
 
     /**

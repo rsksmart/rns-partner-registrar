@@ -566,3 +566,13 @@ describe('Renewal events', () => {
       .withArgs(PartnerRenewer.address, alternateFeeManager.address);
   });
 });
+
+describe('Price', () => {
+  it("should return the price of a domain's registration", async () => {
+    const { PartnerRenewer, partner } = await loadFixture(initialSetup);
+
+    expect(
+      await PartnerRenewer.price(NAME, DURATION, partner.address)
+    ).to.equal(DURATION.mul(2).mul(oneRBTC));
+  });
+});
