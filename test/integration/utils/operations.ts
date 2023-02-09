@@ -1,8 +1,14 @@
-import { getAddrRegisterData, hashName, oneRBTC } from 'test/utils/mock.utils';
+import {
+  getAddrRegisterData,
+  getRenewData,
+  hashName,
+  oneRBTC,
+} from 'test/utils/mock.utils';
 import {
   ERC677Token,
   PartnerConfiguration,
   PartnerRegistrar,
+  PartnerRenewer,
 } from 'typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
@@ -433,3 +439,68 @@ const getDayDigitID = (dayDigit: number) => {
   }
   return moment;
 };
+
+export const oneStepDomainOwnershipRenewal = async (
+  domain: string,
+  duration: BigNumber,
+  namePrice: BigNumber,
+  partnerAddress: string,
+  nameOwner: SignerWithAddress,
+  PartnerRenewer: PartnerRenewer,
+  RIF: MockContract<ERC677Token>,
+  numberOfMonths: BigNumber,
+  makeTimePass = true
+) => {
+  if (makeTimePass) {
+    simulateMonthsTime(numberOfMonths);
+  }
+  const renewData = getRenewData(domain, duration, partnerAddress);
+  const RIFAsNameOwner = RIF.connect(nameOwner);
+  await (
+    await RIFAsNameOwner.transferAndCall(
+      PartnerRenewer.address,
+      namePrice,
+      renewData
+    )
+  ).wait();
+
+  console.log('RNS Log - One Step Renewal executed! ');
+}; // End - One Step Renewal
+
+export const TwoStepsDomainOwnershipRenewal = async (
+  domain: string,
+  duration: BigNumber,
+  namePrice: BigNumber,
+  partnerAddress: string,
+  nameOwner: SignerWithAddress,
+  PartnerRenewer: PartnerRenewer,
+  RIF: MockContract<ERC677Token>,
+  numberOfMonths: BigNumber,
+  makeTimePass = true
+) => {
+  if (makeTimePass) {
+    simulateMonthsTime(numberOfMonths);
+  }
+
+  const RIFAsNameOwner = RIF.connect(nameOwner);
+  await (
+    await RIFAsNameOwner.approve(PartnerRenewer.address, namePrice)
+  ).wait();
+
+  const PartnerRenewerAsNameOwner = PartnerRenewer.connect(nameOwner);
+  await (
+    await PartnerRenewerAsNameOwner.renew(domain, duration, partnerAddress)
+  ).wait();
+
+  console.log('RNS Log - Two Step Renewal executed! ');
+}; // End - Two Steps Renewal
+
+export const simulateMonthsTime = async (numberOfMonths: BigNumber) => {
+  const secontAtYear = BigNumber.from('31536000'); //31536000 = 1 Year
+
+  const timeToSimulate = numberOfMonths
+    .mul(secontAtYear)
+    .div(BigNumber.from('12'));
+
+  await time.increase(timeToSimulate);
+}; // End - Time Simulation

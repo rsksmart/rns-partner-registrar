@@ -219,360 +219,125 @@ const initialSetup = async () => {
   };
 };
 
-describe('Domain Renewal', () => {
-  it('Should revert with `Name already expired`', async () => {
-    const { RIF, PartnerRegistrar, PartnerRenewer, partner } =
-      await loadFixture(initialSetup);
-    const namePrice = await PartnerRegistrar.price(
-      NAME,
-      ethers.BigNumber.from(0),
-      DURATION,
-      partner.address
-    );
+it('Test Case No. 1 - ... ... ...', async () => {
+  //Test Case No. 1
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    1 year
+  //CanReveal:     TRUE
+}); //it
 
-    const renewData = getRenewData(NAME, DURATION, partner.address);
+it('Test Case No. 2 - ... ... ...', async () => {
+  //Test Case No. 2
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    Between 3 and 4 Years
+  //CanReveal:     TRUE
+}); //it
 
-    await expect(
-      RIF.transferAndCall(PartnerRenewer.address, namePrice, renewData)
-    ).to.be.revertedWith('Name already expired');
-  });
-
-  it('Should renew a domain name', async () => {
-    const {
-      RIF,
-      PartnerRenewer,
-      PartnerRegistrar,
-      nameOwner,
-      FeeManager,
-      pool,
-      partner,
-    } = await loadFixture(initialSetup);
-
-    const namePrice = await PartnerRegistrar.price(
-      NAME,
-      0,
-      DURATION,
-      partner.address
-    );
-
-    const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
-    const secret = SECRET();
-    const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
-      LABEL,
-      nameOwner.address,
-      secret,
-      DURATION,
-      nameOwner.address
-    );
-
-    await (
-      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
-    ).wait();
-
-    const registerData = getAddrRegisterData(
-      NAME,
-      nameOwner.address,
-      secret,
-      DURATION,
-      nameOwner.address,
-      partner.address
-    );
-    const renewData = getRenewData(NAME, DURATION, partner.address);
-
-    await (
-      await RIF.connect(nameOwner).transferAndCall(
-        PartnerRegistrar.address,
-        namePrice,
-        registerData
-      )
-    ).wait();
-    await expect(
-      RIF.transferAndCall(PartnerRenewer.address, namePrice, renewData)
-    ).to.be.fulfilled;
-
-    const feeManagerBalance = await RIF.balanceOf(FeeManager.address);
-    const expectedManagerBalance = calculatePercentageWPrecision(
-      namePrice,
-      FEE_PERCENTAGE
-    );
-
-    // double the amount
-    expect(expectedManagerBalance.mul(2)).to.be.equal(feeManagerBalance);
-
-    const poolBalance = await RIF.balanceOf(pool.address);
-
-    const expectedPoolBalance = namePrice.sub(expectedManagerBalance);
-
-    // double the amount
-    expect(expectedPoolBalance.mul(2)).to.equal(poolBalance);
-  });
-  it('Should revert if amount is not enough', async () => {
-    const { RIF, PartnerRenewer, PartnerRegistrar, nameOwner, partner } =
-      await loadFixture(initialSetup);
-
-    const namePrice = await PartnerRegistrar.price(
-      NAME,
-      0,
-      DURATION,
-      partner.address
-    );
-
-    const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
-    const secret = SECRET();
-    const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
-      LABEL,
-      nameOwner.address,
-      secret,
-      DURATION,
-      nameOwner.address
-    );
-
-    await (
-      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
-    ).wait();
-
-    const registerData = getAddrRegisterData(
-      NAME,
-      nameOwner.address,
-      secret,
-      DURATION,
-      nameOwner.address,
-      partner.address
-    );
-    const renewData = getRenewData(NAME, DURATION, partner.address);
-
-    await (
-      await RIF.connect(nameOwner).transferAndCall(
-        PartnerRegistrar.address,
-        namePrice,
-        registerData
-      )
-    ).wait();
-    await expect(
-      RIF.transferAndCall(
-        PartnerRenewer.address,
-        namePrice.sub(BigNumber.from(1)),
-        renewData
-      )
-    ).to.be.revertedWith('Insufficient tokens transferred');
-  });
-
-  it('Should revert if not RIF token', async () => {
-    const {
-      RIF,
-      FakeRIF,
-      PartnerRenewer,
-      PartnerRegistrar,
-      nameOwner,
-      partner,
-    } = await loadFixture(initialSetup);
-
-    const namePrice = await PartnerRegistrar.price(
-      NAME,
-      0,
-      DURATION,
-      partner.address
-    );
-
-    const partnerRegistrarAsNameOwner = PartnerRegistrar.connect(nameOwner);
-    const secret = SECRET();
-    const commitment = await partnerRegistrarAsNameOwner.makeCommitment(
-      LABEL,
-      nameOwner.address,
-      secret,
-      DURATION,
-      nameOwner.address
-    );
-
-    await (
-      await partnerRegistrarAsNameOwner.commit(commitment, partner.address)
-    ).wait();
-
-    const registerData = getAddrRegisterData(
-      NAME,
-      nameOwner.address,
-      secret,
-      DURATION,
-      nameOwner.address,
-      partner.address
-    );
-    const renewData = getRenewData(NAME, DURATION, partner.address);
-
-    await (
-      await RIF.connect(nameOwner).transferAndCall(
-        PartnerRegistrar.address,
-        namePrice,
-        registerData
-      )
-    ).wait();
-    await expect(
-      FakeRIF.transferAndCall(PartnerRenewer.address, namePrice, renewData)
-    ).to.be.revertedWith('Only RIF token');
-  });
-
-  it('Should revert if token transfer approval fails', async () => {
-    const {
-      RIF,
-      PartnerRenewer,
-      PartnerRegistrar,
-      nameOwner,
-      partner,
-      PartnerConfiguration,
-      NodeOwner,
-    } = await loadFixture(initialSetup);
-
-    // First Register the name to be renewed
-    await (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
-
-    RIF.transferFrom.returns(true);
-    RIF.approve.returns(true);
-    RIF.transfer.returns(true);
-
-    await PartnerRegistrar.register(
-      NAME,
-      nameOwner.address,
-      SECRET(),
-      DURATION,
-      NodeOwner.address,
-      partner.address
-    );
-
-    // Attempt to renew registered name
-
-    RIF.transferFrom.returns(true);
-    RIF.approve.returns(false);
-
-    await expect(
-      PartnerRenewer.renew(NAME, DURATION, partner.address)
-    ).to.be.revertedWith('Token approval failed');
-  });
-
-  it('Should successfully renew a new domain without token transfer transactions when discount is 100%', async () => {
-    const {
-      RIF,
-      FakeRIF,
-      PartnerRenewer,
-      PartnerRegistrar,
-      nameOwner,
-      partner,
-      PartnerManager,
-      NodeOwner,
-      alternatePartnerConfiguration,
-    } = await loadFixture(initialSetup);
-
-    await (
-      await PartnerManager.setPartnerConfiguration(
-        partner.address,
-        alternatePartnerConfiguration.address
-      )
-    ).wait();
-
-    (await alternatePartnerConfiguration.setMinCommitmentAge(0)).wait();
-
-    // First Register the name to be renewed
-
-    RIF.transferFrom.returns(true);
-    RIF.approve.returns(true);
-    RIF.transfer.returns(true);
-
-    await PartnerRegistrar.register(
-      NAME,
-      nameOwner.address,
-      SECRET(),
-      DURATION,
-      NodeOwner.address,
-      partner.address
-    );
-
-    // Attempt to renew registered name
-    (await alternatePartnerConfiguration.setDiscount(oneRBTC.mul(100))).wait();
-
-    // The idea here is that the new domain registration shouldn't involve any token transfer
-    // transactions as discount is a 100%. Hence the RIF transactions which would normally
-    // cause the registration to fail with return values of false have no effect because
-    // no token transfer methods are invoked in this domain registration scenario.
-    RIF.transferFrom.returns(false);
-    RIF.approve.returns(false);
-    RIF.transfer.returns(false);
-
-    await expect(PartnerRenewer.renew(NAME, DURATION, partner.address)).to.be
-      .fulfilled;
-  });
-
-  it('Should revert is the fee manager to be set is same as existing', async () => {
-    const { FeeManager, PartnerRenewer } = await loadFixture(initialSetup);
-
-    await expect(
-      PartnerRenewer.setFeeManager(FeeManager.address)
-    ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
-  });
-});
-
-describe('Renewal events', () => {
-  it('Should emit the NameRenewed event on successful domain renewal', async () => {
-    const {
-      RIF,
-      PartnerRenewer,
-      PartnerRegistrar,
-      nameOwner,
-      partner,
-      PartnerManager,
-      NodeOwner,
-      alternatePartnerConfiguration,
-    } = await loadFixture(initialSetup);
-
-    await (
-      await PartnerManager.setPartnerConfiguration(
-        partner.address,
-        alternatePartnerConfiguration.address
-      )
-    ).wait();
-
-    (await alternatePartnerConfiguration.setMinCommitmentAge(0)).wait();
-
-    // First Register the name to be renewed
-
-    RIF.transferFrom.returns(true);
-    RIF.approve.returns(true);
-    RIF.transfer.returns(true);
-
-    await PartnerRegistrar.connect(partner).register(
-      NAME,
-      nameOwner.address,
-      SECRET(),
-      DURATION,
-      NodeOwner.address,
-      partner.address
-    );
-
-    // Attempt to renew registered name
-
-    RIF.transferFrom.returns(true);
-    RIF.approve.returns(true);
-
-    await expect(
-      PartnerRenewer.connect(partner).renew(NAME, DURATION, partner.address)
-    )
-      .to.emit(PartnerRenewer, NAME_RENEWED_EVENT)
-      .withArgs(partner.address, duration.years);
-  });
-
-  it('Should emit the FeeManagerSet event on successful setting of the fee manager contract', async () => {
-    const { FeeManager, PartnerRenewer, alternateFeeManager } =
-      await loadFixture(initialSetup);
-
-    await expect(PartnerRenewer.setFeeManager(alternateFeeManager.address))
-      .to.emit(PartnerRenewer, FEE_MANAGER_CHANGED_EVENT)
-      .withArgs(PartnerRenewer.address, alternateFeeManager.address);
-  });
-});
-
-describe('Price', () => {
-  it("should return the price of a domain's registration", async () => {
-    const { PartnerRenewer, partner } = await loadFixture(initialSetup);
-
-    expect(
-      await PartnerRenewer.price(NAME, DURATION, partner.address)
-    ).to.equal(DURATION.mul(2).mul(oneRBTC));
-  });
-});
+it('Test Case No. 3 - ... ... ...', async () => {
+  //Test Case No. 3
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    5 years
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 4 - ... ... ...', async () => {
+  //Test Case No. 4
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    2 years
+  //CanReveal:     FALSE
+}); //it
+it('Test Case No. 5 - ... ... ...', async () => {
+  //Test Case No. 5
+  //User Role:    RNS Owner
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    2 years
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 6 - ... ... ...', async () => {
+  //Test Case No. 6
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  Two steps
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    1 year
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 7 - ... ... ...', async () => {
+  //Test Case No. 7
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  Two steps
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    2 years
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 8 - ... ... ...', async () => {
+  //Test Case No. 8
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  Two steps
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    Between 3 and 4 Years
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 9 - ... ... ...', async () => {
+  //Test Case No. 9
+  //User Role:    Partner Reseller
+  //Renewal's Number Of Steps:  Two steps
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    5 years
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 10 - ... ... ...', async () => {
+  //Test Case No. 10
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  Two steps
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    5 years
+  //CanReveal:     FALSE
+}); //it
+it('Test Case No. 11 - ... ... ...', async () => {
+  //Test Case No. 11
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    0 Years (-)
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 12 - ... ... ...', async () => {
+  //Test Case No. 12
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Expired (Should Be Purchased As 1st Time) (-)
+  //Duration:    1 year
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 13 - ... ... ...', async () => {
+  //Test Case No. 13
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  Two steps
+  //Domain Status:  Available (Never Purchased) (-)
+  //Duration:    1 year
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 14 - ... ... ...', async () => {
+  //Test Case No. 14
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  One step
+  //Domain Status:  Recent Purchased (Doesn't Need Renovation yet) (-)
+  //Duration:    1 year
+  //CanReveal:     TRUE
+}); //it
+it('Test Case No. 15 - ... ... ...', async () => {
+  //Test Case No. 15
+  //User Role:    Regular User
+  //Renewal's Number Of Steps:  Two steps
+  //Domain Status:  Ready to Be Renovate
+  //Duration:    Greater Than Maximum (-)
+  //CanReveal:     FALSE
+}); //it
