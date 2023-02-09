@@ -312,7 +312,7 @@ contract PartnerRegistrar is
                 addr
             );
             if (!canReveal(commitment)) {
-                revert("Commitment not found");
+                revert("No commitment found");
             }
             _commitmentRevealTime[commitment] = 0;
         }
