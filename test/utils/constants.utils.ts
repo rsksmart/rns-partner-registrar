@@ -13,6 +13,8 @@ export const INVALID_ADDRESS_ERR =
 export const INVALID_PARTNER_CONFIGURATION_ERR =
   'PartnerManager: Invalid configuration';
 export const INVALID_PARTNER_ERR = 'PartnerManager: Invalid partner';
+export const INVALID_NAME_ERR = 'Invalid name';
+export const NOT_A_PARTNER_ERR = 'Not a partner';
 
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';
