@@ -8,6 +8,21 @@ import "../FeeManager/IFeeManager.sol";
  */
 interface IBaseRenewer {
     /**
+        @notice calculates the price of a name
+        @param name the name to register
+        @param expires the expiration date of the name
+        @param duration the duration of the registration in years
+        @return the price of the name
+        @param partner Partner address
+    */
+    function price(
+        string calldata name,
+        uint256 expires,
+        uint256 duration,
+        address partner
+    ) external view returns (uint256);
+
+    /**
      * @notice allows domain name owner to renew their ownership
      * @param name the domain name to be renewed
      * @param duration the duration of the renewal

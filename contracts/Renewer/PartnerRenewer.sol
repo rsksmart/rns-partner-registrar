@@ -131,6 +131,18 @@ contract PartnerRenewer is
     /**
        @inheritdoc IBaseRenewer
      */
+    function price(
+        string calldata name,
+        uint256 expires,
+        uint256 duration,
+        address partner
+    ) external view returns (uint256) {
+        return _getPartnerConfiguration(partner).getPrice(name, expires, duration);
+    }
+
+    /**
+       @inheritdoc IBaseRenewer
+     */
     function renew(
         string calldata name,
         uint256 duration,
