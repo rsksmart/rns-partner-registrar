@@ -137,7 +137,8 @@ contract PartnerRenewer is
         uint256 duration,
         address partner
     ) external view returns (uint256) {
-        return _getPartnerConfiguration(partner).getPrice(name, expires, duration);
+        return
+            _getPartnerConfiguration(partner).getPrice(name, expires, duration);
     }
 
     /**
