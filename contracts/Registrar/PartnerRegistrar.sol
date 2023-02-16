@@ -279,7 +279,7 @@ contract PartnerRegistrar is
             revert("Commitment not required");
         }
 
-        if (_commitmentRevealTime[commitment] > 1) {
+        if (_commitmentRevealTime[commitment] > 0) {
             revert("Existent commitment");
         }
         _commitmentRevealTime[commitment] =
