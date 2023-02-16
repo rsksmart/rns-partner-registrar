@@ -9,6 +9,7 @@ import {
   PartnerConfiguration,
   PartnerRegistrar,
   PartnerRenewer,
+  FeeManager,
 } from 'typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
@@ -504,3 +505,96 @@ export const simulateMonthsTime = async (numberOfMonths: BigNumber) => {
 
   await time.increase(timeToSimulate);
 }; // End - Time Simulation
+
+export const runWithdrawTestProcess = async (
+  partner: SignerWithAddress,
+  FeeManager: FeeManager,
+  RIF: MockContract<ERC677Token>,
+  isFeeBalanceEmpty: boolean
+) => {
+  const partnerAddress = partner.address;
+
+  const RIFBalanceBeforeWithdraw = await RIF.balanceOf(partnerAddress);
+
+  const FEEBalanceBeforeWithdraw = await FeeManager.getBalance(partnerAddress);
+
+  const feeManagerAsPartner = FeeManager.connect(partner);
+
+  if (isFeeBalanceEmpty) {
+    let errorFound: boolean = false;
+
+    try {
+      await feeManagerAsPartner.withdraw();
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      expect(
+        currentError,
+        'BUG: The ZERO Fee Balance error message was NOT displayed'
+      ).to.contains(
+        'VM Exception while processing transaction: reverted with custom error'
+      );
+
+      expect(
+        currentError,
+        'BUG: The ZERO Fee Balance error message was NOT displayed'
+      ).to.contains('ZeroBalance()');
+
+      expect(
+        errorFound + '',
+        'BUG: Error Message (Fee Balance Empty) was NOT thrown!'
+      ).to.be.equals('true');
+
+      console.log('FAILED WITHDRAW - Warning Message Successful!');
+    }
+  } // If
+  else {
+    await feeManagerAsPartner.withdraw();
+  }
+
+  const currentRIFBalanceAfterWithdraw = await RIF.balanceOf(partnerAddress);
+
+  const currentFEEBalanceAfterWithdraw = await FeeManager.getBalance(
+    partnerAddress
+  );
+
+  console.log('Balance RIF - PRE Retiro: ' + RIFBalanceBeforeWithdraw);
+
+  console.log('Balance FEE - PRE Retiro: ' + FEEBalanceBeforeWithdraw);
+
+  console.log('Balance RIF - POST Retiro: ' + currentRIFBalanceAfterWithdraw);
+
+  console.log('Balance FEE - POST Retiro: ' + currentFEEBalanceAfterWithdraw);
+
+  if (!isFeeBalanceEmpty) {
+    expect(
+      +currentFEEBalanceAfterWithdraw,
+      'BUG: The Fee Balance Of the partner should be empty after withdraw, but it is NOT!'
+    ).to.be.equals(+BigNumber.from('0'));
+
+    const expectedRIFAmountOfMoney = RIFBalanceBeforeWithdraw.add(
+      FEEBalanceBeforeWithdraw
+    );
+
+    expect(
+      +currentRIFBalanceAfterWithdraw,
+      'BUG: The RIF Balance Of the partner was Not updated successfully'
+    ).to.be.equals(+expectedRIFAmountOfMoney);
+
+    console.log('SUCCESSFUL WITHDRAW - Validation Successful!');
+  } else {
+    expect(
+      +currentFEEBalanceAfterWithdraw,
+      'BUG: The Fee Balance of the partner was altered despite the withdraw was not executed!'
+    ).to.be.equals(+FEEBalanceBeforeWithdraw);
+
+    expect(
+      +currentRIFBalanceAfterWithdraw,
+      'BUG: The RIF Balance of the partner was altered despite the withdraw was not executed!'
+    ).to.be.equals(+RIFBalanceBeforeWithdraw);
+
+    console.log('FAILED WITHDRAW - Validation Successful!');
+  }
+}; //End - Execute Withdraw Process

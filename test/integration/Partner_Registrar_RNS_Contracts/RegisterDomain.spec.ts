@@ -4,6 +4,7 @@ import {
   SECRET,
   MINIMUM_DOMAIN_NAME_LENGTH,
   MAXIMUM_DOMAIN_NAME_LENGTH,
+  FEE_PERCENTAGE,
 } from '../utils/constants';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
@@ -18,19 +19,21 @@ import {
   purchaseDomainWithCommit,
   TwoStepsDomainOwnershipRenewal,
   oneStepDomainOwnershipRenewal,
+  runWithdrawTestProcess,
 } from '../utils/operations';
 import {
   PartnerRegistrar,
   NodeOwner,
   ERC677Token,
   PartnerRenewer,
+  FeeManager,
 } from 'typechain-types';
 import { MockContract } from '@defi-wonderland/smock';
 import { ConstructorFragment } from '@ethersproject/abi';
-import { oneRBTC } from '../../utils/mock.utils';
+import { calculatePercentageWPrecision, oneRBTC } from '../../utils/mock.utils';
 
 describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
-  it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance', async () => {
+  it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance; Commision should NOT be deposited', async () => {
     //Test Case No. 2
     //User Role:                           Regular User (OK)
     //Number of Steps:                     Two steps (OK)
@@ -46,6 +49,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -61,6 +65,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -111,6 +119,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Zero Duration'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
   it('Test Case No. 3 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Renewal Flow Should be Successful', async () => {
@@ -130,6 +148,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       owner,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -143,6 +162,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = owner;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -182,6 +205,17 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyBeforePurchase
     );
 
+    //Validate the commission was payed to the referred partner
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('6');
 
@@ -200,7 +234,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
   }); //it
 
-  it('Test Case No. 4 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 4 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commision & Price Payed Are the correct', async () => {
     //Test Case No. 4
     //User Role:                         Partner Reseller (OK)
     //Number of Steps:                   One step         (OK)
@@ -216,6 +250,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -229,6 +264,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = partner;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -261,13 +300,25 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
 
     //Validate the correct money amount from the buyer
-    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+    let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
+    moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('12');
@@ -304,6 +355,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       owner,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -319,6 +371,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = owner;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -357,6 +413,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('15');
@@ -376,7 +442,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
   }); //it
 
-  it('Test Case No. 6 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 6 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commission & Price Payed Are the correct', async () => {
     //Test Case No. 6
     //User Role:                         Partner Reseller (OK)
     //Number of Steps:                   Three steps (OK)
@@ -392,6 +458,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -409,6 +476,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -440,13 +511,25 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
 
     //Validate the correct money amount from the buyer
-    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+    let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
+    moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('24');
@@ -483,6 +566,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -498,6 +582,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    let balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -537,11 +625,25 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyBeforePurchase
     );
 
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
     //Test Case No. 20
     //User Role:                      Regular User
     //Number of Steps:                One step
     //Domain Name - Is Available?:    Occupied By Regular User (-)
     let errorFound: boolean = false;
+
+    balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     try {
       await purchaseDomainUsingTransferAndCallWithoutCommit(
@@ -567,6 +669,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       'BUG: NO error was thrown when I purchased the domain twice!'
     ).to.be.equals(true);
 
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('36');
 
@@ -585,7 +697,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
   }); //it
 
-  it('Test Case No. 8 & 23 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
+  it('Test Case No. 8 & 23 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commission & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 8
     //User Role:                       Regular User                                          (OK)
     //Number of Steps:                 Two steps                                             (OK)
@@ -602,6 +714,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -619,6 +732,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    let balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -658,6 +775,20 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyBeforePurchase
     );
 
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
+    balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
+
     //Test Case No. 23
     //User Role:                      Regular User
     //Number of Steps:                Two step
@@ -689,6 +820,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       'BUG: NO error was thrown when I purchased the domain twice!'
     ).to.be.equals(true);
 
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('20');
 
@@ -707,7 +848,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
   }); //it
 
-  it('Test Case No. 9 & 24 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
+  it('Test Case No. 9 & 24 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commission & Price Payed Are the correct; Occupied Domain Should NOT be able to be purchased again', async () => {
     //Test Case No. 9
     //User Role:                       Regular User
     //Number of Steps:                 Three steps
@@ -724,6 +865,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -741,6 +883,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    let balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -778,6 +924,20 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase
+    );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
+    balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
     );
 
     //Test Case No. 24
@@ -811,6 +971,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       'BUG: NO error was thrown when I purchased the domain twice!'
     ).to.be.equals(true);
 
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('10');
 
@@ -829,7 +999,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
   }); //it
 
-  it('Test Case No. 10 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 10 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commission & Price Payed Are the correct', async () => {
     //Test Case No. 10
     //User Role:                       Regular User (OK)
     //Number of Steps:                 Three steps (OK)
@@ -846,6 +1016,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -861,6 +1032,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -899,6 +1074,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('15');
@@ -935,6 +1120,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -948,6 +1134,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -987,6 +1177,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyBeforePurchase
     );
 
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('12');
 
@@ -1005,7 +1205,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
   }); //it
 
-  it('Test Case No. 12 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 12 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commission & Price Payed Are the correct', async () => {
     //Test Case No. 12
     //User Role:                       Regular User (OK)
     //Number of Steps:                 Three steps (OK)
@@ -1022,6 +1222,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       PartnerRenewer,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -1039,6 +1240,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait();
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1078,6 +1283,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyBeforePurchase
     );
 
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('48');
 
@@ -1096,7 +1311,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     );
   }); //it
 
-  it('Test Case No. 13 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it('Test Case No. 13 - Should throw an error message; The domain was not registered; NO deducted money from balance; NO Commission Payed', async () => {
     //Test Case No. 13
     //User Role:                       Regular User (OK)
     //Number of Steps:                 One steps (OK)
@@ -1112,6 +1327,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -1125,6 +1341,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1180,9 +1400,19 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Too Long Domain Name'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
-  it('Test Case No. 14 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it('Test Case No. 14 - Should throw an error message; The domain was not registered; NO deducted money from balance; NO Commission Payed', async () => {
     //Test Case No. 14
     //User Role:                       Regular User (OK)
     //Number of Steps:                 Two step (OK)
@@ -1198,6 +1428,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = 'A1';
@@ -1207,6 +1438,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1261,6 +1496,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Too Short Domain Name'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
   it('Test Case No. 15 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
@@ -1271,8 +1516,14 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //MinCommitmentAge:               Greater Than Zero (OK)
     //Duration:                       5 years (OK)
 
-    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration } =
-      await loadFixture(initialSetup);
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      FeeManager,
+    } = await loadFixture(initialSetup);
 
     const domainName = '';
 
@@ -1283,6 +1534,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = partner;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1333,6 +1588,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Empty Domain Name'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
   //Not Integrated yet
@@ -1352,6 +1617,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName =
@@ -1362,6 +1628,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1411,6 +1681,16 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Domain With Special Characters'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
   it('Test Case No. 17 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
@@ -1422,8 +1702,14 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //MinCommitmentAge:                Negative Number (-) (OK)
     //Duration:                        2 years (OK)
 
-    const { NodeOwner, PartnerRegistrar, partner, RIF, PartnerConfiguration } =
-      await loadFixture(initialSetup);
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      FeeManager,
+    } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
       10,
@@ -1441,6 +1727,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
 
     let errorFound: boolean = false;
 
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
+
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
     try {
@@ -1484,9 +1774,19 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Negative Commit Value'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
-  it('Test Case No. 18 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it('Test Case No. 18 - Should throw an error message; The domain was not registered; NO deducted money from balance; NO Commission Payed', async () => {
     //Test Case No. 18
     //User Role:                      Regular User (OK)
     //Number of Steps:                Two steps (OK)
@@ -1501,8 +1801,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner,
       RIF,
       PartnerConfiguration,
-      owner,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -1518,6 +1818,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1564,9 +1868,19 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Negative Commit Value'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
-  it('Test Case No. 19 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it('Test Case No. 19 - Should throw an error message; The domain was not registered; NO deducted money from balance; NO Commission Payed', async () => {
     //Test Case No. 19
     //User Role:                      RNS Owner (OK)
     //Number of Steps:                Three steps (OK)
@@ -1582,6 +1896,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       owner,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -1597,6 +1912,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = owner;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1641,9 +1960,19 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'No Commitment Provided'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
-  it('Test Case No. 21 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it('Test Case No. 21 - Should throw an error message; The domain was not registered; NO deducted money from balance; NO Commission Payed', async () => {
     //Test Case No. 21
     //User Role:                     Regular User (OK)
     //Number of Steps:               One step (OK)
@@ -1659,6 +1988,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -1672,6 +2002,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1721,9 +2055,19 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       'Duration > Maximum Allowed'
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      false
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, true);
   }); //it
 
-  it('Test Case No. 22 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 22 - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commission & Price Payed Are the correct', async () => {
     //Test Case No. 22
     //User Role:                      Regular User
     //Number of Steps:                Two steps
@@ -1739,6 +2083,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -1752,6 +2097,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1790,9 +2139,19 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
   }); //it "
 
-  it('Test Case No. 16 (POSITIVE) - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct', async () => {
+  it('Test Case No. 16 (POSITIVE) - After Purchase & Renovation, Domain Should NOT Available; The Domain Owner, Commission & Price Payed Are the correct', async () => {
     //Test Case No. 16
     //User Role:                       Regular User (OK)
     //Number of Steps:                 Three steps (OK)
@@ -1808,6 +2167,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       RIF,
       PartnerConfiguration,
       regularUser,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const domainName =
@@ -1820,6 +2180,10 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     const buyerUser: SignerWithAddress = regularUser;
 
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
@@ -1858,8 +2222,20 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       moneyAfterPurchase,
       moneyBeforePurchase
     );
+
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true
+    );
+
+    await runWithdrawTestProcess(partner, FeeManager, RIF, false);
   }); //it
 }); // describe
+
+//Aid Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 //Validate Domain Name IS OR ISN'T Available anymore
 export const validatePurchasedDomainIsNotAvailable = async (
@@ -2073,4 +2449,40 @@ export const runRenewalTestFlow = async (
     currentTimeWhenPurchased,
     durationPurchase
   );
+}; //End - Renewal Flow
+
+export const validateCommissionPayedToPartner = async (
+  duration: BigNumber,
+  partnerAddress: string,
+  balanceBeforePurchaseCommision: BigNumber,
+  FeeManager: FeeManager,
+  wasPurchaseSuccessful: boolean
+) => {
+  const currentBalanceAfterPurchaseCommision = await FeeManager.getBalance(
+    partnerAddress
+  );
+
+  if (wasPurchaseSuccessful) {
+    const expectedPrice = calculateNamePriceByDuration(duration);
+
+    const expectedCommision = calculatePercentageWPrecision(
+      expectedPrice,
+      FEE_PERCENTAGE
+    );
+
+    const expectedBalanceAfterPurchaseCommision =
+      balanceBeforePurchaseCommision.add(expectedCommision);
+
+    expect(+currentBalanceAfterPurchaseCommision).to.be.equals(
+      +expectedBalanceAfterPurchaseCommision
+    );
+
+    console.log('SUCCESSFUL PURCHASE - Comission Validation Successful!');
+  } else {
+    expect(+currentBalanceAfterPurchaseCommision).to.be.equals(
+      +balanceBeforePurchaseCommision
+    );
+
+    console.log('FAILED PURCHASE - Comission Validation Successful!');
+  }
 }; //End - Renewal Flow
