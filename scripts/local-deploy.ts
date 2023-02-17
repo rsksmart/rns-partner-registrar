@@ -27,11 +27,13 @@ const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
-const FEE_PERCENTAGE = oneRBTC.mul(0); //0%
+const ZERO_FEE_PERCENTAGE = oneRBTC.mul(0); //0%
+const HALF_FEE_PERCENTAGE = oneRBTC.mul(50); //50%
+const HALF_DISCOUNT_PERCENTAGE = oneRBTC.mul(50); //50%
 
 async function main() {
   try {
-    const [owner, partner, partnerOwner, userAccount, pool] =
+    const [owner, partner, iov, userAccount, pool, partnerTwo] =
       await ethers.getSigners();
 
     console.log('Deploying contracts with the account:', owner.address);
@@ -202,7 +204,7 @@ async function main() {
         maxLength: BigNumber.from(20),
         minDuration: BigNumber.from(1),
         maxDuration: BigNumber.from(5),
-        feePercentage: FEE_PERCENTAGE,
+        feePercentage: ZERO_FEE_PERCENTAGE,
         discount: BigNumber.from(0),
         minCommitmentAge: 0,
       });
@@ -212,12 +214,54 @@ async function main() {
       DefaultPartnerConfiguration.address
     );
 
+    const { contract: PartnerOneConfiguration } =
+      await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+        accessControl: RegistrarAccessControlContract.address,
+        minLength: BigNumber.from(4),
+        maxLength: BigNumber.from(25),
+        minDuration: BigNumber.from(3),
+        maxDuration: BigNumber.from(8),
+        feePercentage: ZERO_FEE_PERCENTAGE,
+        discount: BigNumber.from(0),
+        minCommitmentAge: 0,
+      });
+
+    console.log('PartnerOneConfiguration:', PartnerOneConfiguration.address);
+
+    const { contract: PartnerTwoConfiguration } =
+      await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+        accessControl: RegistrarAccessControlContract.address,
+        minLength: BigNumber.from(3),
+        maxLength: BigNumber.from(10),
+        minDuration: BigNumber.from(2),
+        maxDuration: BigNumber.from(7),
+        feePercentage: HALF_FEE_PERCENTAGE,
+        discount: HALF_DISCOUNT_PERCENTAGE,
+        minCommitmentAge: 1,
+      });
+
+    console.log('PartnerTwoConfiguration:', PartnerTwoConfiguration.address);
+
     console.log('setting up contracts');
 
     await (
       await PartnerManagerContract.addPartner(
+        iov.address,
+        DefaultPartnerConfiguration.address
+      )
+    ).wait();
+
+    await (
+      await PartnerManagerContract.addPartner(
         partner.address,
-        partnerOwner.address
+        PartnerOneConfiguration.address
+      )
+    ).wait();
+
+    await (
+      await PartnerManagerContract.addPartner(
+        partnerTwo.address,
+        PartnerTwoConfiguration.address
       )
     ).wait();
 
@@ -287,9 +331,21 @@ async function main() {
       renewer: PartnerRenewerContract.address,
       partnerManager: PartnerManagerContract.address,
       feeManager: FeeManager.address,
-      defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
       registrarAccessControl: RegistrarAccessControlContract.address,
-      partner: partner.address,
+      partners: {
+        default: {
+          account: iov.address,
+          config: DefaultPartnerConfiguration.address,
+        },
+        buenbit: {
+          account: partner.address,
+          config: PartnerOneConfiguration.address,
+        },
+        thefellowship: {
+          account: partnerTwo.address,
+          config: PartnerTwoConfiguration.address,
+        },
+      },
     };
 
     fs.writeFileSync(
