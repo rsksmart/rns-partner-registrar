@@ -28,8 +28,8 @@ const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
 const ZERO_FEE_PERCENTAGE = oneRBTC.mul(0); //0%
-const HALF_FEE_PERCENTAGE = oneRBTC.mul(50); //10%
-const HALF_DISCOUNT_PERCENTAGE = oneRBTC.mul(50); //10%
+const HALF_FEE_PERCENTAGE = oneRBTC.mul(50); //50%
+const HALF_DISCOUNT_PERCENTAGE = oneRBTC.mul(50); //50%
 
 async function main() {
   try {
