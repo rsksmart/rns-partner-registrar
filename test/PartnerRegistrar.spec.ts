@@ -35,6 +35,7 @@ import {
   FEE_MANAGER_CHANGED_EVENT,
   NAME_REGISTERED_EVENT,
   ONLY_HIGH_LEVEL_OPERATOR_ERR,
+  NOT_A_PARTNER_ERR,
 } from './utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
@@ -294,7 +295,7 @@ describe('New Domain Registration', () => {
         NodeOwner.address,
         partner.address
       )
-    ).to.be.revertedWith('Partner Registrar: Not a partner');
+    ).to.be.revertedWith(NOT_A_PARTNER_ERR);
   });
 
   it('Should fail if new domain length is less than accepted value', async () => {

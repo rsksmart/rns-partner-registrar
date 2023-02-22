@@ -54,10 +54,9 @@ contract PartnerRegistrar is
     }
 
     modifier onlyPartner(address partner) {
-        require(
-            _partnerManager.isPartner(partner),
-            "Partner Registrar: Not a partner"
-        );
+        if (!_partnerManager.isPartner(partner)) {
+            revert("Not a partner");
+        }
         _;
     }
 
@@ -98,11 +97,18 @@ contract PartnerRegistrar is
         uint256 value,
         bytes calldata data
     ) external returns (bool) {
-        require(msg.sender == address(_rif), "Only RIF token");
-        require(data.length > 128, "Invalid data");
+        if (msg.sender != address(_rif)) {
+            revert("Only RIF token");
+        }
+
+        if (data.length <= 128) {
+            revert("Invalid data");
+        }
 
         bytes4 signature = data.toBytes4(0);
-        require(signature == _REGISTER_SIGNATURE, "Invalid signature");
+        if (signature != _REGISTER_SIGNATURE) {
+            revert("Invalid signature");
+        }
 
         address nameOwner = data.toAddress(4);
         bytes32 secret = data.toBytes32(24);
@@ -150,26 +156,31 @@ contract PartnerRegistrar is
         // any sense to have transactions involving zero tokens. Hence calculations are
         // only done for non zero cost domain registrations.
         if (cost > 0) {
-            require(amount >= cost, "Insufficient tokens transferred");
+            if (amount < cost) {
+                revert("Insufficient tokens transferred");
+            }
 
             _collectFees(partner, cost);
 
             uint256 difference = amount - cost;
-            if (difference > 0)
-                require(
-                    _rif.transfer(from, difference),
-                    "Token transfer failed"
-                );
+            if (difference > 0) {
+                bool success = _rif.transfer(from, difference);
+                if (!success) {
+                    revert("Token transfer failed");
+                }
+            }
         }
     }
 
     function _collectFees(address partner, uint256 amount) private {
-        require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
+        if (_feeManager == IFeeManager(address(0))) {
+            revert("Fee Manager not set");
+        }
 
-        require(
-            _rif.approve(address(_feeManager), amount),
-            "Token approval failed"
-        );
+        bool success = _rif.approve(address(_feeManager), amount);
+        if (!success) {
+            revert("Token approval failed");
+        }
 
         _feeManager.deposit(partner, amount);
     }
@@ -207,10 +218,10 @@ contract PartnerRegistrar is
         // any sense to have transactions involving zero tokens. Hence calculations are
         // only done for non zero cost domain registrations.
         if (cost > 0) {
-            require(
-                _rif.transferFrom(msg.sender, address(this), cost),
-                "Token transfer failed"
-            );
+            bool success = _rif.transferFrom(msg.sender, address(this), cost);
+            if (!success) {
+                revert("Token transfer failed");
+            }
 
             _collectFees(partner, cost);
         }
@@ -267,7 +278,10 @@ contract PartnerRegistrar is
         if (partnerConfiguration.getMinCommitmentAge() == 0) {
             revert("Commitment not required");
         }
-        require(_commitmentRevealTime[commitment] < 1, "Existent commitment");
+
+        if (_commitmentRevealTime[commitment] > 0) {
+            revert("Existent commitment");
+        }
         _commitmentRevealTime[commitment] =
             block.timestamp +
             partnerConfiguration.getMinCommitmentAge();
@@ -297,7 +311,9 @@ contract PartnerRegistrar is
                 duration,
                 addr
             );
-            require(canReveal(commitment), "No commitment found");
+            if (!canReveal(commitment)) {
+                revert("No commitment found");
+            }
             _commitmentRevealTime[commitment] = 0;
         }
 
@@ -323,7 +339,9 @@ contract PartnerRegistrar is
     function _getPartnerConfiguration(
         address partner
     ) private view returns (IPartnerConfiguration) {
-        require(_partnerManager.isPartner(partner), "Not a partner");
+        if (!_partnerManager.isPartner(partner)) {
+            revert("Not a partner");
+        }
 
         return _partnerManager.getPartnerConfiguration(partner);
     }

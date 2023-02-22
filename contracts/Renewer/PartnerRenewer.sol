@@ -42,10 +42,9 @@ contract PartnerRenewer is
     }
 
     modifier onlyPartner(address partner) {
-        require(
-            _partnerManager.isPartner(partner),
-            "Partner Registrar: Not a partner"
-        );
+        if (!_partnerManager.isPartner(partner)) {
+            revert("Not a partner");
+        }
         _;
     }
 
@@ -74,11 +73,17 @@ contract PartnerRenewer is
         uint256 value,
         bytes calldata data
     ) external returns (bool) {
-        require(msg.sender == address(_rif), "Only RIF token");
-        require(data.length > 56, "Invalid data");
+        if (msg.sender != address(_rif)) {
+            revert("Only RIF token");
+        }
+        if (data.length <= 56) {
+            revert("Invalid data");
+        }
 
         bytes4 signature = data.toBytes4(0);
-        require(signature == _RENEW_SIGNATURE, "Invalid signature");
+        if (signature != _RENEW_SIGNATURE) {
+            revert("Invalid signature");
+        }
 
         uint256 duration = data.toUint(4);
         address partner = data.toAddress(36);
@@ -104,26 +109,32 @@ contract PartnerRenewer is
         // any sense to have transactions involving zero tokens. Hence calculations are
         // only done for non zero cost domain registrations.
         if (cost > 0) {
-            require(amount >= cost, "Insufficient tokens transferred");
+            if (amount < cost) {
+                revert("Insufficient tokens transferred");
+            }
 
             _collectFees(partner, cost);
 
             uint256 difference = amount - cost;
-            if (difference > 0)
-                require(
-                    _rif.transfer(from, difference),
-                    "Token transfer failed"
-                );
+
+            if (difference > 0) {
+                bool success = _rif.transfer(from, difference);
+                if (!success) {
+                    revert("Token transfer failed");
+                }
+            }
         }
     }
 
     function _collectFees(address partner, uint256 amount) private {
-        require(_feeManager != IFeeManager(address(0)), "Fee Manager not set");
+        if (_feeManager == IFeeManager(address(0))) {
+            revert("Fee Manager not set");
+        }
 
-        require(
-            _rif.approve(address(_feeManager), amount),
-            "Token approval failed"
-        );
+        bool success = _rif.approve(address(_feeManager), amount);
+        if (!success) {
+            revert("Token approval failed");
+        }
 
         _feeManager.deposit(partner, amount);
     }
@@ -162,10 +173,10 @@ contract PartnerRenewer is
         // any sense to have transactions involving zero tokens. Hence calculations are
         // only done for non zero cost domain registrations.
         if (cost > 0) {
-            require(
-                _rif.transferFrom(msg.sender, address(this), cost),
-                "Token transfer failed"
-            );
+            bool success = _rif.transferFrom(msg.sender, address(this), cost);
+            if (!success) {
+                revert("Token transfer failed");
+            }
 
             _collectFees(partner, cost);
         }

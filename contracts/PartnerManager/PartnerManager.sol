@@ -34,7 +34,9 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
         address partner,
         IPartnerConfiguration partnerConfiguration
     ) external override onlyHighLevelOperator {
-        require(!_partners[partner].isPartner, "Partner already exists");
+        if (_partners[partner].isPartner) {
+            revert("Partner already exists");
+        }
         _partners[partner] = Partner(true, partnerConfiguration);
         emit PartnerAdded(partner, address(partnerConfiguration));
     }
@@ -61,11 +63,13 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
             address(partnerConfiguration)
         );
 
-        require(
-            address(partnerConfiguration) != address(0),
-            "Invalid configuration"
-        );
-        require(_partners[partner].isPartner, "Not a partner");
+        if (address(partnerConfiguration) == address(0)) {
+            revert("Invalid configuration");
+        }
+
+        if (!_partners[partner].isPartner) {
+            revert("Not a partner");
+        }
 
         _partners[partner].configuration = partnerConfiguration;
     }
