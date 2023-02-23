@@ -133,7 +133,11 @@ contract PartnerRenewer is
 
         bool success = _rif.approve(address(_feeManager), amount);
         if (!success) {
-            revert TokenApprovalFailed(address(_rif), address(_feeManager), amount);
+            revert TokenApprovalFailed(
+                address(_rif),
+                address(_feeManager),
+                amount
+            );
         }
 
         _feeManager.deposit(partner, amount);

@@ -74,7 +74,7 @@ interface IBaseRenewer {
      * @param amount amount of tokens transferred
      */
     error TokenApprovalFailed(address from, address to, uint256 amount);
-    
+
     /**
      * @notice error thrown when the amount of tokens transferred is insufficient
      * @param expected amount of tokens expected
