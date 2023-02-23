@@ -307,13 +307,7 @@ async function main() {
       await NodeOwnerContract.setRootResolver(ResolverContract.address)
     ).wait();
     console.log('node root resolver set');
-    await (
-      await PartnerManagerContract.setPartnerConfiguration(
-        partner.address,
-        DefaultPartnerConfiguration.address
-      )
-    ).wait();
-    console.log('partner configuration set');
+
     await (await RIF.transfer(userAccount.address, oneRBTC.mul(100))).wait();
 
     console.log('Writing contract addresses to file...');
