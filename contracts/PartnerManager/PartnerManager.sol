@@ -35,7 +35,7 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
         IPartnerConfiguration partnerConfiguration
     ) external override onlyHighLevelOperator {
         if (_partners[partner].isPartner) {
-            revert("Partner already exists");
+            revert CustomError("Partner already added");
         }
         _partners[partner] = Partner(true, partnerConfiguration);
         emit PartnerAdded(partner, address(partnerConfiguration));
@@ -64,11 +64,11 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
         );
 
         if (address(partnerConfiguration) == address(0)) {
-            revert("Invalid configuration");
+            revert CustomError("Configuration not set");
         }
 
         if (!_partners[partner].isPartner) {
-            revert("Not a partner");
+            revert InvalidPartner(partner);
         }
 
         _partners[partner].configuration = partnerConfiguration;

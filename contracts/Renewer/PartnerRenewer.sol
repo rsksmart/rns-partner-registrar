@@ -43,7 +43,7 @@ contract PartnerRenewer is
 
     modifier onlyPartner(address partner) {
         if (!_partnerManager.isPartner(partner)) {
-            revert("Not a partner");
+            revert InvalidPartner(partner);
         }
         _;
     }
@@ -55,7 +55,7 @@ contract PartnerRenewer is
         IFeeManager feeManager
     ) external onlyHighLevelOperator {
         if (address(_feeManager) == address(feeManager)) {
-            revert("old value is same as new value");
+            revert CustomError("old value is same as new value");
         }
         emit FeeManagerChanged(address(this), address(feeManager));
 
@@ -74,15 +74,15 @@ contract PartnerRenewer is
         bytes calldata data
     ) external returns (bool) {
         if (msg.sender != address(_rif)) {
-            revert("Only RIF token");
+            revert CustomError("Only RIF token");
         }
         if (data.length <= 56) {
-            revert("Invalid data");
+            revert CustomError("Invalid data");
         }
 
         bytes4 signature = data.toBytes4(0);
         if (signature != _RENEW_SIGNATURE) {
-            revert("Invalid signature");
+            revert CustomError("Invalid signature");
         }
 
         uint256 duration = data.toUint(4);
@@ -110,7 +110,7 @@ contract PartnerRenewer is
         // only done for non zero cost domain registrations.
         if (cost > 0) {
             if (amount < cost) {
-                revert("Insufficient tokens transferred");
+                revert InsufficientTokensTransfered(cost, amount);
             }
 
             _collectFees(partner, cost);
@@ -120,7 +120,7 @@ contract PartnerRenewer is
             if (difference > 0) {
                 bool success = _rif.transfer(from, difference);
                 if (!success) {
-                    revert("Token transfer failed");
+                    revert TokenTransferFailed(address(_rif), from, difference);
                 }
             }
         }
@@ -128,12 +128,12 @@ contract PartnerRenewer is
 
     function _collectFees(address partner, uint256 amount) private {
         if (_feeManager == IFeeManager(address(0))) {
-            revert("Fee Manager not set");
+            revert CustomError("Fee Manager not set");
         }
 
         bool success = _rif.approve(address(_feeManager), amount);
         if (!success) {
-            revert("Token approval failed");
+            revert TokenApprovalFailed(address(_rif), address(_feeManager), amount);
         }
 
         _feeManager.deposit(partner, amount);
@@ -175,7 +175,7 @@ contract PartnerRenewer is
         if (cost > 0) {
             bool success = _rif.transferFrom(msg.sender, address(this), cost);
             if (!success) {
-                revert("Token transfer failed");
+                revert TokenTransferFailed(msg.sender, address(this), cost);
             }
 
             _collectFees(partner, cost);

@@ -159,4 +159,25 @@ interface IPartnerConfiguration {
      * @param duration duration for which the name should be registered
      */
     function validateName(string memory name, uint256 duration) external view;
+
+    /**
+     * @notice error emitted when the name is invalid
+     * @param name the name that is invalid
+     * @param reason the reason why the name is invalid
+     */
+    error InvalidName(string name, string reason);
+
+    /**
+     * @notice error emitted when the duration is invalid
+     * @param duration the duration that is invalid
+     * @param reason the reason why the duration is invalid
+     */
+    error InvalidDuration(uint256 duration, string reason);
+
+    /**
+     * @notice error emitted when the length is invalid
+     * @param length the length that is invalid
+     * @param reason the reason why the length is invalid
+     */
+    error InvalidLength(uint256 length, string reason);
 }

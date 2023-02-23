@@ -74,4 +74,16 @@ interface IPartnerManager {
      * @custom:emits-event emits the PartnerRemoved event
      */
     function removePartner(address partner) external;
+
+    /**
+     * @notice custom error
+     * @param message error message
+     */
+    error CustomError(string message);
+    
+    /**
+     * @notice error thrown when a partner is not whitelisted
+     */
+    error InvalidPartner(address partner);
+
 }

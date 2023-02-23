@@ -98,16 +98,16 @@ contract PartnerRegistrar is
         bytes calldata data
     ) external returns (bool) {
         if (msg.sender != address(_rif)) {
-            revert("Only RIF token");
+            revert CustomError("Only RIF token");
         }
 
         if (data.length <= 128) {
-            revert("Invalid data");
+            revert CustomError("Invalid data");
         }
 
         bytes4 signature = data.toBytes4(0);
         if (signature != _REGISTER_SIGNATURE) {
-            revert("Invalid signature");
+            revert CustomError("Invalid signature");
         }
 
         address nameOwner = data.toAddress(4);
@@ -157,7 +157,7 @@ contract PartnerRegistrar is
         // only done for non zero cost domain registrations.
         if (cost > 0) {
             if (amount < cost) {
-                revert("Insufficient tokens transferred");
+                revert InsufficientTokensTransfered(cost, amount);
             }
 
             _collectFees(partner, cost);
@@ -166,7 +166,7 @@ contract PartnerRegistrar is
             if (difference > 0) {
                 bool success = _rif.transfer(from, difference);
                 if (!success) {
-                    revert("Token transfer failed");
+                    revert TokenTransferFailed(address(_rif), from, difference);
                 }
             }
         }
@@ -174,12 +174,12 @@ contract PartnerRegistrar is
 
     function _collectFees(address partner, uint256 amount) private {
         if (_feeManager == IFeeManager(address(0))) {
-            revert("Fee Manager not set");
+            revert CustomError("Fee manager not set");
         }
 
         bool success = _rif.approve(address(_feeManager), amount);
         if (!success) {
-            revert("Token approval failed");
+            revert TokenApprovalFailed(address(_rif), address(_feeManager), amount);
         }
 
         _feeManager.deposit(partner, amount);
@@ -220,7 +220,7 @@ contract PartnerRegistrar is
         if (cost > 0) {
             bool success = _rif.transferFrom(msg.sender, address(this), cost);
             if (!success) {
-                revert("Token transfer failed");
+                revert TokenTransferFailed(msg.sender, address(this), cost);
             }
 
             _collectFees(partner, cost);
@@ -276,11 +276,11 @@ contract PartnerRegistrar is
 
         // Check the Partner's one step registration allowance config
         if (partnerConfiguration.getMinCommitmentAge() == 0) {
-            revert("Commitment not required");
+            revert CustomError("Commitment not required");
         }
 
         if (_commitmentRevealTime[commitment] > 0) {
-            revert("Existent commitment");
+            revert CustomError("Existent commitment");
         }
         _commitmentRevealTime[commitment] =
             block.timestamp +
@@ -312,7 +312,7 @@ contract PartnerRegistrar is
                 addr
             );
             if (!canReveal(commitment)) {
-                revert("No commitment found");
+                revert CustomError("Commitment not found");
             }
             _commitmentRevealTime[commitment] = 0;
         }
@@ -340,7 +340,7 @@ contract PartnerRegistrar is
         address partner
     ) private view returns (IPartnerConfiguration) {
         if (!_partnerManager.isPartner(partner)) {
-            revert("Not a partner");
+            revert InvalidPartner(partner);
         }
 
         return _partnerManager.getPartnerConfiguration(partner);
