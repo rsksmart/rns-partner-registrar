@@ -36,6 +36,8 @@ import {
   NAME_REGISTERED_EVENT,
   ONLY_HIGH_LEVEL_OPERATOR_ERR,
   NOT_A_PARTNER_ERR,
+  NO_COMMITMENT_FOUND_ERR,
+  COMMITMENT_NOT_REQUIRED_ERR,
 } from './utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
@@ -382,7 +384,9 @@ describe('New Domain Registration', () => {
         NodeOwner.address,
         partner.address
       )
-    ).to.be.revertedWith('No commitment found');
+    )
+      .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
+      .withArgs(NO_COMMITMENT_FOUND_ERR);
   });
 
   it('Should fail there is a mismatch in the name used to make a commitment and the name being registered', async () => {
@@ -423,7 +427,9 @@ describe('New Domain Registration', () => {
         NodeOwner.address,
         partner.address
       )
-    ).to.be.revertedWith('No commitment found');
+    )
+      .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
+      .withArgs(NO_COMMITMENT_FOUND_ERR);
   });
 
   it('Should ensure registration can not be front run by spoofing the duration other than the original one', async () => {
@@ -469,7 +475,9 @@ describe('New Domain Registration', () => {
           NodeOwner.address,
           partner.address
         )
-      ).to.be.revertedWith('No commitment found');
+      )
+        .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
+        .withArgs(NO_COMMITMENT_FOUND_ERR);
     } catch (error) {
       console.log(error);
       throw error;
@@ -519,7 +527,9 @@ describe('New Domain Registration', () => {
           attacker.address,
           partner.address
         )
-      ).to.be.revertedWith('No commitment found');
+      )
+        .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
+        .withArgs(NO_COMMITMENT_FOUND_ERR);
     } catch (error) {
       console.log(error);
       throw error;
@@ -553,9 +563,9 @@ describe('Registrar Checks', () => {
     PartnerConfiguration.getMinCommitmentAge.returns(0);
 
     try {
-      await expect(
-        PartnerRegistrar.commit(DUMMY_COMMITMENT, partner.address)
-      ).to.be.revertedWith('Commitment not required');
+      await expect(PartnerRegistrar.commit(DUMMY_COMMITMENT, partner.address))
+        .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
+        .withArgs(COMMITMENT_NOT_REQUIRED_ERR);
     } catch (error) {
       console.log(error);
 

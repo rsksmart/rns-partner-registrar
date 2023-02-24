@@ -35,7 +35,7 @@ contract PartnerManager is IPartnerManager, HasAccessControl {
         IPartnerConfiguration partnerConfiguration
     ) external override onlyHighLevelOperator {
         if (_partners[partner].isPartner) {
-            revert CustomError("Partner already added");
+            revert CustomError("Partner already exists");
         }
         _partners[partner] = Partner(true, partnerConfiguration);
         emit PartnerAdded(partner, address(partnerConfiguration));

@@ -15,6 +15,9 @@ export const INVALID_PARTNER_CONFIGURATION_ERR =
 export const INVALID_PARTNER_ERR = 'PartnerManager: Invalid partner';
 export const INVALID_NAME_ERR = 'Invalid name';
 export const NOT_A_PARTNER_ERR = 'Not a partner';
+export const NO_COMMITMENT_FOUND_ERR = 'No commitment found';
+export const COMMITMENT_NOT_REQUIRED_ERR = 'Commitment not required';
+export const ONLY_RIF_TOKEN_ERR = 'Only RIF token';
 
 // EVENTS
 export const MIN_DURATION_CHANGED_EVENT = 'MinDurationChanged';
