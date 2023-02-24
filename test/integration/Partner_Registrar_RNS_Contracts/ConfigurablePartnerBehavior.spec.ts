@@ -6,7 +6,7 @@ import { PartnerRegistrar, NodeOwner } from 'typechain-types';
 import { assert } from 'console';
 import { oneRBTC } from 'test/utils/mock.utils';
 
-describe.only('Configurable Partner Behavior', () => {
+describe('Configurable Partner Behavior', () => {
   it('Test Case No. 1 - The Minimum Domain Length value should be successfully updated; The Purchase Of 1 Step was succesful when the configuration was respected; The Purchase Of 1 Step should throw an error when the new configuration was NOT respected', async () => {
     //Test Case No. 1
     //User Role (LogIn):                                   HIGH LEVEL OPERATOR
