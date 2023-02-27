@@ -299,7 +299,7 @@ export const generateRandomStringWithLettersAndNumbers = (
     }
   }
 
-  console.log('RNS Log - Generated Name: ' + domainName);
+  //console.log('RNS Log - Generated Name: ' + domainName);
 
   if (length == 0) return '';
   else return domainName;

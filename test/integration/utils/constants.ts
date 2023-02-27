@@ -16,4 +16,4 @@ export const tldAsSha3 = ethers.utils.id('rsk');
 export const namePriceForOneYear = oneRBTC.mul(2);
 
 export const MINIMUM_DOMAIN_NAME_LENGTH = 3;
-export const MAXIMUM_DOMAIN_NAME_LENGTH = 100; // PENDIENTE CONFIRMAR ESTA LONGITUD!
+export const MAXIMUM_DOMAIN_NAME_LENGTH = 100;

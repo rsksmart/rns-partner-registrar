@@ -2319,7 +2319,7 @@ export const validateNegativeFlowExpectedResults = async (
     moneyBeforePurchase + '',
     'BUG: NOT Purchased domain was deducted from User Balance!'
   ).to.be.equals(moneyAfterPurchase + '');
-};
+}; // End - Validate Negative Flow
 
 const validateErrorMessageWhenDomainIsOccupied = (currentError: string) => {
   const bugDescription =
@@ -2330,7 +2330,7 @@ const validateErrorMessageWhenDomainIsOccupied = (currentError: string) => {
   );
 
   expect(currentError, bugDescription).contains('Not available');
-};
+}; // End - Validate Error Message When Occupied
 
 export const validateRenewalExpectedResults = async (
   NodeOwner: NodeOwner,
