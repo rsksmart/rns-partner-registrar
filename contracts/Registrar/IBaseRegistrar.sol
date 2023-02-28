@@ -100,4 +100,39 @@ interface IBaseRegistrar {
         @return true if the name is ready to be registered
     */
     function canReveal(bytes32 commitment) external view returns (bool);
+
+    /**
+     * @notice error thrown when the partner is not whitelisted
+     * @param partner address of the invlalid partner
+     */
+    error InvalidPartner(address partner);
+
+    /**
+     * @notice error thrown when a token transfer fails
+     * @param from address from which the tokens were transferred
+     * @param to address to which the tokens were transferred
+     * @param amount amount of tokens transferred
+     */
+    error TokenTransferFailed(address from, address to, uint256 amount);
+
+    /**
+     * @notice error thrown when approval for a token transfer fails
+     * @param from address from which the tokens were transferred
+     * @param to address to which the tokens were transferred
+     * @param amount amount of tokens transferred
+     */
+    error TokenApprovalFailed(address from, address to, uint256 amount);
+
+    /**
+     * @notice error thrown when the amount of tokens transferred is insufficient
+     * @param expected amount of tokens expected
+     * @param actual amount of tokens transferred
+     */
+    error InsufficientTokensTransfered(uint256 expected, uint256 actual);
+
+    /**
+     * @notice custom error
+     * @param message error message
+     */
+    error CustomError(string message);
 }

@@ -47,8 +47,7 @@ describe('Check Domain Price With Given Partner', () => {
     } catch (error) {
       capturedError = true;
 
-      const expectedError =
-        'Error: call revert exception; VM Exception while processing transaction: reverted with reason string ';
+      const expectedError = 'Error: call revert exception';
 
       const currentError = error + '';
 
@@ -64,7 +63,7 @@ describe('Check Domain Price With Given Partner', () => {
       expect(
         currentError,
         'BUG: The contract did not send the NotPartner Error Message'
-      ).to.contains('Not a partner');
+      ).to.contains('errorName="InvalidPartner"');
     }
 
     expect(capturedError).to.be.true;

@@ -7,6 +7,7 @@ import {
   NAME,
   SECRET,
 } from './utils/constants';
+import { ONLY_RIF_TOKEN_ERR } from '../utils/constants.utils';
 import {
   calculatePercentageWPrecision,
   getAddrRegisterData,
@@ -103,23 +104,24 @@ describe('New Domain Registration (Integration)', () => {
         namePrice,
         data
       )
-    ).to.be.revertedWith('Only RIF token');
+    )
+      .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
+      .withArgs(ONLY_RIF_TOKEN_ERR);
   });
 
   it('Should revert if token transfer approval fails', async () => {
-    const {
-      RIF,
-      nameOwner,
-      PartnerRegistrar,
-      partner,
-      PartnerManager,
-      PartnerConfiguration,
-      NodeOwner,
-      alternatePartnerConfiguration,
-    } = await loadFixture(initialSetup);
+    const { RIF, nameOwner, PartnerRegistrar, partner, NodeOwner, FeeManager } =
+      await loadFixture(initialSetup);
 
     RIF.transferFrom.returns(true);
     RIF.approve.returns(false);
+
+    const namePrice = await PartnerRegistrar.price(
+      'cheta',
+      0,
+      OneYearDuration,
+      partner.address
+    );
 
     await expect(
       PartnerRegistrar.register(
@@ -130,7 +132,9 @@ describe('New Domain Registration (Integration)', () => {
         NodeOwner.address,
         partner.address
       )
-    ).to.be.revertedWith('Token approval failed');
+    )
+      .to.be.revertedWithCustomError(PartnerRegistrar, 'TokenApprovalFailed')
+      .withArgs(RIF.address, FeeManager.address, namePrice);
   });
 
   it('Should register a new domain for a partnerOwnerAccount with a non 0 minCommitmentAge', async () => {

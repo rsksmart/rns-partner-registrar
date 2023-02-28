@@ -6,10 +6,6 @@ import "../StringUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
 
-error InvalidName(string name, string reason);
-error InvalidDuration(uint256 duration, string reason);
-error InvalidLength(uint256 length, string reason);
-
 /**
  * @title Defines the configuration for a partner in particular
  * @author Identity Team @IOVLabs

@@ -1942,10 +1942,12 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       const bugDescription =
         'BUG: The NO Provided Commit error message was NOT displayed correctly';
 
-      expect(currentError, bugDescription).to.contains('No commitment found');
+      expect(currentError, bugDescription).to.contains(
+        'CustomError("No commitment found")'
+      );
 
       expect(currentError, bugDescription).to.contains(
-        'Error: VM Exception while processing transaction: reverted with reason string'
+        'Error: VM Exception while processing transaction: reverted with custom error \'CustomError("No commitment found")'
       );
     }
 
