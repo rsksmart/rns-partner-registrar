@@ -701,7 +701,7 @@ describe('Configurable Partner Behavior', () => {
     );
   }); //it
 
-  it.skip('Test Case No. 18 - The Discount Percentage value should be successfully updated; The Purchase Of 1 Step was succesful', async () => {
+  it('Test Case No. 18 - The Discount Percentage value should be successfully updated; The Purchase Of 1 Step was succesful', async () => {
     //Test Case No. 18
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -716,11 +716,18 @@ describe('Configurable Partner Behavior', () => {
       RIF,
       PartnerConfiguration,
       FeeManager,
+      PartnerManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Discount Percentage';
 
-    const parameterNewValue = 50;
+    const parameterNewValue = oneRBTC.mul(50);
+
+    const partnerConfiguration = await PartnerManager.getPartnerConfiguration(
+      partner.address
+    );
+
+    expect(partnerConfiguration).to.be.equal(PartnerConfiguration.address);
 
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
@@ -742,7 +749,7 @@ describe('Configurable Partner Behavior', () => {
     );
   }); //it
 
-  it.skip('Test Case No. 19 - The Discount Percentage value should be successfully updated; The Purchase Of 2 Steps was succesful when the configuration was respected; The Purchase Of 2 Steps should throw an error when the new configuration was NOT respected', async () => {
+  it('Test Case No. 19 - The Discount Percentage value should be successfully updated; The Purchase Of 2 Steps was succesful when the configuration was respected; The Purchase Of 2 Steps should throw an error when the new configuration was NOT respected', async () => {
     //Test Case No. 19
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -783,7 +790,7 @@ describe('Configurable Partner Behavior', () => {
     );
   }); //it
 
-  it.skip('Test Case No. 20 - The Discount Percentage value should be successfully updated; The Purchase Of 3 Steps was succesful when the configuration was respected; The Purchase Of 3 Steps should throw an error when the new configuration was NOT respected', async () => {
+  it('Test Case No. 20 - The Discount Percentage value should be successfully updated; The Purchase Of 3 Steps was succesful when the configuration was respected; The Purchase Of 3 Steps should throw an error when the new configuration was NOT respected', async () => {
     //Test Case No. 20
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -1151,17 +1158,19 @@ const runPartnerBehaviorConfigCRUDProcess = async (
   console.log(parameterName + ' BEFORE: ' + valueBeforeChange);
 
   if (parameterName.includes('Minimum Domain Length'))
-    await PartnerConfiguration.setMinLength(parameterNewValue);
+    await (await PartnerConfiguration.setMinLength(parameterNewValue)).wait();
   else if (parameterName.includes('Maximum Domain Length'))
-    await PartnerConfiguration.setMaxLength(parameterNewValue);
+    await (await PartnerConfiguration.setMaxLength(parameterNewValue)).wait();
   else if (parameterName.includes('Minimum Duration'))
-    await PartnerConfiguration.setMinDuration(parameterNewValue);
+    await (await PartnerConfiguration.setMinDuration(parameterNewValue)).wait();
   else if (parameterName.includes('Maximum Duration'))
-    await PartnerConfiguration.setMaxDuration(parameterNewValue);
+    await (await PartnerConfiguration.setMaxDuration(parameterNewValue)).wait();
   else if (parameterName.includes('Commission Fee Percentage'))
-    await PartnerConfiguration.setFeePercentage(parameterNewValue);
+    await (
+      await PartnerConfiguration.setFeePercentage(parameterNewValue)
+    ).wait();
   else if (parameterName.includes('Discount Percentage'))
-    await PartnerConfiguration.setDiscount(parameterNewValue);
+    await (await PartnerConfiguration.setDiscount(parameterNewValue)).wait();
   else throw new Error('Invalid Parameter Name Option: ' + parameterName);
 
   const valueAfterChange = await getPartnerParameterValue(

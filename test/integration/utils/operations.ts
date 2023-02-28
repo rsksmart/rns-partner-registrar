@@ -54,7 +54,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -120,7 +120,7 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -160,7 +160,7 @@ export const purchaseDomainWithoutCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   //step 1
   await (
@@ -231,7 +231,7 @@ export const purchaseDomainWithCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   //step 2
   await (
@@ -306,13 +306,26 @@ export const generateRandomStringWithLettersAndNumbers = (
 };
 
 //Validate given price is correct
-export const validateNamePrice = (
+export const validateNamePrice = async (
   duration: BigNumber,
-  currentNamePrice: BigNumber
+  currentNamePrice: BigNumber,
+  PartnerConfiguration: PartnerConfiguration
 ) => {
-  const expectPrice = calculateNamePriceByDuration(duration);
+  let expectPrice = calculateNamePriceByDuration(duration); //TODO - Confirm With Sergio!
 
-  console.log('Expected: ' + expectPrice + '. Current: ' + currentNamePrice);
+  const discountPercentage = await PartnerConfiguration.getDiscount();
+
+  const oneHundred = oneRBTC.mul(100);
+
+  const discountedAmount = expectPrice.mul(discountPercentage).div(oneHundred);
+
+  console.log('Amount To Discount: ' + discountedAmount);
+
+  expectPrice = expectPrice.sub(discountedAmount);
+
+  console.log(
+    'Expected Price: ' + expectPrice + '. Current Price: ' + currentNamePrice
+  );
 
   expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(
     +currentNamePrice

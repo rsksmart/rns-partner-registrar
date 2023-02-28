@@ -2338,7 +2338,7 @@ export const validateCorrectMoneyAmountWasPayed = async (
 
   let expectedPrice = calculateNamePriceByDuration(duration); //TODO - Confirm With Sergio!
 
-  const oneHundred = BigNumber.from('100');
+  const oneHundred = oneRBTC.mul(100);
 
   const discountedAmount = expectedPrice
     .mul(discountPercentage)
@@ -2532,7 +2532,17 @@ export const validateCommissionPayedToPartner = async (
   console.log('Current Fee Percentage: ' + feePercentage);
 
   if (wasPurchaseSuccessful) {
-    const expectedPrice = calculateNamePriceByDuration(duration);
+    let expectedPrice = calculateNamePriceByDuration(duration);
+
+    const discountPercentage = await PartnerConfiguration.getDiscount();
+
+    const oneHundred = oneRBTC.mul(100);
+
+    const discountedAmount = expectedPrice
+      .mul(discountPercentage)
+      .div(oneHundred);
+
+    expectedPrice = expectedPrice.sub(discountedAmount);
 
     const expectedCommision = calculatePercentageWPrecision(
       expectedPrice,
