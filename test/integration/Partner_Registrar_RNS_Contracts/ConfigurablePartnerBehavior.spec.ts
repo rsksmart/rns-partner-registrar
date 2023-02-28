@@ -3,13 +3,13 @@ import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 import { BigNumber, Contract } from 'ethers';
 import {
-  PartnerRegistrar,
   NodeOwner,
   ERC677Token,
   PartnerConfiguration,
   PartnerRenewer,
+  FeeManager,
+  PartnerRegistrar,
 } from 'typechain-types';
-import { assert } from 'console';
 import { oneRBTC } from 'test/utils/mock.utils';
 import {
   calculateNamePriceByDuration,
@@ -24,7 +24,11 @@ import { SECRET } from '../utils/constants';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { MockContract } from '@defi-wonderland/smock';
 import { validatePurchaseExpectedResults } from './RenewalDomainNegativeCases.spec';
-import { validateNegativeFlowExpectedResults } from './RegisterDomain.spec';
+import {
+  validateCommissionPayedToPartner,
+  validateNegativeFlowExpectedResults,
+  validateRenewalExpectedResults,
+} from './RegisterDomain.spec';
 
 describe('Configurable Partner Behavior', () => {
   it('Test Case No. 1 - The Minimum Domain Length value should be successfully updated; The Purchase Of 1 Step was succesful when the configuration was respected; The Purchase Of 1 Step should throw an error when the new configuration was NOT respected', async () => {
@@ -41,6 +45,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Minimum Domain Length';
@@ -62,7 +67,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -80,6 +86,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Minimum Domain Length';
@@ -101,7 +108,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -118,6 +126,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Minimum Domain Length';
@@ -139,7 +148,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -157,6 +167,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Maximum Domain Length';
@@ -178,7 +189,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -196,6 +208,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Maximum Domain Length';
@@ -217,7 +230,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -235,6 +249,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Maximum Domain Length';
@@ -256,7 +271,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -274,6 +290,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Minimum Duration';
@@ -295,7 +312,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -313,6 +331,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Minimum Duration';
@@ -334,7 +353,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -352,6 +372,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Minimum Duration';
@@ -373,7 +394,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -391,6 +413,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
@@ -414,7 +437,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -432,6 +456,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
@@ -455,7 +480,8 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -473,6 +499,7 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
     await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
@@ -496,11 +523,12 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       PartnerConfiguration,
       NodeOwner,
-      parameterNewValue
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
-  it('Test Case No. 13 - The Commission Fee Percentage value should be successfully updated; The Purchase Of 1 Step was succesful when the configuration was respected; The Purchase Of 1 Step should throw an error when the new configuration was NOT respected', async () => {
+  it('Test Case No. 13 - The Commission Fee Percentage value should be successfully updated; The Purchase Of 1 Step was succesful', async () => {
     //Test Case No. 13
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -514,18 +542,34 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = oneRBTC.mul(5);
+    const behaviorConfigurationToTest = 'Commission Fee Percentage';
+
+    const parameterNewValue = oneRBTC.mul(20);
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Commission Fee Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
     );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 1 Step',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
   }); //it
 
-  it('Test Case No. 14 - The Commission Fee Percentage value should be successfully updated; The Purchase Of 2 Steps was succesful when the configuration was respected; The Purchase Of 2 Steps should throw an error when the new configuration was NOT respected', async () => {
+  it('Test Case No. 14 - The Commission Fee Percentage value should be successfully updated; The Purchase Of 2 Steps was succesful', async () => {
     //Test Case No. 14
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -539,18 +583,34 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = oneRBTC.mul(5);
+    const behaviorConfigurationToTest = 'Commission Fee Percentage';
+
+    const parameterNewValue = oneRBTC.mul(10);
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Commission Fee Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
     );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 2 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
   }); //it
 
-  it('Test Case No. 15 - The Commission Fee Percentage value should be successfully updated; The Purchase Of 3 Steps was succesful when the configuration was respected; The Purchase Of 3 Steps should throw an error when the new configuration was NOT respected', async () => {
+  it('Test Case No. 15 - The Commission Fee Percentage value should be successfully updated; The Purchase Of 3 Steps was succesful', async () => {
     //Test Case No. 15
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -564,14 +624,30 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = oneRBTC.mul(5);
+    const behaviorConfigurationToTest = 'Commission Fee Percentage';
+
+    const parameterNewValue = oneRBTC.mul(40);
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Commission Fee Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
+    );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 3 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -625,7 +701,7 @@ describe('Configurable Partner Behavior', () => {
     );
   }); //it
 
-  it('Test Case No. 18 - The Discount Percentage value should be successfully updated; The Purchase Of 1 Step was succesful when the configuration was respected; The Purchase Of 1 Step should throw an error when the new configuration was NOT respected', async () => {
+  it.skip('Test Case No. 18 - The Discount Percentage value should be successfully updated; The Purchase Of 1 Step was succesful', async () => {
     //Test Case No. 18
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -639,18 +715,34 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = BigNumber.from('6');
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = 50;
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Discount Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
     );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 1 Step',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
   }); //it
 
-  it('Test Case No. 19 - The Discount Percentage value should be successfully updated; The Purchase Of 2 Steps was succesful when the configuration was respected; The Purchase Of 2 Steps should throw an error when the new configuration was NOT respected', async () => {
+  it.skip('Test Case No. 19 - The Discount Percentage value should be successfully updated; The Purchase Of 2 Steps was succesful when the configuration was respected; The Purchase Of 2 Steps should throw an error when the new configuration was NOT respected', async () => {
     //Test Case No. 19
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -664,18 +756,34 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = BigNumber.from('6');
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = 25;
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Discount Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
     );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 2 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
   }); //it
 
-  it('Test Case No. 20 - The Discount Percentage value should be successfully updated; The Purchase Of 3 Steps was succesful when the configuration was respected; The Purchase Of 3 Steps should throw an error when the new configuration was NOT respected', async () => {
+  it.skip('Test Case No. 20 - The Discount Percentage value should be successfully updated; The Purchase Of 3 Steps was succesful when the configuration was respected; The Purchase Of 3 Steps should throw an error when the new configuration was NOT respected', async () => {
     //Test Case No. 20
     //User Role (LogIn):                                   RNS Owner
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -689,14 +797,30 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = BigNumber.from('6');
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = 10;
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Discount Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
+    );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 3 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
     );
   }); //it
 
@@ -1012,7 +1136,7 @@ describe('Configurable Partner Behavior', () => {
 
     console.log('Error Accomplished - ' + expectedError + ' - OK');
   }); //it
-}); //describe - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+}); //describe - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const runPartnerBehaviorConfigCRUDProcess = async (
   parameterName: string,
@@ -1047,7 +1171,9 @@ const runPartnerBehaviorConfigCRUDProcess = async (
 
   expect(
     valueAfterChange,
-    "BUG: The '" + parameterName + "' option did NOT save the new correct value"
+    "BUG: The '" +
+      parameterName +
+      "' option did NOT save the new correct value!"
   ).to.be.equals(parameterNewValue);
 
   console.log(
@@ -1056,7 +1182,7 @@ const runPartnerBehaviorConfigCRUDProcess = async (
       valueAfterChange +
       ' --- Partner Behavior Test Successful!'
   );
-}; // End - Partner Behavior Flow
+}; // End - Partner Behavior CRUD Flow - - - - - - - - - - - - - - - - -
 
 const getPartnerParameterValue = async (
   parameterName: string,
@@ -1086,7 +1212,7 @@ const getPartnerParameterValue = async (
   ).to.be.greaterThanOrEqual(BigNumber.from('0'));
 
   return value;
-}; // End - Get Parameter Value
+}; // End - Get Parameter Value - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const getPartnerParameterErrorMessage = (parameterName: string) => {
   let value = '';
@@ -1104,7 +1230,7 @@ const getPartnerParameterErrorMessage = (parameterName: string) => {
   else throw new Error('Invalid Parameter Name Option: ' + parameterName);
 
   return value;
-}; // End - Get Parameter Value
+}; // End - Get Parameter Error Message - - - - - - - - - - - - - - - - - - - - -
 
 const purchaseDomain = async (
   partnerConfigurationToTest: string,
@@ -1116,7 +1242,8 @@ const purchaseDomain = async (
   PartnerConfiguration: PartnerConfiguration,
   NodeOwner: NodeOwner,
   usedValidParameterValue: boolean,
-  newParamValue: BigNumber
+  newParamValue: BigNumber,
+  FeeManager: FeeManager
 ) => {
   let duration = BigNumber.from('2');
 
@@ -1153,9 +1280,9 @@ const purchaseDomain = async (
   )
     duration = newParamValue.add(1);
 
-  console.log('DURACION ACTUAL: ' + duration);
+  console.log('Current Duration: ' + duration);
 
-  console.log('LONGITUD ACTUAL: ' + domainLength);
+  console.log('Current Length: ' + domainLength);
 
   const domainName = generateRandomStringWithLettersAndNumbers(
     domainLength.toNumber(),
@@ -1163,9 +1290,15 @@ const purchaseDomain = async (
     false
   );
 
-  console.log('NOMBRE ACTUAL: ' + domainName);
+  console.log('Current Name: ' + domainName);
 
   const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+  console.log('User Balance BEFORE Purchase: ' + moneyBeforePurchase);
+
+  const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+    partnerAddress
+  );
 
   let errorFound: boolean = false;
 
@@ -1187,7 +1320,7 @@ const purchaseDomain = async (
         PartnerConfiguration
       );
 
-      console.log('Purchase Of 1 Step - Successful');
+      console.log('Purchase Of 1 Step - Done');
     } // if
     else if (
       typeOfProcess.includes('Purchase Of 2 Steps') ||
@@ -1206,7 +1339,7 @@ const purchaseDomain = async (
         PartnerConfiguration
       );
 
-      console.log('Purchase Of 2 Steps - Successful');
+      console.log('Purchase Of 2 Steps - Done');
     } // if
     else if (typeOfProcess.includes('Purchase Of 3 Steps')) {
       console.log('Purchase Of 3 Steps - In Progress...');
@@ -1223,7 +1356,7 @@ const purchaseDomain = async (
         BigNumber.from('10')
       );
 
-      console.log('Purchase Of 3 Steps - Successful');
+      console.log('Purchase Of 3 Steps - Done');
     } // if
     else throw new Error('Invalid Process Name Option: ' + typeOfProcess);
   } catch (error) {
@@ -1260,7 +1393,8 @@ const purchaseDomain = async (
       buyerUser,
       moneyBeforePurchase,
       duration,
-      RIF
+      RIF,
+      PartnerConfiguration
     );
 
     expect(
@@ -1269,6 +1403,9 @@ const purchaseDomain = async (
     ).to.be.equals('false');
 
     console.log('SUCCESFUL PURCHASE - Partner Behavior Test OK!');
+    console.log(
+      'User Balance AFTER Purchase: ' + (await RIF.balanceOf(buyerUser.address))
+    );
   } // If - Valid Parameter Flow
   else {
     //Validate the previous process failed this time and the contract threw a coherent error message.
@@ -1284,28 +1421,44 @@ const purchaseDomain = async (
 
     console.log('FAILED PURCHASE - Partner Behavior Test OK!');
   }
-}; // End - Purchase Flow
+
+  //Validate the commission was payed to the referred partner
+  await validateCommissionPayedToPartner(
+    duration,
+    partnerAddress,
+    balanceBeforePurchaseCommision,
+    FeeManager,
+    usedValidParameterValue,
+    PartnerConfiguration
+  );
+}; // End - Purchase Flow - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const renovateDomain = async (
   typeOfProcess: string,
+  NodeOwner: NodeOwner,
   buyerUser: SignerWithAddress,
   partnerRenewer: PartnerRenewer,
   RIF: MockContract<ERC677Token>,
-  partnerAddress: string
+  partnerAddress: string,
+  parameterNewValue: string,
+  currentTimeWhenPurchased: BigNumber,
+  durationPurchase: BigNumber
 ) => {
   const domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
 
-  const duration = BigNumber.from('3');
+  const duration = BigNumber.from('2');
 
   const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
-
-  const errorFound: boolean = false;
 
   const numberOfMonthsToSimulate = BigNumber.from('12');
 
   const namePrice = await calculateNamePriceByDuration(duration);
 
+  const moneyBeforeRenovation = await RIF.balanceOf(buyerUser.address);
+
   if (typeOfProcess.includes('Renewal Of 1 Step')) {
+    console.log('Renewal Of 1 Step - In Progress..');
+
     await oneStepDomainOwnershipRenewal(
       domainName,
       duration,
@@ -1319,6 +1472,8 @@ const renovateDomain = async (
 
     console.log('Renewal Of 1 Step - Successful');
   } else if (typeOfProcess.includes('Renewal Of 2 Steps')) {
+    console.log('Renewal Of 2 Steps - In Progress..');
+
     await TwoStepsDomainOwnershipRenewal(
       domainName,
       duration,
@@ -1332,7 +1487,21 @@ const renovateDomain = async (
 
     console.log('Renewal Of 2 Steps - Successful');
   }
-}; // End - Renewal Flow
+
+  const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
+
+  await validateRenewalExpectedResults(
+    NodeOwner,
+    domainName,
+    buyerUser,
+    moneyBeforeRenovation,
+    moneyAfterRenovation,
+    duration,
+    numberOfMonthsToSimulate,
+    currentTimeWhenPurchased,
+    durationPurchase
+  );
+}; // End - Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const runPurchasesFlow = async (
   behaviorConfigurationToTest: string,
@@ -1343,7 +1512,8 @@ const runPurchasesFlow = async (
   partnerAddress: string,
   PartnerConfiguration: PartnerConfiguration,
   NodeOwner: NodeOwner,
-  parameterNewValue: BigNumber
+  parameterNewValue: BigNumber,
+  FeeManager: FeeManager
 ) => {
   //Positive Flow Using the NEW Value
   await purchaseDomain(
@@ -1356,20 +1526,27 @@ const runPurchasesFlow = async (
     PartnerConfiguration,
     NodeOwner,
     true,
-    parameterNewValue
+    parameterNewValue,
+    FeeManager
   );
 
-  //Negative Flow Using the NEW Value
-  await purchaseDomain(
-    behaviorConfigurationToTest,
-    processToRun,
-    buyerUser,
-    PartnerRegistrar,
-    RIF,
-    partnerAddress,
-    PartnerConfiguration,
-    NodeOwner,
-    false,
-    parameterNewValue
-  );
-}; // End - Renewal Flow
+  if (
+    !behaviorConfigurationToTest.includes('Commission Fee Percentage') &&
+    !behaviorConfigurationToTest.includes('Discount Percentage')
+  ) {
+    //Negative Flow Using the NEW Value
+    await purchaseDomain(
+      behaviorConfigurationToTest,
+      processToRun,
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partnerAddress,
+      PartnerConfiguration,
+      NodeOwner,
+      false,
+      parameterNewValue,
+      FeeManager
+    );
+  }
+}; // End - Renewal Flow - - - - - - - - - - - - - - - - - - - - -

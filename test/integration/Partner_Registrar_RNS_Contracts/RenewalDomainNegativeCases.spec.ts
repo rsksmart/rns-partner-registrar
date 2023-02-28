@@ -18,6 +18,7 @@ import {
   NodeOwner,
   ERC677Token,
   PartnerRenewer,
+  PartnerConfiguration,
 } from 'typechain-types';
 
 import {
@@ -31,6 +32,7 @@ import {
 } from './RegisterDomain.spec';
 import { MockContract } from '@defi-wonderland/smock';
 import { oneRBTC } from 'test/utils/mock.utils';
+import { partnerConfiguration } from 'typechain-types/contracts';
 
 describe('Renewal Name - Negative Test Cases', () => {
   it('Test Case No. 11 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
@@ -84,7 +86,8 @@ describe('Renewal Name - Negative Test Cases', () => {
       buyerUser,
       moneyBeforePurchase,
       duration,
-      RIF
+      RIF,
+      PartnerConfiguration
     );
 
     const moneyBeforeRenovation = await RIF.balanceOf(buyerUser.address);
@@ -189,7 +192,8 @@ describe('Renewal Name - Negative Test Cases', () => {
       buyerUser,
       moneyBeforePurchase,
       duration,
-      RIF
+      RIF,
+      PartnerConfiguration
     );
 
     //Expired (Should Be Purchased As 1st Time)
@@ -411,7 +415,8 @@ describe('Renewal Name - Negative Test Cases', () => {
       buyerUser,
       moneyBeforePurchase,
       duration,
-      RIF
+      RIF,
+      PartnerConfiguration
     );
 
     const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
@@ -447,7 +452,8 @@ describe('Renewal Name - Negative Test Cases', () => {
       durationforRenovation,
       numberOfMonthsToSimulate,
       currentTimeWhenPurchased,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -514,7 +520,8 @@ describe('Renewal Name - Negative Test Cases', () => {
       buyerUser,
       moneyBeforePurchase,
       duration,
-      RIF
+      RIF,
+      PartnerConfiguration
     );
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -558,7 +565,8 @@ describe('Renewal Name - Negative Test Cases', () => {
       durationforRenovation,
       numberOfMonthsToSimulate,
       currentTimeWhenPurchased,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 }); // End - Describe
@@ -569,7 +577,8 @@ export const validatePurchaseExpectedResults = async (
   buyerUser: SignerWithAddress,
   moneyBeforePurchase: BigNumber,
   duration: BigNumber,
-  RIF: MockContract<ERC677Token>
+  RIF: MockContract<ERC677Token>,
+  PartnerConfiguration: PartnerConfiguration
 ) => {
   //Validate Domain Name ISN'T Available anymore
   await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
@@ -584,9 +593,10 @@ export const validatePurchaseExpectedResults = async (
   //Validate the correct money amount from the buyer
   const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-  validateCorrectMoneyAmountWasPayed(
+  await validateCorrectMoneyAmountWasPayed(
     duration,
     moneyAfterPurchase,
-    moneyBeforePurchase
+    moneyBeforePurchase,
+    PartnerConfiguration
   );
 };

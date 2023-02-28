@@ -7,7 +7,7 @@ import {
   FEE_PERCENTAGE,
 } from '../utils/constants';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
   calculateNamePriceByDuration,
@@ -27,10 +27,12 @@ import {
   ERC677Token,
   PartnerRenewer,
   FeeManager,
+  PartnerConfiguration,
 } from 'typechain-types';
 import { MockContract } from '@defi-wonderland/smock';
 import { ConstructorFragment } from '@ethersproject/abi';
 import { calculatePercentageWPrecision, oneRBTC } from '../../utils/mock.utils';
+import { partnerConfiguration } from 'typechain-types/contracts';
 
 describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
   it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance; Commision should NOT be deposited', async () => {
@@ -125,7 +127,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -202,7 +205,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     //Validate the commission was payed to the referred partner
@@ -211,7 +215,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -230,7 +235,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       false,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -305,7 +311,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -313,7 +320,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -334,7 +342,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       true,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -411,7 +420,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -419,7 +429,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -438,7 +449,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       false,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -516,7 +528,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -524,7 +537,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -545,7 +559,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       false,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -622,7 +637,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -630,7 +646,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -674,7 +691,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -693,7 +711,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       true,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -772,7 +791,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -780,7 +800,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -825,7 +846,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -844,7 +866,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       false,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -923,7 +946,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -931,7 +955,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -976,7 +1001,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -995,7 +1021,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       false,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -1072,7 +1099,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -1080,7 +1108,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -1099,7 +1128,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       false,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -1174,7 +1204,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -1182,7 +1213,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -1201,7 +1233,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       true,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -1280,7 +1313,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -1288,7 +1322,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -1307,7 +1342,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       NodeOwner,
       moneyAfterPurchase,
       false,
-      duration
+      duration,
+      PartnerConfiguration
     );
   }); //it
 
@@ -1406,7 +1442,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -1502,7 +1539,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -1594,7 +1632,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -1687,7 +1726,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -1780,7 +1820,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -1874,7 +1915,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -1966,7 +2008,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -2061,7 +2104,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      false
+      false,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, true);
@@ -2137,7 +2181,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -2145,7 +2190,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -2220,7 +2266,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
-      moneyBeforePurchase
+      moneyBeforePurchase,
+      PartnerConfiguration
     );
 
     await validateCommissionPayedToPartner(
@@ -2228,7 +2275,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address,
       balanceBeforePurchaseCommision,
       FeeManager,
-      true
+      true,
+      PartnerConfiguration
     );
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
@@ -2279,21 +2327,33 @@ export const validatePurchasedDomainHasCorrectOwner = async (
   ).to.be.equals(owner.address);
 };
 
-//Validate the correct money amount from the buyer (SERGIO)
-
+//Validate the correct money amount from the buyer
 export const validateCorrectMoneyAmountWasPayed = async (
   duration: BigNumber,
   moneyAfterPurchase: BigNumber,
-  moneyBeforePurchase: BigNumber
+  moneyBeforePurchase: BigNumber,
+  PartnerConfiguration: PartnerConfiguration
 ) => {
-  const expectedPrice = calculateNamePriceByDuration(duration);
+  const discountPercentage = await PartnerConfiguration.getDiscount();
+
+  let expectedPrice = calculateNamePriceByDuration(duration); //TODO - Confirm With Sergio!
+
+  const oneHundred = BigNumber.from('100');
+
+  const discountedAmount = expectedPrice
+    .mul(discountPercentage)
+    .div(oneHundred);
+
+  expectedPrice = expectedPrice.sub(discountedAmount);
 
   const expectedBalance = moneyBeforePurchase.sub(expectedPrice);
 
   expect(
     moneyAfterPurchase + '',
-    'BUG: The spent balance is incorrect!'
+    'BUG: The spent balance is incorrect (The balance after purchase is incorrect)!'
   ).to.be.equals(expectedBalance + '');
+
+  console.log('Amount Payed With Discount Successful!');
 };
 
 export const validateNegativeFlowExpectedResults = async (
@@ -2341,7 +2401,8 @@ export const validateRenewalExpectedResults = async (
   duration: BigNumber,
   numberOfMonthsToSimulate: BigNumber,
   currentTimeWhenPurchased: BigNumber,
-  durationPurchase: BigNumber
+  durationPurchase: BigNumber,
+  PartnerConfiguration: PartnerConfiguration
 ) => {
   await validatePurchasedDomainHasCorrectOwner(
     domainName,
@@ -2358,7 +2419,8 @@ export const validateRenewalExpectedResults = async (
   await validateCorrectMoneyAmountWasPayed(
     duration,
     moneyAfterRenovation,
-    moneyBeforeRenovation
+    moneyBeforeRenovation,
+    PartnerConfiguration
   );
 
   console.log('Renewal Flow - User payed the correct price! (OK)');
@@ -2406,7 +2468,8 @@ export const runRenewalTestFlow = async (
   NodeOwner: NodeOwner,
   moneyAfterPurchase: BigNumber,
   isOneStep: boolean,
-  durationPurchase: BigNumber
+  durationPurchase: BigNumber,
+  PartnerConfiguration: PartnerConfiguration
 ) => {
   const namePrice = await calculateNamePriceByDuration(duration);
 
@@ -2447,7 +2510,8 @@ export const runRenewalTestFlow = async (
     duration,
     numberOfMonthsToSimulate,
     currentTimeWhenPurchased,
-    durationPurchase
+    durationPurchase,
+    PartnerConfiguration
   );
 }; //End - Renewal Flow
 
@@ -2456,32 +2520,45 @@ export const validateCommissionPayedToPartner = async (
   partnerAddress: string,
   balanceBeforePurchaseCommision: BigNumber,
   FeeManager: FeeManager,
-  wasPurchaseSuccessful: boolean
+  wasPurchaseSuccessful: boolean,
+  PartnerConfiguration: Contract
 ) => {
   const currentBalanceAfterPurchaseCommision = await FeeManager.getBalance(
     partnerAddress
   );
+
+  const feePercentage = await PartnerConfiguration.getFeePercentage();
+
+  console.log('Current Fee Percentage: ' + feePercentage);
 
   if (wasPurchaseSuccessful) {
     const expectedPrice = calculateNamePriceByDuration(duration);
 
     const expectedCommision = calculatePercentageWPrecision(
       expectedPrice,
-      FEE_PERCENTAGE
+      feePercentage
     );
+
+    console.log('Current Fee Amount: ' + expectedCommision);
 
     const expectedBalanceAfterPurchaseCommision =
       balanceBeforePurchaseCommision.add(expectedCommision);
 
-    expect(+currentBalanceAfterPurchaseCommision).to.be.equals(
-      +expectedBalanceAfterPurchaseCommision
+    console.log(
+      'Current Partner Fee Balance: ' + currentBalanceAfterPurchaseCommision
     );
+
+    expect(
+      +currentBalanceAfterPurchaseCommision,
+      'BUG: Fee balance of the Partner was NOT updated as expected!'
+    ).to.be.equals(+expectedBalanceAfterPurchaseCommision);
 
     console.log('SUCCESSFUL PURCHASE - Comission Validation Successful!');
   } else {
-    expect(+currentBalanceAfterPurchaseCommision).to.be.equals(
-      +balanceBeforePurchaseCommision
-    );
+    expect(
+      +currentBalanceAfterPurchaseCommision,
+      'BUG: Fee Balance of the Partner was altered, despite of the failed purchase!'
+    ).to.be.equals(+balanceBeforePurchaseCommision);
 
     console.log('FAILED PURCHASE - Comission Validation Successful!');
   }
