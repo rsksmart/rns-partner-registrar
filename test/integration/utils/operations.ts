@@ -465,11 +465,14 @@ export const oneStepDomainOwnershipRenewal = async (
   numberOfMonths: BigNumber,
   makeTimePass = true
 ) => {
-  if (makeTimePass) {
-    simulateMonthsTime(numberOfMonths);
+  if (makeTimePass && numberOfMonths.gt(BigNumber.from('0'))) {
+    await simulateMonthsTime(numberOfMonths);
   }
+
   const renewData = getRenewData(domain, duration, partnerAddress);
+
   const RIFAsNameOwner = RIF.connect(nameOwner);
+
   await (
     await RIFAsNameOwner.transferAndCall(
       PartnerRenewer.address,
@@ -478,7 +481,7 @@ export const oneStepDomainOwnershipRenewal = async (
     )
   ).wait();
 
-  console.log('RNS Log - One Step Renewal executed! ');
+  console.log('RNS Log - One Step Renewal Executed! ');
 }; // End - One Step Renewal
 
 export const TwoStepsDomainOwnershipRenewal = async (
@@ -493,7 +496,7 @@ export const TwoStepsDomainOwnershipRenewal = async (
   makeTimePass = true
 ) => {
   if (makeTimePass) {
-    simulateMonthsTime(numberOfMonths);
+    await simulateMonthsTime(numberOfMonths);
   }
 
   const RIFAsNameOwner = RIF.connect(nameOwner);

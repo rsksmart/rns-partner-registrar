@@ -2336,7 +2336,7 @@ export const validateCorrectMoneyAmountWasPayed = async (
 ) => {
   const discountPercentage = await PartnerConfiguration.getDiscount();
 
-  let expectedPrice = calculateNamePriceByDuration(duration); //TODO - Confirm With Sergio!
+  let expectedPrice = calculateNamePriceByDuration(duration);
 
   const oneHundred = oneRBTC.mul(100);
 
@@ -2399,7 +2399,6 @@ export const validateRenewalExpectedResults = async (
   moneyBeforeRenovation: BigNumber,
   moneyAfterRenovation: BigNumber,
   duration: BigNumber,
-  numberOfMonthsToSimulate: BigNumber,
   currentTimeWhenPurchased: BigNumber,
   durationPurchase: BigNumber,
   PartnerConfiguration: PartnerConfiguration
@@ -2434,16 +2433,13 @@ export const validateRenewalExpectedResults = async (
 
   const secondsAtAYear = BigNumber.from('31536000');
 
-  const simulatedTime = numberOfMonthsToSimulate
-    .mul(secondsAtAYear)
-    .div(BigNumber.from('12'));
   const renewalDurationInSeconds = duration.mul(secondsAtAYear);
 
   const purchaseDurationInSeconds = durationPurchase.mul(secondsAtAYear);
 
   const expectedExpirationAfterRenovation = currentTimeWhenPurchased
     .add(renewalDurationInSeconds)
-    .add(purchaseDurationInSeconds); // Me falta sumar el año de compra
+    .add(purchaseDurationInSeconds); // I need also to include the number of years of the initial purchase
 
   const timeDifference = currentExpirationTimeAfterRenovation
     .sub(expectedExpirationAfterRenovation)
@@ -2508,7 +2504,6 @@ export const runRenewalTestFlow = async (
     moneyAfterPurchase,
     moneyAfterRenovation,
     duration,
-    numberOfMonthsToSimulate,
     currentTimeWhenPurchased,
     durationPurchase,
     PartnerConfiguration

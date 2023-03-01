@@ -14,6 +14,7 @@ import { oneRBTC } from 'test/utils/mock.utils';
 import {
   calculateNamePriceByDuration,
   generateRandomStringWithLettersAndNumbers,
+  nameToTokenId,
   oneStepDomainOwnershipRenewal,
   purchaseDomainUsingTransferAndCallWithoutCommit,
   purchaseDomainWithCommit,
@@ -665,14 +666,52 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = oneRBTC.mul(5);
+    const behaviorConfigurationToTest = 'Commission Fee Percentage';
+
+    const parameterNewValue = oneRBTC.mul(30);
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Commission Fee Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
+    );
+
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 2 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    //Renewal Process
+    await runRenovateFlow(
+      'Renewal Of 1 Step',
+      NodeOwner,
+      regularUser,
+      PartnerRenewer,
+      RIF,
+      partner.address,
+      currentTimeWhenPurchased,
+      BigNumber.from(durationPurchase),
+      PartnerConfiguration,
+      FeeManager,
+      domainName
     );
   }); //it
 
@@ -690,14 +729,52 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = oneRBTC.mul(5);
+    const behaviorConfigurationToTest = 'Commission Fee Percentage';
+
+    const parameterNewValue = oneRBTC.mul(20);
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Commission Fee Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
+    );
+
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 3 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    //Renewal Process
+    await runRenovateFlow(
+      'Renewal Of 2 Steps',
+      NodeOwner,
+      regularUser,
+      PartnerRenewer,
+      RIF,
+      partner.address,
+      currentTimeWhenPurchased,
+      BigNumber.from(durationPurchase),
+      PartnerConfiguration,
+      FeeManager,
+      domainName
     );
   }); //it
 
@@ -768,7 +845,7 @@ describe('Configurable Partner Behavior', () => {
 
     const behaviorConfigurationToTest = 'Discount Percentage';
 
-    const parameterNewValue = 25;
+    const parameterNewValue = oneRBTC.mul(25);
 
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
@@ -809,7 +886,7 @@ describe('Configurable Partner Behavior', () => {
 
     const behaviorConfigurationToTest = 'Discount Percentage';
 
-    const parameterNewValue = 10;
+    const parameterNewValue = oneRBTC.mul(10);
 
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
@@ -845,14 +922,52 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = BigNumber.from('6');
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = oneRBTC.mul(20);
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Discount Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
+    );
+
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 3 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    //Renewal Process
+    await runRenovateFlow(
+      'Renewal Of 1 Step',
+      NodeOwner,
+      regularUser,
+      PartnerRenewer,
+      RIF,
+      partner.address,
+      currentTimeWhenPurchased,
+      BigNumber.from(durationPurchase),
+      PartnerConfiguration,
+      FeeManager,
+      domainName
     );
   }); //it
 
@@ -870,14 +985,52 @@ describe('Configurable Partner Behavior', () => {
       NodeOwner,
       RIF,
       PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
     } = await loadFixture(initialSetup);
 
-    const parameterNewValue = BigNumber.from('6');
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = oneRBTC.mul(5);
 
     await runPartnerBehaviorConfigCRUDProcess(
-      'Discount Percentage',
+      behaviorConfigurationToTest,
       parameterNewValue,
       PartnerConfiguration
+    );
+
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 3 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    //Renewal Process
+    await runRenovateFlow(
+      'Renewal Of 2 Steps',
+      NodeOwner,
+      regularUser,
+      PartnerRenewer,
+      RIF,
+      partner.address,
+      currentTimeWhenPurchased,
+      BigNumber.from(durationPurchase),
+      PartnerConfiguration,
+      FeeManager,
+      domainName
     );
   }); //it
 
@@ -1415,6 +1568,11 @@ const purchaseDomain = async (
     console.log(
       'User Balance AFTER Purchase: ' + (await RIF.balanceOf(buyerUser.address))
     );
+
+    console.log(
+      'Expiration TIme Of the Name: ' +
+        (await NodeOwner.expirationTime(nameToTokenId(domainName)))
+    );
   } // If - Valid Parameter Flow
   else {
     //Validate the previous process failed this time and the contract threw a coherent error message.
@@ -1440,30 +1598,36 @@ const purchaseDomain = async (
     usedValidParameterValue,
     PartnerConfiguration
   );
+
+  return domainName + ';' + duration;
 }; // End - Purchase Flow - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-const renovateDomain = async (
+const runRenovateFlow = async (
   typeOfProcess: string,
   NodeOwner: NodeOwner,
   buyerUser: SignerWithAddress,
   partnerRenewer: PartnerRenewer,
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
-  parameterNewValue: string,
   currentTimeWhenPurchased: BigNumber,
-  durationPurchase: BigNumber
+  durationPurchase: BigNumber,
+  PartnerConfiguration: PartnerConfiguration,
+  FeeManager: FeeManager,
+  domainName: string
 ) => {
-  const domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
-
-  const duration = BigNumber.from('2');
-
-  const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+  const duration = BigNumber.from('3');
 
   const numberOfMonthsToSimulate = BigNumber.from('12');
 
   const namePrice = await calculateNamePriceByDuration(duration);
 
   const moneyBeforeRenovation = await RIF.balanceOf(buyerUser.address);
+
+  const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+    partnerAddress
+  );
+
+  console.log('Renewal Duration: ' + duration);
 
   if (typeOfProcess.includes('Renewal Of 1 Step')) {
     console.log('Renewal Of 1 Step - In Progress..');
@@ -1479,7 +1643,7 @@ const renovateDomain = async (
       numberOfMonthsToSimulate
     );
 
-    console.log('Renewal Of 1 Step - Successful');
+    console.log('Renewal Of 1 Step - Done');
   } else if (typeOfProcess.includes('Renewal Of 2 Steps')) {
     console.log('Renewal Of 2 Steps - In Progress..');
 
@@ -1494,7 +1658,7 @@ const renovateDomain = async (
       numberOfMonthsToSimulate
     );
 
-    console.log('Renewal Of 2 Steps - Successful');
+    console.log('Renewal Of 2 Steps - Done');
   }
 
   const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
@@ -1506,9 +1670,18 @@ const renovateDomain = async (
     moneyBeforeRenovation,
     moneyAfterRenovation,
     duration,
-    numberOfMonthsToSimulate,
     currentTimeWhenPurchased,
-    durationPurchase
+    durationPurchase,
+    PartnerConfiguration
+  );
+
+  await validateCommissionPayedToPartner(
+    duration,
+    partnerAddress,
+    balanceBeforePurchaseCommision,
+    FeeManager,
+    true,
+    PartnerConfiguration
   );
 }; // End - Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1525,7 +1698,7 @@ const runPurchasesFlow = async (
   FeeManager: FeeManager
 ) => {
   //Positive Flow Using the NEW Value
-  await purchaseDomain(
+  const domainAndDurationUsed = await purchaseDomain(
     behaviorConfigurationToTest,
     processToRun,
     buyerUser,
@@ -1558,4 +1731,6 @@ const runPurchasesFlow = async (
       FeeManager
     );
   }
+
+  return domainAndDurationUsed;
 }; // End - Renewal Flow - - - - - - - - - - - - - - - - - - - - -

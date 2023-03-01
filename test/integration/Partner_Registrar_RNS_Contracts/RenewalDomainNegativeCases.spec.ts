@@ -450,7 +450,6 @@ describe('Renewal Name - Negative Test Cases', () => {
       moneyBeforeRenovation,
       moneyAfterRenovation,
       durationforRenovation,
-      numberOfMonthsToSimulate,
       currentTimeWhenPurchased,
       duration,
       PartnerConfiguration
@@ -563,7 +562,6 @@ describe('Renewal Name - Negative Test Cases', () => {
       moneyBeforeRenovation,
       moneyAfterRenovation,
       durationforRenovation,
-      numberOfMonthsToSimulate,
       currentTimeWhenPurchased,
       duration,
       PartnerConfiguration
