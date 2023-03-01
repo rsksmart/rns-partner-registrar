@@ -54,7 +54,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -120,7 +120,7 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -160,7 +160,7 @@ export const purchaseDomainWithoutCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   //step 1
   await (
@@ -231,7 +231,7 @@ export const purchaseDomainWithCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
-  validateNamePrice(duration, currentNamePrice);
+  validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   //step 2
   await (
@@ -299,20 +299,33 @@ export const generateRandomStringWithLettersAndNumbers = (
     }
   }
 
-  console.log('RNS Log - Generated Name: ' + domainName);
+  //console.log('RNS Log - Generated Name: ' + domainName);
 
   if (length == 0) return '';
   else return domainName;
 };
 
 //Validate given price is correct
-export const validateNamePrice = (
+export const validateNamePrice = async (
   duration: BigNumber,
-  currentNamePrice: BigNumber
+  currentNamePrice: BigNumber,
+  PartnerConfiguration: PartnerConfiguration
 ) => {
-  const expectPrice = calculateNamePriceByDuration(duration);
+  let expectPrice = calculateNamePriceByDuration(duration); //TODO - Confirm With Sergio!
 
-  console.log('Expected: ' + expectPrice + '. Current: ' + currentNamePrice);
+  const discountPercentage = await PartnerConfiguration.getDiscount();
+
+  const oneHundred = oneRBTC.mul(100);
+
+  const discountedAmount = expectPrice.mul(discountPercentage).div(oneHundred);
+
+  console.log('Amount To Discount: ' + discountedAmount);
+
+  expectPrice = expectPrice.sub(discountedAmount);
+
+  console.log(
+    'Expected Price: ' + expectPrice + '. Current Price: ' + currentNamePrice
+  );
 
   expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(
     +currentNamePrice
@@ -452,11 +465,14 @@ export const oneStepDomainOwnershipRenewal = async (
   numberOfMonths: BigNumber,
   makeTimePass = true
 ) => {
-  if (makeTimePass) {
-    simulateMonthsTime(numberOfMonths);
+  if (makeTimePass && numberOfMonths.gt(BigNumber.from('0'))) {
+    await simulateMonthsTime(numberOfMonths);
   }
+
   const renewData = getRenewData(domain, duration, partnerAddress);
+
   const RIFAsNameOwner = RIF.connect(nameOwner);
+
   await (
     await RIFAsNameOwner.transferAndCall(
       PartnerRenewer.address,
@@ -465,7 +481,7 @@ export const oneStepDomainOwnershipRenewal = async (
     )
   ).wait();
 
-  console.log('RNS Log - One Step Renewal executed! ');
+  console.log('RNS Log - One Step Renewal Executed! ');
 }; // End - One Step Renewal
 
 export const TwoStepsDomainOwnershipRenewal = async (
@@ -480,7 +496,7 @@ export const TwoStepsDomainOwnershipRenewal = async (
   makeTimePass = true
 ) => {
   if (makeTimePass) {
-    simulateMonthsTime(numberOfMonths);
+    await simulateMonthsTime(numberOfMonths);
   }
 
   const RIFAsNameOwner = RIF.connect(nameOwner);
