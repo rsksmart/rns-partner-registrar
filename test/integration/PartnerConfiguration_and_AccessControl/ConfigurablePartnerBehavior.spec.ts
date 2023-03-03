@@ -1334,7 +1334,7 @@ describe('Configurable Partner Behavior', () => {
   }); //it
 }); //describe - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-const runPartnerBehaviorConfigCRUDProcess = async (
+export const runPartnerBehaviorConfigCRUDProcess = async (
   parameterName: string,
   parameterNewValue: BigNumber,
   PartnerConfiguration: Contract
@@ -1382,7 +1382,7 @@ const runPartnerBehaviorConfigCRUDProcess = async (
   );
 }; // End - Partner Behavior CRUD Flow - - - - - - - - - - - - - - - - -
 
-const getPartnerParameterValue = async (
+export const getPartnerParameterValue = async (
   parameterName: string,
   PartnerConfiguration: Contract
 ) => {
