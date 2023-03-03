@@ -24,12 +24,12 @@ import {
 import { SECRET } from '../utils/constants';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { MockContract } from '@defi-wonderland/smock';
-import { validatePurchaseExpectedResults } from './RenewalDomainNegativeCases.spec';
+import { validatePurchaseExpectedResults } from '../Partner_Registrar_RNS_Contracts/RenewalDomainNegativeCases.spec';
 import {
   validateCommissionPayedToPartner,
   validateNegativeFlowExpectedResults,
   validateRenewalExpectedResults,
-} from './RegisterDomain.spec';
+} from '../Partner_Registrar_RNS_Contracts/RegisterDomain.spec';
 
 describe('Configurable Partner Behavior', () => {
   it('Test Case No. 1 - The Minimum Domain Length value should be successfully updated; The Purchase Of 1 Step was succesful when the configuration was respected; The Purchase Of 1 Step should throw an error when the new configuration was NOT respected', async () => {
@@ -47,7 +47,13 @@ describe('Configurable Partner Behavior', () => {
       RIF,
       PartnerConfiguration,
       FeeManager,
+      highLevelOperator,
     } = await loadFixture(initialSetup);
+
+    const PartnerConfigurationAsHLO =
+      PartnerConfiguration.connect(highLevelOperator);
+
+    console.log('Login As High Level Operator - Done');
 
     const behaviorConfigurationToTest = 'Minimum Domain Length';
 
@@ -56,7 +62,7 @@ describe('Configurable Partner Behavior', () => {
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
-      PartnerConfiguration
+      PartnerConfigurationAsHLO
     );
 
     await runPurchasesFlow(
@@ -66,7 +72,7 @@ describe('Configurable Partner Behavior', () => {
       PartnerRegistrar,
       RIF,
       partner.address,
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       NodeOwner,
       parameterNewValue,
       FeeManager
@@ -210,16 +216,22 @@ describe('Configurable Partner Behavior', () => {
       RIF,
       PartnerConfiguration,
       FeeManager,
+      highLevelOperator,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Maximum Domain Length';
 
     const parameterNewValue = BigNumber.from('10');
 
+    const PartnerConfigurationAsHLO =
+      PartnerConfiguration.connect(highLevelOperator);
+
+    console.log('Login As High Level Operator - Done');
+
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
-      PartnerConfiguration
+      PartnerConfigurationAsHLO
     );
 
     await runPurchasesFlow(
@@ -229,7 +241,7 @@ describe('Configurable Partner Behavior', () => {
       PartnerRegistrar,
       RIF,
       partner.address,
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       NodeOwner,
       parameterNewValue,
       FeeManager
@@ -374,16 +386,22 @@ describe('Configurable Partner Behavior', () => {
       RIF,
       PartnerConfiguration,
       FeeManager,
+      highLevelOperator,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Minimum Duration';
 
     const parameterNewValue = BigNumber.from('4');
 
+    const PartnerConfigurationAsHLO =
+      PartnerConfiguration.connect(highLevelOperator);
+
+    console.log('Login As High Level Operator - Done');
+
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
-      PartnerConfiguration
+      PartnerConfigurationAsHLO
     );
 
     await runPurchasesFlow(
@@ -393,7 +411,7 @@ describe('Configurable Partner Behavior', () => {
       PartnerRegistrar,
       RIF,
       partner.address,
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       NodeOwner,
       parameterNewValue,
       FeeManager
@@ -415,6 +433,7 @@ describe('Configurable Partner Behavior', () => {
       RIF,
       PartnerConfiguration,
       FeeManager,
+      highLevelOperator,
     } = await loadFixture(initialSetup);
 
     await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
@@ -423,10 +442,15 @@ describe('Configurable Partner Behavior', () => {
 
     const parameterNewValue = BigNumber.from('6');
 
+    const PartnerConfigurationAsHLO =
+      PartnerConfiguration.connect(highLevelOperator);
+
+    console.log('Login As High Level Operator - Done');
+
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
-      PartnerConfiguration
+      PartnerConfigurationAsHLO
     );
 
     await runPurchasesFlow(
@@ -436,7 +460,7 @@ describe('Configurable Partner Behavior', () => {
       PartnerRegistrar,
       RIF,
       partner.address,
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       NodeOwner,
       parameterNewValue,
       FeeManager
@@ -668,16 +692,22 @@ describe('Configurable Partner Behavior', () => {
       PartnerConfiguration,
       FeeManager,
       PartnerRenewer,
+      highLevelOperator,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Commission Fee Percentage';
 
     const parameterNewValue = oneRBTC.mul(30);
 
+    const PartnerConfigurationAsHLO =
+      PartnerConfiguration.connect(highLevelOperator);
+
+    console.log('Login As High Level Operator - Done');
+
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
-      PartnerConfiguration
+      PartnerConfigurationAsHLO
     );
 
     const domainNameAndPurchaseDuration = await runPurchasesFlow(
@@ -687,7 +717,7 @@ describe('Configurable Partner Behavior', () => {
       PartnerRegistrar,
       RIF,
       partner.address,
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       NodeOwner,
       parameterNewValue,
       FeeManager
@@ -709,7 +739,7 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       currentTimeWhenPurchased,
       BigNumber.from(durationPurchase),
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       FeeManager,
       domainName
     );
@@ -987,16 +1017,22 @@ describe('Configurable Partner Behavior', () => {
       PartnerConfiguration,
       FeeManager,
       PartnerRenewer,
+      highLevelOperator,
     } = await loadFixture(initialSetup);
 
     const behaviorConfigurationToTest = 'Discount Percentage';
 
     const parameterNewValue = oneRBTC.mul(5);
 
+    const PartnerConfigurationAsHLO =
+      PartnerConfiguration.connect(highLevelOperator);
+
+    console.log('Login As High Level Operator - Done');
+
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
-      PartnerConfiguration
+      PartnerConfigurationAsHLO
     );
 
     const domainNameAndPurchaseDuration = await runPurchasesFlow(
@@ -1006,7 +1042,7 @@ describe('Configurable Partner Behavior', () => {
       PartnerRegistrar,
       RIF,
       partner.address,
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       NodeOwner,
       parameterNewValue,
       FeeManager
@@ -1028,7 +1064,7 @@ describe('Configurable Partner Behavior', () => {
       partner.address,
       currentTimeWhenPurchased,
       BigNumber.from(durationPurchase),
-      PartnerConfiguration,
+      PartnerConfigurationAsHLO,
       FeeManager,
       domainName
     );

@@ -2,7 +2,11 @@ import { ethers } from 'hardhat';
 import { deployContract, Factory } from '../../../utils/deployment.utils';
 import { deployContract as deployContractAsMock } from '../../utils/mock.utils';
 import { oneRBTC } from '../../utils/mock.utils';
-import { NodeOwner, RegistrarAccessControl__factory } from 'typechain-types';
+import {
+  NodeOwner,
+  RegistrarAccessControl,
+  RegistrarAccessControl__factory,
+} from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
 import { ERC677Token__factory } from 'typechain-types';
@@ -26,6 +30,7 @@ export const initialSetup = async () => {
   const pool = signers[4];
   const regularUser = signers[5];
   const notWhitelistedPartner = signers[6];
+  const highLevelOperator = signers[7];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -76,11 +81,8 @@ export const initialSetup = async () => {
     }
   );
 
-  const accessControl =
-    await deployContractAsMock<RegistrarAccessControl__factory>(
-      'RegistrarAccessControl',
-      []
-    );
+  const { contract: accessControl } =
+    await deployContract<RegistrarAccessControl>('RegistrarAccessControl', {});
 
   const { contract: PartnerManager } = await deployContract<PartnerManager>(
     'PartnerManager',
@@ -176,6 +178,10 @@ export const initialSetup = async () => {
       minCommitmentAge: 0,
     });
 
+  await (
+    await accessControl.addHighLevelOperator(highLevelOperator.address)
+  ).wait();
+
   return {
     NodeOwner,
     RIF,
@@ -195,5 +201,7 @@ export const initialSetup = async () => {
     alternatePartnerConfiguration,
     notWhitelistedPartner,
     PartnerRenewer,
+    accessControl,
+    highLevelOperator,
   };
 };
