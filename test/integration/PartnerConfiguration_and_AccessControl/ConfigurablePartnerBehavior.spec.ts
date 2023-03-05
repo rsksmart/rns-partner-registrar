@@ -1441,7 +1441,8 @@ const purchaseDomain = async (
   NodeOwner: NodeOwner,
   usedValidParameterValue: boolean,
   newParamValue: BigNumber,
-  FeeManager: FeeManager
+  FeeManager: FeeManager,
+  calledFromAccessControl: boolean = false
 ) => {
   let duration = BigNumber.from('2');
 
@@ -1477,6 +1478,22 @@ const purchaseDomain = async (
     partnerConfigurationToTest.includes('Maximum Duration')
   )
     duration = newParamValue.add(1);
+
+  if (calledFromAccessControl) {
+    duration = BigNumber.from(
+      (await getPartnerParameterValue(
+        'Minimum Duration',
+        PartnerConfiguration
+      )) + ''
+    );
+
+    domainLength = BigNumber.from(
+      (await getPartnerParameterValue(
+        'Minimum Domain Length',
+        PartnerConfiguration
+      )) + ''
+    );
+  }
 
   console.log('Current Duration: ' + duration);
 
@@ -1638,7 +1655,7 @@ const purchaseDomain = async (
   return domainName + ';' + duration;
 }; // End - Purchase Flow - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-const runRenovateFlow = async (
+export const runRenovateFlow = async (
   typeOfProcess: string,
   NodeOwner: NodeOwner,
   buyerUser: SignerWithAddress,
@@ -1721,7 +1738,7 @@ const runRenovateFlow = async (
   );
 }; // End - Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-const runPurchasesFlow = async (
+export const runPurchasesFlow = async (
   behaviorConfigurationToTest: string,
   processToRun: string,
   buyerUser: SignerWithAddress,
@@ -1731,7 +1748,8 @@ const runPurchasesFlow = async (
   PartnerConfiguration: PartnerConfiguration,
   NodeOwner: NodeOwner,
   parameterNewValue: BigNumber,
-  FeeManager: FeeManager
+  FeeManager: FeeManager,
+  calledFromAccessControl: boolean = false
 ) => {
   //Positive Flow Using the NEW Value
   const domainAndDurationUsed = await purchaseDomain(
@@ -1745,7 +1763,8 @@ const runPurchasesFlow = async (
     NodeOwner,
     true,
     parameterNewValue,
-    FeeManager
+    FeeManager,
+    calledFromAccessControl
   );
 
   if (
@@ -1764,7 +1783,8 @@ const runPurchasesFlow = async (
       NodeOwner,
       false,
       parameterNewValue,
-      FeeManager
+      FeeManager,
+      calledFromAccessControl
     );
   }
 

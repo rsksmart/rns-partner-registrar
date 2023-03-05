@@ -31,6 +31,7 @@ export const initialSetup = async () => {
   const regularUser = signers[5];
   const notWhitelistedPartner = signers[6];
   const highLevelOperator = signers[7];
+  const highLevelOperatorToAddOrRemove = signers[8];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -203,5 +204,6 @@ export const initialSetup = async () => {
     PartnerRenewer,
     accessControl,
     highLevelOperator,
+    highLevelOperatorToAddOrRemove,
   };
 };

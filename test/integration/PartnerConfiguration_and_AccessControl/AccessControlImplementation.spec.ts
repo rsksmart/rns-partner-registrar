@@ -1,7 +1,7 @@
 import { initialSetup } from '../utils/initialSetup';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { BigNumber, Contract, ethers } from 'ethers';
+import { BigNumber, Contract, ethers, Signer } from 'ethers';
 import {
   NodeOwner,
   ERC677Token,
@@ -9,6 +9,7 @@ import {
   PartnerRenewer,
   FeeManager,
   PartnerRegistrar,
+  PartnerConfiguration,
 } from 'typechain-types';
 import { oneRBTC } from 'test/utils/mock.utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -16,6 +17,8 @@ import { MockContract } from '@defi-wonderland/smock';
 import {
   getPartnerParameterValue,
   runPartnerBehaviorConfigCRUDProcess,
+  runPurchasesFlow,
+  runRenovateFlow,
 } from './ConfigurablePartnerBehavior.spec';
 
 describe('Access Control Implementarion', () => {
@@ -124,69 +127,319 @@ describe('Access Control Implementarion', () => {
     //User Role (LogIn):    Regular User (-)
     //Function To Execute:  Add High Level Operator
 
-    const {
-      PartnerRegistrar,
-      partner,
-      regularUser,
-      NodeOwner,
-      RIF,
-      PartnerConfiguration,
-      FeeManager,
-      highLevelOperator,
-      owner,
+    const { regularUser, accessControl, highLevelOperatorToAddOrRemove } =
+      await loadFixture(initialSetup);
+
+    await runHighLevelOperatorCRUD(
       accessControl,
-    } = await loadFixture(initialSetup);
-
-    const AccessControlAsAdmin = accessControl.connect(owner);
-
-    //await (await accessControl.addHighLevelOperator()).wait();
-
-    expect(
-      'true',
-      'BUG: The function says RNS Owner Admin is NOT Owner Role!'
-    ).to.be.equals('true');
+      regularUser,
+      highLevelOperatorToAddOrRemove,
+      'Regular User',
+      'Add'
+    );
   }); //it
 
-  it("Test Case No. 10 - The 'Add High Level Operator' function should work succesfully", async () => {
+  it("Test Case No. 10 - The 'Add High Level Operator' function should work succesfully; The New HLO should can configure the Partner Behavior, execute the Purchase Flow and the Renewal Flow", async () => {
     //Test Case No. 10
     //User Role (LogIn):    RNS Owner
     //Function To Execute:  Add High Level Operator
+
+    const {
+      owner,
+      accessControl,
+      highLevelOperatorToAddOrRemove,
+      PartnerConfiguration,
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      NodeOwner,
+      partner,
+      PartnerRenewer,
+      FeeManager,
+    } = await loadFixture(initialSetup);
+
+    await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
+
+    //Add New HLO
+    await runHighLevelOperatorCRUD(
+      accessControl,
+      owner,
+      highLevelOperatorToAddOrRemove,
+      'RNS Owner',
+      'Add'
+    );
+
+    //Using the Added HLO
+    const PartnerConfigurationAsHLO = PartnerConfiguration.connect(
+      highLevelOperatorToAddOrRemove
+    );
+
+    //Minimum Domain Length
+    let behaviorConfigurationToTest = 'Minimum Domain Length';
+
+    let parameterNewValue = BigNumber.from('10');
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfigurationAsHLO
+    );
+
+    //Maximum Domain Length
+    behaviorConfigurationToTest = 'Maximum Domain Length';
+
+    parameterNewValue = BigNumber.from('15');
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfigurationAsHLO
+    );
+
+    //Minimum Duration
+    behaviorConfigurationToTest = 'Minimum Duration';
+
+    parameterNewValue = BigNumber.from('4');
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfigurationAsHLO
+    );
+
+    //Maximum Duration
+    behaviorConfigurationToTest = 'Maximum Duration';
+
+    parameterNewValue = BigNumber.from('7');
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfigurationAsHLO
+    );
+
+    //Commission Fee Percentage
+    behaviorConfigurationToTest = 'Commission Fee Percentage';
+
+    parameterNewValue = oneRBTC.mul(30);
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfigurationAsHLO
+    );
+
+    //Discount Percentage
+    behaviorConfigurationToTest = 'Discount Percentage';
+
+    parameterNewValue = oneRBTC.mul(5);
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfigurationAsHLO
+    );
+
+    //Purchase Process
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 1 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfigurationAsHLO,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager,
+      true
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    //Renewal Process
+    await runRenovateFlow(
+      'Renewal Of 1 Steps',
+      NodeOwner,
+      regularUser,
+      PartnerRenewer,
+      RIF,
+      partner.address,
+      currentTimeWhenPurchased,
+      BigNumber.from(durationPurchase),
+      PartnerConfigurationAsHLO,
+      FeeManager,
+      domainName
+    );
   }); //it
 
   it("Test Case No. 11 - The 'Add High Level Operator' function should throw an error message", async () => {
     //Test Case No. 11
     //User Role (LogIn):    Partner Reseller (-)
     //Function To Execute:  Add High Level Operator
+
+    const { partner, accessControl, highLevelOperatorToAddOrRemove } =
+      await loadFixture(initialSetup);
+
+    await runHighLevelOperatorCRUD(
+      accessControl,
+      partner,
+      highLevelOperatorToAddOrRemove,
+      'Partner Reseller',
+      'Add'
+    );
   }); //it
 
   it("Test Case No. 12 - The 'Add High Level Operator' function should throw an error message", async () => {
     //Test Case No. 12
     //User Role (LogIn):    High Level Operator (-)
     //Function To Execute:  Add High Level Operator
+
+    const { highLevelOperator, accessControl, highLevelOperatorToAddOrRemove } =
+      await loadFixture(initialSetup);
+
+    await runHighLevelOperatorCRUD(
+      accessControl,
+      highLevelOperator,
+      highLevelOperatorToAddOrRemove,
+      'High Level Operator',
+      'Add'
+    );
   }); //it
 
   it("Test Case No. 13 - The 'Remove High Level Operator' function should throw an error message", async () => {
     //Test Case No. 13
     //User Role (LogIn):    Regular User (-)
     //Function To Execute:  Remove High Level Operator
+
+    const { regularUser, accessControl, highLevelOperatorToAddOrRemove } =
+      await loadFixture(initialSetup);
+
+    await runHighLevelOperatorCRUD(
+      accessControl,
+      regularUser,
+      highLevelOperatorToAddOrRemove,
+      'Regular User',
+      'Remove'
+    );
   }); //it
 
-  it("Test Case No. 14 - The 'Remove High Level Operator' function should work succesfully", async () => {
+  it("Test Case No. 14 - The 'Remove High Level Operator' function should work succesfully; The Removed HLO Should NOT be able to update the Partner Configuration anymore", async () => {
     //Test Case No. 14
     //User Role (LogIn):    RNS Owner
     //Function To Execute:  Remove High Level Operator
+
+    const {
+      owner,
+      accessControl,
+      highLevelOperatorToAddOrRemove,
+      PartnerConfiguration,
+    } = await loadFixture(initialSetup);
+
+    await runHighLevelOperatorCRUD(
+      accessControl,
+      owner,
+      highLevelOperatorToAddOrRemove,
+      'RNS Owner',
+      'Remove'
+    );
+
+    const userToLoginWith = highLevelOperatorToAddOrRemove;
+
+    const PartnerConfigurationLogIn =
+      PartnerConfiguration.connect(userToLoginWith);
+
+    let featureToTest = 'Discount Percentage';
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      featureToTest,
+      oneRBTC.mul(40),
+      PartnerConfigurationLogIn,
+      userToLoginWith.address
+    );
+
+    featureToTest = 'Maximum Duration';
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      featureToTest,
+      BigNumber.from('8'),
+      PartnerConfigurationLogIn,
+      userToLoginWith.address
+    );
+
+    featureToTest = 'Minimum Duration';
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      featureToTest,
+      BigNumber.from('2'),
+      PartnerConfigurationLogIn,
+      userToLoginWith.address
+    );
+
+    featureToTest = 'Maximum Domain Length';
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      featureToTest,
+      BigNumber.from('15'),
+      PartnerConfigurationLogIn,
+      userToLoginWith.address
+    );
+
+    featureToTest = 'Minimum Domain Length';
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      featureToTest,
+      BigNumber.from('4'),
+      PartnerConfigurationLogIn,
+      userToLoginWith.address
+    );
+
+    featureToTest = 'Commission Fee Percentage';
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      featureToTest,
+      oneRBTC.mul(10),
+      PartnerConfigurationLogIn,
+      userToLoginWith.address
+    );
   }); //it
 
   it("Test Case No. 15 - The 'Remove High Level Operator' function should throw an error message", async () => {
     //Test Case No. 15
     //User Role (LogIn):    Partner Reseller (-)
     //Function To Execute:  Remove High Level Operator
+
+    const { partner, accessControl, highLevelOperatorToAddOrRemove } =
+      await loadFixture(initialSetup);
+
+    await runHighLevelOperatorCRUD(
+      accessControl,
+      partner,
+      highLevelOperatorToAddOrRemove,
+      'Partner Reseller',
+      'Remove'
+    );
   }); //it
 
   it("Test Case No. 16 - The 'Remove High Level Operator' function should throw an error message", async () => {
     //Test Case No. 16
     //User Role (LogIn):    High Level Operator (-)
     //Function To Execute:  Remove High Level Operator
+
+    const { highLevelOperator, accessControl, highLevelOperatorToAddOrRemove } =
+      await loadFixture(initialSetup);
+
+    await runHighLevelOperatorCRUD(
+      accessControl,
+      highLevelOperator,
+      highLevelOperatorToAddOrRemove,
+      'High Level Operator',
+      'Remove'
+    );
   }); //it
 
   it("Test Case No. 17 - The 'Transfer Ownership' function should throw an error message", async () => {
@@ -606,3 +859,111 @@ const runPartnerBehaviorCRUDWithNoPermissions = async (
       ' --- Partner Behavior (NO Permissions) Test Successful!'
   );
 }; // End - No Permissions - Partner Behavior CRUD Flow - - - - - - - - - - - - - - - - -
+
+const runHighLevelOperatorCRUD = async (
+  originalAccessControl: Contract,
+  userToLoginWith: SignerWithAddress,
+  highLevelOperatorToAddOrRemove: SignerWithAddress,
+  userRoleName: string,
+  CRUDOperation: string
+) => {
+  let isHLO = await originalAccessControl.isHighLevelOperator(
+    highLevelOperatorToAddOrRemove.address
+  );
+
+  if (CRUDOperation.includes('Add')) expect(isHLO + '').to.be.equals('false');
+  else if (CRUDOperation.includes('Remove')) {
+    await (
+      await originalAccessControl.addHighLevelOperator(
+        highLevelOperatorToAddOrRemove.address
+      )
+    ).wait();
+
+    isHLO = await originalAccessControl.isHighLevelOperator(
+      highLevelOperatorToAddOrRemove.address
+    );
+
+    expect(isHLO + '').to.be.equals('true');
+  } else throw new Error('Invalid CRUD Operation: ' + CRUDOperation);
+
+  console.log(CRUDOperation + ' BEFORE: Is HLO? ' + isHLO + ' - Validation OK');
+
+  let errorFound: boolean = false;
+
+  try {
+    const AccessControlLogIn = await originalAccessControl.connect(
+      userToLoginWith
+    );
+
+    if (CRUDOperation.includes('Add'))
+      await (
+        await AccessControlLogIn.addHighLevelOperator(
+          highLevelOperatorToAddOrRemove.address
+        )
+      ).wait();
+    else if (CRUDOperation.includes('Remove'))
+      await (
+        await AccessControlLogIn.removeHighLevelOperator(
+          highLevelOperatorToAddOrRemove.address
+        )
+      ).wait();
+  } catch (error) {
+    errorFound = true;
+
+    const currentError = error + '';
+
+    const bugDescription =
+      'BUG: The HLO Creation (No Permissions) Error message was NOT displayed correctly';
+
+    expect(currentError, bugDescription).to.contains(
+      'reverted with custom error'
+    );
+
+    expect(currentError, bugDescription).to.contains('OnlyOwner');
+
+    expect(currentError, bugDescription).to.contains(userToLoginWith.address);
+  } //catch
+
+  isHLO = await originalAccessControl.isHighLevelOperator(
+    highLevelOperatorToAddOrRemove.address
+  );
+
+  if (
+    userRoleName.includes('Regular User') ||
+    userRoleName.includes('Partner Reseller') ||
+    userRoleName.includes('High Level Operator')
+  ) {
+    expect(
+      errorFound + '',
+      'BUG: The function did NOT throw an expected error!'
+    ).to.be.equals('true');
+
+    if (CRUDOperation.includes('Add')) expect(isHLO + '').to.be.equals('false');
+    else if (CRUDOperation.includes('Remove'))
+      expect(isHLO + '').to.be.equals('true');
+  } //if NOT RNS Owner
+  else if (userRoleName.includes('RNS Owner')) {
+    expect(
+      errorFound + '',
+      'BUG: The function Threw an unexpected error!'
+    ).to.be.equals('false');
+
+    if (CRUDOperation.includes('Add')) expect(isHLO + '').to.be.equals('true');
+    else if (CRUDOperation.includes('Remove'))
+      expect(isHLO + '').to.be.equals('false');
+  } // else RNS Owner
+  else throw new Error('Invalid User Role Operation: ' + userRoleName);
+
+  console.log(
+    CRUDOperation +
+      ' As ' +
+      userRoleName +
+      ' - Error Threw? ' +
+      errorFound +
+      ' - Validation OK'
+  );
+
+  console.log(
+    CRUDOperation + ' AFTER: Is a HLO? ' + isHLO + ' - Validation OK'
+  );
+}; // End - run HighLevelOperator CRUD - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
