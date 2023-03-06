@@ -8,7 +8,7 @@ export interface Factory<C extends Contract> extends ContractFactory {
 
 export const deployContract = async <C extends Contract, A = {}>(
   contractName: string,
-  constructorArgs: A,
+  constructorArgs: A extends {} ? A : {},
   factory?: Factory<C>,
   signer?: SignerWithAddress
 ): Promise<{
