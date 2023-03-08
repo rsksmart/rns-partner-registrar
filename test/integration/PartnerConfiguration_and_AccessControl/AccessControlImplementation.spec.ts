@@ -16,10 +16,14 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { MockContract } from '@defi-wonderland/smock';
 import {
   getPartnerParameterValue,
+  purchaseDomain,
   runPartnerBehaviorConfigCRUDProcess,
   runPurchasesFlow,
   runRenovateFlow,
 } from './ConfigurablePartnerBehavior.spec';
+import { validatePurchasedDomainHasCorrectOwner } from '../Partner_Registrar_RNS_Contracts/RegisterDomain.spec';
+import { nameToTokenId } from '../utils/operations';
+import { Sign } from 'crypto';
 
 describe('Access Control Implementarion', () => {
   it("Test Case No. 1 - The 'IsOwnerRole function should throw FALSE", async () => {
@@ -446,24 +450,137 @@ describe('Access Control Implementarion', () => {
     //Test Case No. 17
     //User Role (LogIn):    Regular User (-)
     //Function To Execute:  Transfer Ownership
+
+    const {
+      accessControl,
+      owner,
+      regularUser,
+      partner,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove,
+    } = await loadFixture(initialSetup);
+
+    const logInRoleName = 'Regular User';
+
+    const userToLogInWith = regularUser;
+
+    const newOwnerRoleName = 'Partner Reseller';
+
+    const newOwner = partner;
+
+    //Positive Flow Using the NEW Value
+
+    await runTransferOwnershipTest(
+      accessControl,
+      userToLogInWith,
+      logInRoleName,
+      newOwner,
+      owner,
+      newOwnerRoleName,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove
+    );
   }); //it
 
   it("Test Case No. 18 - The 'Transfer Ownership' function should work succesfully", async () => {
     //Test Case No. 18
     //User Role (LogIn):    RNS Owner
     //Function To Execute:  Transfer Ownership
+
+    const {
+      accessControl,
+      owner,
+      partner,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove,
+    } = await loadFixture(initialSetup);
+
+    const logInRoleName = 'RNS Owner';
+
+    const userToLogInWith = owner;
+
+    const newOwnerRoleName = 'Partner Reseller';
+
+    const newOwner = partner;
+
+    await runTransferOwnershipTest(
+      accessControl,
+      userToLogInWith,
+      logInRoleName,
+      newOwner,
+      owner,
+      newOwnerRoleName,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove
+    );
   }); //it
 
   it("Test Case No. 19 - The 'Transfer Ownership' function should throw an error message", async () => {
     //Test Case No. 19
     //User Role (LogIn):    Partner Reseller (-)
     //Function To Execute:  Transfer Ownership
+
+    const {
+      accessControl,
+      owner,
+      partner,
+      highLevelOperator,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove,
+    } = await loadFixture(initialSetup);
+
+    const logInRoleName = 'Partner Reseller';
+
+    const userToLogInWith = partner;
+
+    const newOwnerRoleName = 'High Level Operator';
+
+    const newOwner = highLevelOperator;
+
+    await runTransferOwnershipTest(
+      accessControl,
+      userToLogInWith,
+      logInRoleName,
+      newOwner,
+      owner,
+      newOwnerRoleName,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove
+    );
   }); //it
 
   it("Test Case No. 20 - The 'Transfer Ownership' function should throw an error message", async () => {
     //Test Case No. 20
     //User Role (LogIn):    High Level Operator (-)
     //Function To Execute:  Transfer Ownership
+
+    const {
+      accessControl,
+      owner,
+      regularUser,
+      highLevelOperator,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove,
+    } = await loadFixture(initialSetup);
+
+    const logInRoleName = 'High Level Operator';
+
+    const userToLogInWith = highLevelOperator;
+
+    const newOwnerRoleName = 'Regular User';
+
+    const newOwner = regularUser;
+
+    await runTransferOwnershipTest(
+      accessControl,
+      userToLogInWith,
+      logInRoleName,
+      newOwner,
+      owner,
+      newOwnerRoleName,
+      PartnerConfiguration,
+      highLevelOperatorToAddOrRemove
+    );
   }); //it
 
   it("Test Case No. 21 - The 'Set Maximum Duration' function should throw an error message; the parameter was NOT altered", async () => {
@@ -967,3 +1084,178 @@ const runHighLevelOperatorCRUD = async (
     CRUDOperation + ' AFTER: Is a HLO? ' + isHLO + ' - Validation OK'
   );
 }; // End - run HighLevelOperator CRUD - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+const runTransferOwnershipTest = async (
+  originalAccessControl: Contract,
+  userToLogInWith: SignerWithAddress,
+  logInRoleName: string,
+  newOwner: SignerWithAddress,
+  originalOwner: SignerWithAddress,
+  newOwnerRoleName: string,
+  PartnerConfiguration: PartnerConfiguration,
+  highLevelOperatorToAddOrRemove: SignerWithAddress
+) => {
+  const AccessControlLogIn = await originalAccessControl.connect(
+    userToLogInWith
+  );
+
+  let errorFound: boolean = false;
+
+  try {
+    await (await AccessControlLogIn.transferOwnership(newOwner.address)).wait();
+  } catch (error) {
+    errorFound = true;
+
+    const currentError = error + '';
+
+    const bugDescription =
+      "BUG: The 'Transfer Owner' (No Permissions) Error message was NOT displayed correctly";
+
+    expect(currentError, bugDescription).to.contains(
+      'reverted with custom error'
+    );
+
+    expect(currentError, bugDescription).to.contains('OnlyOwner');
+
+    expect(currentError, bugDescription).to.contains(userToLogInWith.address);
+  }
+
+  let userToLoginWithNoPermissions;
+
+  let userWithPermissions;
+
+  if (
+    logInRoleName.includes('Regular User') ||
+    logInRoleName.includes('Partner Reseller') ||
+    logInRoleName.includes('High Level Operator')
+  ) {
+    console.log(
+      'Running Not Authorized Role (' +
+        logInRoleName +
+        ')  validations... Error = ' +
+        errorFound
+    );
+
+    expect(
+      errorFound + '',
+      'BUG: The function transferOwnership DID NOT throw an expected error!'
+    ).to.be.equals('true');
+
+    await runIsOwnerRoleTest(
+      newOwner.address,
+      originalAccessControl,
+      newOwnerRoleName
+    );
+
+    await runIsOwnerRoleTest(
+      originalOwner.address,
+      originalAccessControl,
+      'RNS Owner'
+    );
+
+    await runIsOwnerRoleTest(
+      userToLogInWith.address,
+      originalAccessControl,
+      logInRoleName
+    );
+
+    userToLoginWithNoPermissions = newOwner;
+
+    userWithPermissions = originalOwner;
+  } else if (logInRoleName.includes('RNS Owner')) {
+    console.log('Running RNS Owner Role validations... Error = ' + errorFound);
+
+    expect(
+      errorFound + '',
+      'BUG: The function transferOwnership threw an unexpected error!'
+    ).to.be.equals('false');
+
+    await runIsOwnerRoleTest(
+      originalOwner.address,
+      originalAccessControl,
+      newOwnerRoleName
+    );
+
+    await runIsOwnerRoleTest(
+      newOwner.address,
+      originalAccessControl,
+      'RNS Owner'
+    );
+
+    userToLoginWithNoPermissions = originalOwner;
+
+    userWithPermissions = newOwner;
+  } else throw new Error('Invalid User Role Name: ' + logInRoleName);
+
+  //ValidateOriginal Owner DOESN'T Have Permissions Anymore // New Owner Has Permissions Now
+  const PartnerConfigurationLogIn = PartnerConfiguration.connect(
+    userToLoginWithNoPermissions
+  );
+
+  const userToLoginWithNoPermissionsAddress =
+    userToLoginWithNoPermissions.address;
+
+  if (!newOwnerRoleName.includes('High Level Operator')) {
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      'Maximum Duration',
+      BigNumber.from('8'),
+      PartnerConfigurationLogIn,
+      userToLoginWithNoPermissionsAddress
+    );
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      'Discount Percentage',
+      oneRBTC.mul(40),
+      PartnerConfigurationLogIn,
+      userToLoginWithNoPermissionsAddress
+    );
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      'Minimum Duration',
+      BigNumber.from('2'),
+      PartnerConfigurationLogIn,
+      userToLoginWithNoPermissionsAddress
+    );
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      'Maximum Domain Length',
+      BigNumber.from('15'),
+      PartnerConfigurationLogIn,
+      userToLoginWithNoPermissionsAddress
+    );
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      'Minimum Domain Length',
+      BigNumber.from('4'),
+      PartnerConfigurationLogIn,
+      userToLoginWithNoPermissionsAddress
+    );
+
+    await runPartnerBehaviorCRUDWithNoPermissions(
+      'Commission Fee Percentage',
+      oneRBTC.mul(10),
+      PartnerConfigurationLogIn,
+      userToLoginWithNoPermissionsAddress
+    );
+  }
+
+  originalAccessControl = await originalAccessControl.connect(
+    userWithPermissions
+  );
+
+  await runHighLevelOperatorCRUD(
+    originalAccessControl,
+    userToLoginWithNoPermissions,
+    highLevelOperatorToAddOrRemove,
+    'Partner Reseller',
+    'Add'
+  );
+
+  await runHighLevelOperatorCRUD(
+    originalAccessControl,
+    userToLoginWithNoPermissions,
+    highLevelOperatorToAddOrRemove,
+    'Partner Reseller',
+    'Remove'
+  );
+}; // End - run TransferOwnership Test - - - - - - - - - - - - - - - - - - - - - - - - - - - -

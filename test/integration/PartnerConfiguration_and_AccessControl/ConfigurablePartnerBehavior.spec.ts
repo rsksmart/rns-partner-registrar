@@ -1430,7 +1430,7 @@ const getPartnerParameterErrorMessage = (parameterName: string) => {
   return value;
 }; // End - Get Parameter Error Message - - - - - - - - - - - - - - - - - - - - -
 
-const purchaseDomain = async (
+export const purchaseDomain = async (
   partnerConfigurationToTest: string,
   typeOfProcess: string,
   buyerUser: SignerWithAddress,
