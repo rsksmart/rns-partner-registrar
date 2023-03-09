@@ -1332,6 +1332,507 @@ describe('Configurable Partner Behavior', () => {
 
     console.log('Error Accomplished - ' + expectedError + ' - OK');
   }); //it
+
+  it('Test Case No. 27 - Set 100% to the Discount Percentage; The Purchases should be successful', async () => {
+    //Test Case No. 20
+    //User Role (LogIn):                                   Regular User
+    //User Role (Of The Configuration to Consult/Update):  Partner Reseller
+    //Behavior Configuration To Test:                      Discount Percentage = 100%
+    //Process to Run:                                      Purchases Of 1, 2 and 3 Steps & Renewal
+
+    const {
+      PartnerRegistrar,
+      partner,
+      regularUser,
+      NodeOwner,
+      RIF,
+      PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
+    } = await loadFixture(initialSetup);
+
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = oneRBTC.mul(100);
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfiguration
+    );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 1 Step',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 2 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 3 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    let currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    //Renewal Process
+    await runRenovateFlow(
+      'Renewal Of 2 Steps',
+      NodeOwner,
+      regularUser,
+      PartnerRenewer,
+      RIF,
+      partner.address,
+      currentTimeWhenPurchased,
+      BigNumber.from(durationPurchase),
+      PartnerConfiguration,
+      FeeManager,
+      domainName
+    );
+
+    currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+  }); //it
+
+  it('Test Case No. 28.1 - Renewal 1 Step - Renovation without enough balance should throw error', async () => {
+    //Test Case No. 21
+    //User Role (LogIn):                                   RNS Owner
+    //User Role (Of The Configuration to Consult/Update):  Partner Reseller
+    //Behavior Configuration To Test:                      Discount Percentage
+    //Process to Run:                                      Renewal Of 1 Step (NO BALANCE)
+
+    const {
+      PartnerRegistrar,
+      partner,
+      regularUser,
+      NodeOwner,
+      RIF,
+      PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
+    } = await loadFixture(initialSetup);
+
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = oneRBTC.mul(5);
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfiguration
+    );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 1 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 2 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    const moneyBeforeRenovation = await RIF.balanceOf(regularUser.address);
+
+    const expirationTimeBeforeRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    let errorFound: boolean = false;
+
+    try {
+      //Renewal Process
+      await runRenovateFlow(
+        'Renewal Of 1 Step',
+        NodeOwner,
+        regularUser,
+        PartnerRenewer,
+        RIF,
+        partner.address,
+        currentTimeWhenPurchased,
+        BigNumber.from(durationPurchase),
+        PartnerConfiguration,
+        FeeManager,
+        domainName
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Expired Name Renewal Error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains(
+        'ERC20: transfer amount exceeds balance'
+      );
+
+      expect(currentError, bugDescription).to.contains(
+        'VM Exception while processing transaction: reverted with reason'
+      );
+
+      expect(currentError, bugDescription).to.contains('Error');
+    }
+
+    expect(
+      errorFound + '',
+      'BUG: Error Message (Renewal without money) was NOT thrown!'
+    ).to.be.equals('true');
+
+    const moneyAfterRenovation = await RIF.balanceOf(regularUser.address);
+
+    //Expected Result - Money should NOT be deducted from the Balance
+    expect(
+      moneyBeforeRenovation + '',
+      'BUG: Money for Renewal With Duration = 0 was deducted from User Balance!'
+    ).to.be.equals(moneyAfterRenovation + '');
+
+    //Expected Result - Expiration Date Was Not Deducted!
+    const expirationTimeAfterRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    expect(
+      expirationTimeBeforeRenovation,
+      'BUG: Domain Expiration Time Was Altered But The Renewal Failed!'
+    ).equals(expirationTimeAfterRenovation);
+  }); //it
+
+  it('Test Case No. 28.2 - Renewal 2 Steps - Renovation without enough balance should throw error', async () => {
+    //Test Case No. 21
+    //User Role (LogIn):                                   RNS Owner
+    //User Role (Of The Configuration to Consult/Update):  Partner Reseller
+    //Behavior Configuration To Test:                      Discount Percentage
+    //Process to Run:                                      Renewal Of 2 Steps (NO BALANCE)
+
+    const {
+      PartnerRegistrar,
+      partner,
+      regularUser,
+      NodeOwner,
+      RIF,
+      PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
+    } = await loadFixture(initialSetup);
+
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = oneRBTC.mul(5);
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfiguration
+    );
+
+    await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 3 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainNameAndPurchaseDuration = await runPurchasesFlow(
+      behaviorConfigurationToTest,
+      'Purchase Of 1 Steps',
+      regularUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration,
+      NodeOwner,
+      parameterNewValue,
+      FeeManager
+    );
+
+    const domainName = domainNameAndPurchaseDuration.split(';')[0];
+
+    const durationPurchase = domainNameAndPurchaseDuration.split(';')[1];
+
+    const currentTimeWhenPurchased = BigNumber.from(await time.latest()); //currentTime - Blockchain Clock Current Moment
+
+    const moneyBeforeRenovation = await RIF.balanceOf(regularUser.address);
+
+    const expirationTimeBeforeRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    let errorFound: boolean = false;
+
+    try {
+      //Renewal Process
+      await runRenovateFlow(
+        'Renewal Of 2 Steps',
+        NodeOwner,
+        regularUser,
+        PartnerRenewer,
+        RIF,
+        partner.address,
+        currentTimeWhenPurchased,
+        BigNumber.from(durationPurchase),
+        PartnerConfiguration,
+        FeeManager,
+        domainName
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Expired Name Renewal Error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains(
+        'ERC20: transfer amount exceeds balance'
+      );
+
+      expect(currentError, bugDescription).to.contains(
+        'VM Exception while processing transaction: reverted with reason'
+      );
+
+      expect(currentError, bugDescription).to.contains('Error');
+    }
+
+    const moneyAfterRenovation = await RIF.balanceOf(regularUser.address);
+
+    //Expected Result - Money should NOT be deducted from the Balance
+    expect(
+      moneyBeforeRenovation + '',
+      'BUG: Money for Renewal With Duration = 0 was deducted from User Balance!'
+    ).to.be.equals(moneyAfterRenovation + '');
+
+    //Expected Result - Expiration Date Was Not Deducted!
+    const expirationTimeAfterRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    expect(
+      expirationTimeBeforeRenovation,
+      'BUG: Domain Expiration Time Was Altered But The Renewal Failed!'
+    ).equals(expirationTimeAfterRenovation);
+
+    expect(
+      errorFound + '',
+      'BUG: Error Message (Renewal without money) was NOT thrown!'
+    ).to.be.equals('true');
+  }); //it
+
+  it('Test Case No. 29 - Sending more than the required money; The contract should return the additional money', async () => {
+    //Test Case No. 20
+    //User Role (LogIn):                                   Regular User
+    //User Role (Of The Configuration to Consult/Update):  Partner Reseller
+    //Behavior Configuration To Test:                      Discount Percentage (Lower to 100%)
+    //Process to Run:                                      Purchases Of 1, 2 and 3 Steps & Renewal (ADDITIONAL MONEY)
+
+    const {
+      PartnerRegistrar,
+      partner,
+      regularUser,
+      NodeOwner,
+      RIF,
+      PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
+    } = await loadFixture(initialSetup);
+
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = oneRBTC.mul(10);
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfiguration
+    );
+
+    await (await RIF.transfer(regularUser.address, oneRBTC.mul(20))).wait();
+
+    const buyerUser = regularUser;
+
+    const partnerAddress = partner.address;
+
+    console.log(
+      'Balance BEFORE Purchases - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+
+    let domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
+
+    let moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    let duration = BigNumber.from('3');
+
+    console.log('Purchase Of 1 Step - In Progress...');
+
+    console.log('Duration - ' + duration);
+
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partnerAddress,
+      PartnerConfiguration,
+      true
+    );
+
+    console.log('Purchase Of 1 Step - Done');
+
+    console.log(
+      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+
+    //Validate the previous Purchase was successful!
+    await validatePurchaseExpectedResults(
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      duration,
+      RIF,
+      PartnerConfiguration
+    );
+
+    domainName = generateRandomStringWithLettersAndNumbers(10, false, true);
+
+    moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    duration = BigNumber.from('1');
+
+    console.log('Purchase Of 2 Steps - In Progress...');
+
+    console.log('Duration - ' + duration);
+
+    await purchaseDomainWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partnerAddress,
+      PartnerConfiguration,
+      true
+    );
+
+    console.log('Purchase Of 2 Steps - Done');
+
+    console.log(
+      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+
+    //Validate the previous Purchase was successful!
+    await validatePurchaseExpectedResults(
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      duration,
+      RIF,
+      PartnerConfiguration
+    );
+
+    domainName = generateRandomStringWithLettersAndNumbers(10, true, true);
+
+    moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    duration = BigNumber.from('4');
+
+    console.log('Purchase Of 3 Steps - In Progress...');
+
+    console.log('Duration - ' + duration);
+
+    await purchaseDomainWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partnerAddress,
+      PartnerConfiguration,
+      BigNumber.from('10'),
+      true,
+      true
+    );
+
+    console.log('Purchase Of 3 Steps - Done');
+
+    //Validate the previous Purchase was successful!
+    await validatePurchaseExpectedResults(
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      duration,
+      RIF,
+      PartnerConfiguration
+    );
+
+    console.log(
+      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+  }); //it
 }); //describe - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export const runPartnerBehaviorConfigCRUDProcess = async (
@@ -1672,7 +2173,23 @@ export const runRenovateFlow = async (
 
   const numberOfMonthsToSimulate = BigNumber.from('12');
 
-  const namePrice = await calculateNamePriceByDuration(duration);
+  const discountPercentage = await PartnerConfiguration.getDiscount();
+
+  let namePrice = await calculateNamePriceByDuration(duration);
+
+  const oneHundred = oneRBTC.mul(100);
+
+  const discountedAmount = namePrice.mul(discountPercentage).div(oneHundred);
+
+  namePrice = namePrice.sub(discountedAmount);
+
+  const priceRene = await partnerRenewer.price(
+    domainName,
+    duration,
+    partnerAddress
+  );
+
+  expect(priceRene, 'BUG: Renewal Price is Incorrect!').to.be.equals(namePrice);
 
   const moneyBeforeRenovation = await RIF.balanceOf(buyerUser.address);
 
@@ -1681,6 +2198,8 @@ export const runRenovateFlow = async (
   );
 
   console.log('Renewal Duration: ' + duration);
+
+  console.log('User Money BEFORE Renewal: ' + moneyBeforeRenovation);
 
   if (typeOfProcess.includes('Renewal Of 1 Step')) {
     console.log('Renewal Of 1 Step - In Progress..');
@@ -1715,6 +2234,8 @@ export const runRenovateFlow = async (
   }
 
   const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
+
+  console.log('User Money AFTER Renewal: ' + moneyAfterRenovation);
 
   await validateRenewalExpectedResults(
     NodeOwner,

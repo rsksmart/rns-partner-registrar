@@ -27,7 +27,8 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   registrar: PartnerRegistrar,
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
-  partnerConfiguration: PartnerConfiguration
+  partnerConfiguration: PartnerConfiguration,
+  includeExtraMoney = false
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge > 0) {
@@ -46,7 +47,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const PartnerRegistrarAsRegularUser = registrar.connect(nameOwner);
   const NameWithLettersOnlyHashed = hashName(domainName);
-  const currentNamePrice = await PartnerRegistrarAsRegularUser.price(
+  let currentNamePrice = await PartnerRegistrarAsRegularUser.price(
     NameWithLettersOnlyHashed,
     0,
     duration,
@@ -55,6 +56,11 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
 
   //Validate given price is correct
   validateNamePrice(duration, currentNamePrice, partnerConfiguration);
+
+  if (includeExtraMoney)
+    currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('2'))); //Test Cases to validate the extra money is refunded
+
+  console.log('Purchase Of 1 Step - MONEY SENT: ' + currentNamePrice);
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -141,7 +147,8 @@ export const purchaseDomainWithoutCommit = async (
   registrar: PartnerRegistrar,
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
-  partnerConfiguration: PartnerConfiguration
+  partnerConfiguration: PartnerConfiguration,
+  sendExtraMoney = false
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge > 0) {
@@ -152,7 +159,7 @@ export const purchaseDomainWithoutCommit = async (
   const registrarAsNameOwner = registrar.connect(nameOwner);
   const NameWithLettersOnlyHashed = hashName(domainName);
 
-  const currentNamePrice = await registrarAsNameOwner.price(
+  let currentNamePrice = await registrarAsNameOwner.price(
     NameWithLettersOnlyHashed,
     0,
     duration,
@@ -161,6 +168,11 @@ export const purchaseDomainWithoutCommit = async (
 
   //Validate given price is correct
   validateNamePrice(duration, currentNamePrice, partnerConfiguration);
+
+  if (sendExtraMoney)
+    currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('3'))); //Test Cases to validate the extra money is refunded
+
+  console.log('Purchase Of 2 Steps - MONEY SENT: ' + currentNamePrice);
 
   //step 1
   await (
@@ -191,7 +203,8 @@ export const purchaseDomainWithCommit = async (
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
   expectedCommitmentAge: BigNumber, // in seconds
-  timeTravel: boolean = true
+  timeTravel: boolean = true,
+  sentExtraMoney = false
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
 
@@ -223,7 +236,7 @@ export const purchaseDomainWithCommit = async (
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const NameWithLettersOnlyHashed = hashName(domainName);
 
-  const currentNamePrice = await registrarAsNameOwner.price(
+  let currentNamePrice = await registrarAsNameOwner.price(
     NameWithLettersOnlyHashed,
     0,
     duration,
@@ -232,6 +245,11 @@ export const purchaseDomainWithCommit = async (
 
   //Validate given price is correct
   validateNamePrice(duration, currentNamePrice, partnerConfiguration);
+
+  if (sentExtraMoney)
+    currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('5'))); //Test Cases to validate the extra money is refunded
+
+  console.log('Purchase Of 3 Steps - MONEY SENT: ' + currentNamePrice);
 
   //step 2
   await (
@@ -472,6 +490,8 @@ export const oneStepDomainOwnershipRenewal = async (
   const renewData = getRenewData(domain, duration, partnerAddress);
 
   const RIFAsNameOwner = RIF.connect(nameOwner);
+
+  console.log('name price to renovate: ' + namePrice);
 
   await (
     await RIFAsNameOwner.transferAndCall(
