@@ -202,7 +202,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -308,7 +308,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -417,7 +417,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -525,7 +525,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -634,7 +634,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -788,7 +788,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -943,7 +943,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -1096,7 +1096,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -1201,7 +1201,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -1310,7 +1310,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -2180,7 +2180,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -2265,7 +2265,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -2355,7 +2355,12 @@ export const validateCorrectMoneyAmountWasPayed = async (
     'BUG: The spent balance is incorrect (The balance after purchase is incorrect)!'
   ).to.be.equals(expectedBalance + '');
 
-  console.log('Amount Payed With Discount Successful!');
+  console.log(
+    'Amount Payed With Discount Successful: ' +
+      moneyAfterPurchase +
+      ' (RIFF) Vs. ' +
+      expectedBalance
+  );
 };
 
 export const validateNegativeFlowExpectedResults = async (
