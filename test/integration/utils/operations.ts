@@ -32,7 +32,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge > 0) {
-    await partnerConfiguration.setMinCommitmentAge(0);
+    await (await partnerConfiguration.setMinCommitmentAge(0)).wait();
   }
 
   const data = getAddrRegisterData(
@@ -85,7 +85,9 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge == 0) {
-    await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge);
+    await (
+      await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge)
+    ).wait();
   }
 
   const registrarAsNameOwner = registrar.connect(nameOwner);
@@ -152,7 +154,7 @@ export const purchaseDomainWithoutCommit = async (
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge > 0) {
-    await partnerConfiguration.setMinCommitmentAge(0);
+    await (await partnerConfiguration.setMinCommitmentAge(0)).wait();
   }
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
@@ -209,7 +211,9 @@ export const purchaseDomainWithCommit = async (
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
 
   if (+currentMinCommitAge == 0) {
-    await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge);
+    await (
+      await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge)
+    ).wait();
   }
 
   const registrarAsNameOwner = registrar.connect(nameOwner);
