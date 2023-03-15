@@ -1676,7 +1676,7 @@ describe('Configurable Partner Behavior', () => {
     ).to.be.equals('true');
   }); //it
 
-  it('Test Case No. 29 - Sending more than the required money; The contract should return the additional money', async () => {
+  it('Test Case No. 29.1 - Sending more than the required money (Discount < 100%); The contract should return the additional money', async () => {
     //Test Case No. 20
     //User Role (LogIn):                                   Regular User
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -1697,6 +1697,164 @@ describe('Configurable Partner Behavior', () => {
     const behaviorConfigurationToTest = 'Discount Percentage';
 
     const parameterNewValue = oneRBTC.mul(10);
+
+    await runPartnerBehaviorConfigCRUDProcess(
+      behaviorConfigurationToTest,
+      parameterNewValue,
+      PartnerConfiguration
+    );
+
+    await (await RIF.transfer(regularUser.address, oneRBTC.mul(20))).wait();
+
+    const buyerUser = regularUser;
+
+    const partnerAddress = partner.address;
+
+    console.log(
+      'Balance BEFORE Purchases - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+
+    let domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
+
+    let moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    let duration = BigNumber.from('3');
+
+    console.log('Purchase Of 1 Step - In Progress...');
+
+    console.log('Duration - ' + duration);
+
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partnerAddress,
+      PartnerConfiguration,
+      true
+    );
+
+    console.log('Purchase Of 1 Step - Done');
+
+    console.log(
+      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+
+    //Validate the previous Purchase was successful!
+    await validatePurchaseExpectedResults(
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      duration,
+      RIF,
+      PartnerConfiguration
+    );
+
+    domainName = generateRandomStringWithLettersAndNumbers(10, false, true);
+
+    moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    duration = BigNumber.from('1');
+
+    console.log('Purchase Of 2 Steps - In Progress...');
+
+    console.log('Duration - ' + duration);
+
+    await purchaseDomainWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partnerAddress,
+      PartnerConfiguration,
+      true
+    );
+
+    console.log('Purchase Of 2 Steps - Done');
+
+    console.log(
+      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+
+    //Validate the previous Purchase was successful!
+    await validatePurchaseExpectedResults(
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      duration,
+      RIF,
+      PartnerConfiguration
+    );
+
+    domainName = generateRandomStringWithLettersAndNumbers(10, true, true);
+
+    moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    duration = BigNumber.from('4');
+
+    console.log('Purchase Of 3 Steps - In Progress...');
+
+    console.log('Duration - ' + duration);
+
+    await purchaseDomainWithCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partnerAddress,
+      PartnerConfiguration,
+      BigNumber.from('10'),
+      true,
+      true
+    );
+
+    console.log('Purchase Of 3 Steps - Done');
+
+    //Validate the previous Purchase was successful!
+    await validatePurchaseExpectedResults(
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      duration,
+      RIF,
+      PartnerConfiguration
+    );
+
+    console.log(
+      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
+    );
+  }); //it
+
+  it.skip('Test Case No. 29.2 - Sending more than the required money & DISCOUNT 100%; The contract should return the additional money', async () => {
+    //Test Case No. 20
+    //User Role (LogIn):                                   Regular User
+    //User Role (Of The Configuration to Consult/Update):  Partner Reseller
+    //Behavior Configuration To Test:                      Discount Percentage (EQUALS TO 100%)
+    //Process to Run:                                      Purchases Of 1, 2 and 3 Steps & Renewal (ADDITIONAL MONEY)
+
+    const {
+      PartnerRegistrar,
+      partner,
+      regularUser,
+      NodeOwner,
+      RIF,
+      PartnerConfiguration,
+      FeeManager,
+      PartnerRenewer,
+    } = await loadFixture(initialSetup);
+
+    const behaviorConfigurationToTest = 'Discount Percentage';
+
+    const parameterNewValue = oneRBTC.mul(100);
 
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
