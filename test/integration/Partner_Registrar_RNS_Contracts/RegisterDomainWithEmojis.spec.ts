@@ -42,7 +42,7 @@ import {
   validatePurchasedDomainIsNotAvailable,
 } from './RegisterDomain.spec';
 
-describe('Registration With Emojis', () => {
+describe('Registration With Emojis & Transfer Validation', () => {
   it('Test Case No. 1 - Name Ending By Emoji: After Purchase & Renovation, Domain Should NOT Available; The Domain Owner & Price Payed Are the correct; Renewal Flow Should be Successful', async () => {
     //Test Case No. 1
     //User Role:                          Regular User                                         (OK)
@@ -50,7 +50,7 @@ describe('Registration With Emojis', () => {
     //Domain Name - Chars:                Only Numbers + Emoji                                 (OK)
     //Domain Name - Is Available?:        Available (Never Purchased)                          (OK)
     //Duration:                           1 year                                               (OK)
-
+    //Renewal Type:                       1 Step
     const {
       NodeOwner,
       PartnerRegistrar,
@@ -108,7 +108,7 @@ describe('Registration With Emojis', () => {
     );
 
     //Validate the correct money amount from the buyer
-    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+    let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
     await validateCorrectMoneyAmountWasPayed(
       duration,
@@ -129,21 +129,56 @@ describe('Registration With Emojis', () => {
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
 
+    const newNameOwner = owner;
+
+    const NodeOwnerAsBuyer = NodeOwner.connect(buyerUser);
+
+    await (
+      await NodeOwnerAsBuyer.transferFrom(
+        buyerUser.address,
+        newNameOwner.address,
+        nameToTokenId(domainName)
+      )
+    ).wait();
+
+    console.log('Transfer Done - New Owner Is: ' + newNameOwner.address);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      newNameOwner
+    );
+
+    console.log('Transfer Done - Test Successful!');
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('6');
+
+    moneyAfterPurchase = await RIF.balanceOf(newNameOwner.address);
 
     await runRenewalTestFlow(
       numberOfMonthsToSimulate,
       duration,
       domainName,
       partner.address,
-      buyerUser,
+      newNameOwner,
       PartnerRenewer,
       RIF,
       NodeOwner,
       moneyAfterPurchase,
       true,
       duration,
+      PartnerConfiguration
+    );
+
+    //Validate the commission was payed to the referred partner
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true,
       PartnerConfiguration
     );
   }); //it
@@ -260,7 +295,7 @@ describe('Registration With Emojis', () => {
     //Domain Name - Chars:                Letters & Number + Emojis At the Middle              (OK)
     //Domain Name - Is Available?:        Available (Never Purchased)                          (OK)
     //Duration:                           3 year                                               (OK)
-
+    //Renewal Type:                       2 Steps
     const {
       NodeOwner,
       PartnerRegistrar,
@@ -321,7 +356,7 @@ describe('Registration With Emojis', () => {
     );
 
     //Validate the correct money amount from the buyer
-    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+    let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
     await validateCorrectMoneyAmountWasPayed(
       duration,
@@ -342,21 +377,56 @@ describe('Registration With Emojis', () => {
 
     await runWithdrawTestProcess(partner, FeeManager, RIF, false);
 
+    const newNameOwner = partner;
+
+    const NodeOwnerAsBuyer = NodeOwner.connect(buyerUser);
+
+    await (
+      await NodeOwnerAsBuyer.transferFrom(
+        buyerUser.address,
+        newNameOwner.address,
+        nameToTokenId(domainName)
+      )
+    ).wait();
+
+    console.log('Transfer Done - New Owner Is: ' + newNameOwner.address);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      newNameOwner
+    );
+
+    console.log('Transfer Done - Test Successful!');
+
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('6');
+
+    moneyAfterPurchase = await RIF.balanceOf(newNameOwner.address);
 
     await runRenewalTestFlow(
       numberOfMonthsToSimulate,
       duration,
       domainName,
       partner.address,
-      buyerUser,
+      newNameOwner, // New Owner Of The Name Will Renew
       PartnerRenewer,
       RIF,
       NodeOwner,
       moneyAfterPurchase,
       false,
       duration,
+      PartnerConfiguration
+    );
+
+    //Validate the commission was payed to the referred partner
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true,
       PartnerConfiguration
     );
   }); //it
