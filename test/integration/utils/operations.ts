@@ -10,6 +10,7 @@ import {
   PartnerRegistrar,
   PartnerRenewer,
   FeeManager,
+  PartnerRegistrar,
 } from 'typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
@@ -106,7 +107,19 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
       .commit(commitment, partnerAddress)
   ).wait();
 
+  let canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+  expect(canReveal, "BUG: 'CanReveal' threw true!").to.be.false;
+
+  console.log('CanReveal False - OK!');
+
   await time.increase(+expectedCommitmentAge);
+
+  canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+  expect(canReveal, "BUG: 'CanReveal' threw false!").to.be.true;
+
+  console.log('CanReveal True - OK!');
 
   const data = getAddrRegisterData(
     domainName,
@@ -234,7 +247,19 @@ export const purchaseDomainWithCommit = async (
   ).wait();
 
   if (timeTravel) {
+    let canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+    expect(canReveal, "BUG: 'CanReveal' threw true!").to.be.false;
+
+    console.log('CanReveal False - OK!');
+
     await time.increase(+expectedCommitmentAge);
+
+    canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+    expect(canReveal, "BUG: 'CanReveal' threw false!").to.be.true;
+
+    console.log('CanReveal True - OK!');
   }
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
