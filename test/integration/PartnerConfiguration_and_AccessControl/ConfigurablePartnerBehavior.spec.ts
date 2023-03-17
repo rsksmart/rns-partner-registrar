@@ -1833,7 +1833,6 @@ describe('Configurable Partner Behavior', () => {
       'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
     );
   }); //it
-
   it.skip('Test Case No. 29.2 - Sending more than the required money & DISCOUNT 100%; The contract should return the additional money', async () => {
     //Test Case No. 20
     //User Role (LogIn):                                   Regular User
@@ -1992,7 +1991,6 @@ describe('Configurable Partner Behavior', () => {
     );
   }); //it
 }); //describe - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 export const runPartnerBehaviorConfigCRUDProcess = async (
   parameterName: string,
   parameterNewValue: BigNumber,

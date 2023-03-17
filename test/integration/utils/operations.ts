@@ -7,7 +7,6 @@ import {
 import {
   ERC677Token,
   PartnerConfiguration,
-  PartnerRegistrar,
   PartnerRenewer,
   FeeManager,
   PartnerRegistrar,
@@ -16,8 +15,10 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { MockContract } from '@defi-wonderland/smock';
-import { time } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
+import { initialSetup } from './initialSetup';
+import { SECRET } from './constants';
 
 //Purchase 1 Step (Commit = 0)
 export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
@@ -82,7 +83,7 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
-  expectedCommitmentAge: BigNumber // in seconds
+  expectedCommitmentAge: BigNumber // in seconds,
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge == 0) {
