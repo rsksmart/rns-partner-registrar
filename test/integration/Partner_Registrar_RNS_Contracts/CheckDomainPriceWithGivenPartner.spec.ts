@@ -51,10 +51,6 @@ describe('Check Domain Price With Given Partner', () => {
 
       const currentError = error + '';
 
-      console.log(
-        "Expected: '" + expectedError + "'. Current: '" + currentError + "'"
-      );
-
       expect(
         currentError,
         'BUG: The contract did not send the Call Revert Error Message'
@@ -394,10 +390,6 @@ describe('Check Domain Price With Given Partner', () => {
 
       const currentError = error + '';
 
-      console.log(
-        "Expected: '" + expectedError + "'. Current: '" + currentError + "'"
-      );
-
       expect(
         currentError,
         'BUG: The contract did not send the Not-Allowed Characters Message'
@@ -497,10 +489,6 @@ describe('Check Domain Price With Given Partner', () => {
 
       const currentError = error + '';
 
-      console.log(
-        "Expected: '" + expectedError + "'. Current: '" + currentError + "'"
-      );
-
       expect(
         currentError,
         'BUG: The contract did not send the Out-Of-Bounds Message'
@@ -581,13 +569,6 @@ const runCheckPricePositiveFlow = async (
   //Expected Result - Validate price equation: 2*Duration, Duration+2 (50% Discount)
   //Expected Result - Validate price currency is at 'RIFF'
   const expectedNamePrice = calculateNamePriceByDuration(durationAsBN);
-
-  console.log(
-    'Expected: ' +
-      expectedNamePrice +
-      '. Current: ' +
-      currentNamePriceAfterExpiration
-  );
 
   expect(
     +currentNamePriceAfterExpiration,

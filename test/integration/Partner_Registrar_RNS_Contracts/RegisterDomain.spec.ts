@@ -1,11 +1,6 @@
 import { initialSetup } from '../utils/initialSetup';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
-import {
-  SECRET,
-  MINIMUM_DOMAIN_NAME_LENGTH,
-  MAXIMUM_DOMAIN_NAME_LENGTH,
-  FEE_PERCENTAGE,
-} from '../utils/constants';
+import { SECRET } from '../utils/constants';
 import { expect } from 'chai';
 import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -22,7 +17,6 @@ import {
   runWithdrawTestProcess,
 } from '../utils/operations';
 import {
-  PartnerRegistrar,
   NodeOwner,
   ERC677Token,
   PartnerRenewer,
@@ -30,9 +24,7 @@ import {
   PartnerConfiguration,
 } from 'typechain-types';
 import { MockContract } from '@defi-wonderland/smock';
-import { ConstructorFragment } from '@ethersproject/abi';
 import { calculatePercentageWPrecision, oneRBTC } from '../../utils/mock.utils';
-import { partnerConfiguration } from 'typechain-types/contracts';
 
 describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
   it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance; Commision should NOT be deposited', async () => {
@@ -52,6 +44,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       FeeManager,
+      owner,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -202,7 +195,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -308,7 +301,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -417,7 +410,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -525,7 +518,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -634,7 +627,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -734,6 +727,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       regularUser,
       PartnerRenewer,
       FeeManager,
+      owner,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(
@@ -788,7 +782,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -943,7 +937,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -1096,7 +1090,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -1201,7 +1195,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -1310,7 +1304,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -2180,7 +2174,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -2265,7 +2259,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
     //Validate the correct money amount from the buyer
     const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
 
-    validateCorrectMoneyAmountWasPayed(
+    await validateCorrectMoneyAmountWasPayed(
       duration,
       moneyAfterPurchase,
       moneyBeforePurchase,
@@ -2354,8 +2348,6 @@ export const validateCorrectMoneyAmountWasPayed = async (
     moneyAfterPurchase + '',
     'BUG: The spent balance is incorrect (The balance after purchase is incorrect)!'
   ).to.be.equals(expectedBalance + '');
-
-  console.log('Amount Payed With Discount Successful!');
 };
 
 export const validateNegativeFlowExpectedResults = async (
@@ -2411,11 +2403,7 @@ export const validateRenewalExpectedResults = async (
     buyerUser
   );
 
-  console.log('Renewal Flow - Domains Has The Correct Owner! (OK)');
-
   await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
-
-  console.log('Renewal Flow - Domains Is NOT Available! (OK)');
 
   await validateCorrectMoneyAmountWasPayed(
     duration,
@@ -2423,8 +2411,6 @@ export const validateRenewalExpectedResults = async (
     moneyBeforeRenovation,
     PartnerConfiguration
   );
-
-  console.log('Renewal Flow - User payed the correct price! (OK)');
 
   //Validate Expiration Time Is Correct according to the Duration Renovation and Time Simulated
   const tokenId = nameToTokenId(domainName);
@@ -2451,8 +2437,6 @@ export const validateRenewalExpectedResults = async (
     timeDifference,
     'BUG: Expiration Date Is Incorrect (More Than 5 Minutes Of Difference)!'
   ).to.be.lessThanOrEqual(300);
-
-  console.log('Renewal Flow - Expiration Time Is Correctly Updated! (OK)');
 }; //End - Validate Renewal Expected Results
 
 export const runRenewalTestFlow = async (
@@ -2526,8 +2510,6 @@ export const validateCommissionPayedToPartner = async (
 
   const feePercentage = await PartnerConfiguration.getFeePercentage();
 
-  console.log('Current Fee Percentage: ' + feePercentage);
-
   if (wasPurchaseSuccessful) {
     let expectedPrice = calculateNamePriceByDuration(duration);
 
@@ -2546,27 +2528,17 @@ export const validateCommissionPayedToPartner = async (
       feePercentage
     );
 
-    console.log('Current Fee Amount: ' + expectedCommision);
-
     const expectedBalanceAfterPurchaseCommision =
       balanceBeforePurchaseCommision.add(expectedCommision);
-
-    console.log(
-      'Current Partner Fee Balance: ' + currentBalanceAfterPurchaseCommision
-    );
 
     expect(
       +currentBalanceAfterPurchaseCommision,
       'BUG: Fee balance of the Partner was NOT updated as expected!'
     ).to.be.equals(+expectedBalanceAfterPurchaseCommision);
-
-    console.log('SUCCESSFUL PURCHASE - Comission Validation Successful!');
   } else {
     expect(
       +currentBalanceAfterPurchaseCommision,
       'BUG: Fee Balance of the Partner was altered, despite of the failed purchase!'
     ).to.be.equals(+balanceBeforePurchaseCommision);
-
-    console.log('FAILED PURCHASE - Comission Validation Successful!');
   }
 }; //End - Renewal Flow

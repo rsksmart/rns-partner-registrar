@@ -11,11 +11,7 @@ import {
   oneRBTC,
   deployContract,
 } from './utils/mock.utils';
-import {
-  FeeManager__factory,
-  RIF as RIFType,
-  RegistrarAccessControl__factory,
-} from 'typechain-types';
+import { FeeManager__factory, RIF as RIFType } from 'typechain-types';
 import { PartnerManager } from '../typechain-types/contracts/PartnerManager/PartnerManager';
 import { PartnerConfiguration } from '../typechain-types/contracts/PartnerConfiguration/PartnerConfiguration';
 import { FakeContract, MockContract } from '@defi-wonderland/smock';
@@ -110,7 +106,6 @@ describe('Fee Manager', () => {
           depositAmount.sub(partnerFee)
         );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -132,7 +127,6 @@ describe('Fee Manager', () => {
           .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
           .withArgs(owner.address);
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -170,7 +164,6 @@ describe('Fee Manager', () => {
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(registrar.address, feeManager.address, depositAmount);
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -211,7 +204,6 @@ describe('Fee Manager', () => {
             depositAmount.sub(partnerFee)
           );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -256,7 +248,6 @@ describe('Fee Manager', () => {
           ethers.constants.Zero
         );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -269,7 +260,6 @@ describe('Fee Manager', () => {
           feeManager.connect(partner).withdraw()
         ).to.be.revertedWithCustomError(feeManager, 'ZeroBalance');
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -285,7 +275,6 @@ describe('Fee Manager', () => {
             await feeManager.connect(partner).getBalance(partner.address)
           );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -320,7 +309,6 @@ describe('Fee Manager', () => {
           .to.emit(feeManager, DEPOSIT_SUCCESSFUL_EVENT)
           .withArgs(depositAmount, partner.address);
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });

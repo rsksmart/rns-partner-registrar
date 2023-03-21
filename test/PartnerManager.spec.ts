@@ -53,7 +53,6 @@ describe('partnerManager', () => {
       try {
         expect(await partnerManager.isPartner(owner.address)).to.be.false;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -74,7 +73,6 @@ describe('partnerManager', () => {
         ).to.eventually.fulfilled;
         expect(await partnerManager.isPartner(partner.address)).to.be.true;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -97,7 +95,6 @@ describe('partnerManager', () => {
         ).to.not.be.reverted;
         expect(await partnerManager.isPartner(partner.address)).to.be.true;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -117,7 +114,6 @@ describe('partnerManager', () => {
             .addPartner(partner.address, partnerOwnerAccount.address)
         ).to.be.reverted;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -144,7 +140,6 @@ describe('partnerManager', () => {
 
         expect(await partnerManager.isPartner(partner.address)).to.be.false;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -169,7 +164,6 @@ describe('partnerManager', () => {
           partnerManager.connect(account2).removePartner(partner.address)
         ).to.be.reverted;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -200,7 +194,6 @@ describe('partnerManager', () => {
           )
         ).to.eventually.be.fulfilled;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -244,7 +237,6 @@ describe('partnerManager', () => {
           )
         ).to.be.reverted;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -271,7 +263,6 @@ describe('partnerManager', () => {
           )
         ).to.be.reverted;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -299,7 +290,6 @@ describe('partnerManager', () => {
             .setPartnerConfiguration(partner.address, account3.address)
         ).to.be.reverted;
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });
@@ -333,7 +323,6 @@ describe('partnerManager', () => {
           await partnerManager.getPartnerConfiguration(partner.address)
         ).to.be.eq(account3.address);
       } catch (e) {
-        console.log(e);
         throw e;
       }
     });

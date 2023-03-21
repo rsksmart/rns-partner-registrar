@@ -195,7 +195,6 @@ describe('New Domain Registration', () => {
         )
       ).to.eventually.be.fulfilled;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   });
@@ -479,7 +478,6 @@ describe('New Domain Registration', () => {
         .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
         .withArgs(NO_COMMITMENT_FOUND_ERR);
     } catch (error) {
-      console.log(error);
       throw error;
     }
   });
@@ -531,7 +529,6 @@ describe('New Domain Registration', () => {
         .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
         .withArgs(NO_COMMITMENT_FOUND_ERR);
     } catch (error) {
-      console.log(error);
       throw error;
     }
   });
@@ -567,8 +564,6 @@ describe('Registrar Checks', () => {
         .to.be.revertedWithCustomError(PartnerRegistrar, 'CustomError')
         .withArgs(COMMITMENT_NOT_REQUIRED_ERR);
     } catch (error) {
-      console.log(error);
-
       throw error;
     }
   });

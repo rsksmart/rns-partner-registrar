@@ -23,7 +23,6 @@ import { expect } from 'chai';
 import { RNS as RNSType } from 'typechain-types';
 import { Resolver as ResolverType } from 'typechain-types';
 import { keccak256, namehash, toUtf8Bytes } from 'ethers/lib/utils';
-import { duration } from '@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time';
 import {
   DEFAULT_MIN_LENGTH,
   DEFAULT_MAX_LENGTH,
@@ -31,10 +30,6 @@ import {
   DEFAULT_MAX_DURATION,
   DEFAULT_DISCOUNT,
   DEFAULT_FEE_PERCENTAGE,
-  UN_NECESSARY_MODIFICATION_ERROR_MSG,
-  FEE_MANAGER_CHANGED_EVENT,
-  NAME_REGISTERED_EVENT,
-  ONLY_HIGH_LEVEL_OPERATOR_ERR,
 } from './utils/constants.utils';
 import { OneYearDuration } from './integration/utils/constants';
 

@@ -7,9 +7,9 @@ import {
 import {
   ERC677Token,
   PartnerConfiguration,
-  PartnerRegistrar,
   PartnerRenewer,
   FeeManager,
+  PartnerRegistrar,
 } from 'typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
@@ -27,11 +27,12 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   registrar: PartnerRegistrar,
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
-  partnerConfiguration: PartnerConfiguration
+  partnerConfiguration: PartnerConfiguration,
+  includeExtraMoney = false
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge > 0) {
-    await partnerConfiguration.setMinCommitmentAge(0);
+    await (await partnerConfiguration.setMinCommitmentAge(0)).wait();
   }
 
   const data = getAddrRegisterData(
@@ -46,7 +47,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const PartnerRegistrarAsRegularUser = registrar.connect(nameOwner);
   const NameWithLettersOnlyHashed = hashName(domainName);
-  const currentNamePrice = await PartnerRegistrarAsRegularUser.price(
+  let currentNamePrice = await PartnerRegistrarAsRegularUser.price(
     NameWithLettersOnlyHashed,
     0,
     duration,
@@ -54,7 +55,11 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
+
   validateNamePrice(duration, currentNamePrice, partnerConfiguration);
+
+  if (includeExtraMoney)
+    currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('2'))); //Test Cases to validate the extra money is refunded
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -75,11 +80,13 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
-  expectedCommitmentAge: BigNumber // in seconds
+  expectedCommitmentAge: BigNumber // in seconds,
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge == 0) {
-    await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge);
+    await (
+      await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge)
+    ).wait();
   }
 
   const registrarAsNameOwner = registrar.connect(nameOwner);
@@ -98,7 +105,15 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
       .commit(commitment, partnerAddress)
   ).wait();
 
+  let canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+  expect(canReveal, "BUG: 'CanReveal' threw true!").to.be.false;
+
   await time.increase(+expectedCommitmentAge);
+
+  canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+  expect(canReveal, "BUG: 'CanReveal' threw false!").to.be.true;
 
   const data = getAddrRegisterData(
     domainName,
@@ -141,18 +156,19 @@ export const purchaseDomainWithoutCommit = async (
   registrar: PartnerRegistrar,
   RIF: MockContract<ERC677Token>,
   partnerAddress: string,
-  partnerConfiguration: PartnerConfiguration
+  partnerConfiguration: PartnerConfiguration,
+  sendExtraMoney = false
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
   if (+currentMinCommitAge > 0) {
-    await partnerConfiguration.setMinCommitmentAge(0);
+    await (await partnerConfiguration.setMinCommitmentAge(0)).wait();
   }
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const registrarAsNameOwner = registrar.connect(nameOwner);
   const NameWithLettersOnlyHashed = hashName(domainName);
 
-  const currentNamePrice = await registrarAsNameOwner.price(
+  let currentNamePrice = await registrarAsNameOwner.price(
     NameWithLettersOnlyHashed,
     0,
     duration,
@@ -161,6 +177,9 @@ export const purchaseDomainWithoutCommit = async (
 
   //Validate given price is correct
   validateNamePrice(duration, currentNamePrice, partnerConfiguration);
+
+  if (sendExtraMoney)
+    currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('3'))); //Test Cases to validate the extra money is refunded
 
   //step 1
   await (
@@ -191,12 +210,15 @@ export const purchaseDomainWithCommit = async (
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
   expectedCommitmentAge: BigNumber, // in seconds
-  timeTravel: boolean = true
+  timeTravel: boolean = true,
+  sentExtraMoney = false
 ) => {
   const currentMinCommitAge = await partnerConfiguration.getMinCommitmentAge();
 
   if (+currentMinCommitAge == 0) {
-    await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge);
+    await (
+      await partnerConfiguration.setMinCommitmentAge(expectedCommitmentAge)
+    ).wait();
   }
 
   const registrarAsNameOwner = registrar.connect(nameOwner);
@@ -217,13 +239,21 @@ export const purchaseDomainWithCommit = async (
   ).wait();
 
   if (timeTravel) {
+    let canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+    expect(canReveal, "BUG: 'CanReveal' threw true!").to.be.false;
+
     await time.increase(+expectedCommitmentAge);
+
+    canReveal = await registrar.connect(nameOwner).canReveal(commitment);
+
+    expect(canReveal, "BUG: 'CanReveal' threw false!").to.be.true;
   }
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
   const NameWithLettersOnlyHashed = hashName(domainName);
 
-  const currentNamePrice = await registrarAsNameOwner.price(
+  let currentNamePrice = await registrarAsNameOwner.price(
     NameWithLettersOnlyHashed,
     0,
     duration,
@@ -232,6 +262,9 @@ export const purchaseDomainWithCommit = async (
 
   //Validate given price is correct
   validateNamePrice(duration, currentNamePrice, partnerConfiguration);
+
+  if (sentExtraMoney)
+    currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('5'))); //Test Cases to validate the extra money is refunded
 
   //step 2
   await (
@@ -299,7 +332,7 @@ export const generateRandomStringWithLettersAndNumbers = (
     }
   }
 
-  //console.log('RNS Log - Generated Name: ' + domainName);
+  //
 
   if (length == 0) return '';
   else return domainName;
@@ -319,13 +352,7 @@ export const validateNamePrice = async (
 
   const discountedAmount = expectPrice.mul(discountPercentage).div(oneHundred);
 
-  console.log('Amount To Discount: ' + discountedAmount);
-
   expectPrice = expectPrice.sub(discountedAmount);
-
-  console.log(
-    'Expected Price: ' + expectPrice + '. Current Price: ' + currentNamePrice
-  );
 
   expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(
     +currentNamePrice
@@ -480,8 +507,6 @@ export const oneStepDomainOwnershipRenewal = async (
       renewData
     )
   ).wait();
-
-  console.log('RNS Log - One Step Renewal Executed! ');
 }; // End - One Step Renewal
 
 export const TwoStepsDomainOwnershipRenewal = async (
@@ -508,8 +533,6 @@ export const TwoStepsDomainOwnershipRenewal = async (
   await (
     await PartnerRenewerAsNameOwner.renew(domain, duration, partnerAddress)
   ).wait();
-
-  console.log('RNS Log - Two Step Renewal executed! ');
 }; // End - Two Steps Renewal
 
 export const simulateMonthsTime = async (numberOfMonths: BigNumber) => {
@@ -562,8 +585,6 @@ export const runWithdrawTestProcess = async (
         errorFound + '',
         'BUG: Error Message (Fee Balance Empty) was NOT thrown!'
       ).to.be.equals('true');
-
-      console.log('FAILED WITHDRAW - Warning Message Successful!');
     }
   } // If
   else {
@@ -575,14 +596,6 @@ export const runWithdrawTestProcess = async (
   const currentFEEBalanceAfterWithdraw = await FeeManager.getBalance(
     partnerAddress
   );
-
-  console.log('Balance RIF - PRE Retiro: ' + RIFBalanceBeforeWithdraw);
-
-  console.log('Balance FEE - PRE Retiro: ' + FEEBalanceBeforeWithdraw);
-
-  console.log('Balance RIF - POST Retiro: ' + currentRIFBalanceAfterWithdraw);
-
-  console.log('Balance FEE - POST Retiro: ' + currentFEEBalanceAfterWithdraw);
 
   if (!isFeeBalanceEmpty) {
     expect(
@@ -598,8 +611,6 @@ export const runWithdrawTestProcess = async (
       +currentRIFBalanceAfterWithdraw,
       'BUG: The RIF Balance Of the partner was Not updated successfully'
     ).to.be.equals(+expectedRIFAmountOfMoney);
-
-    console.log('SUCCESSFUL WITHDRAW - Validation Successful!');
   } else {
     expect(
       +currentFEEBalanceAfterWithdraw,
@@ -610,7 +621,5 @@ export const runWithdrawTestProcess = async (
       +currentRIFBalanceAfterWithdraw,
       'BUG: The RIF Balance of the partner was altered despite the withdraw was not executed!'
     ).to.be.equals(+RIFBalanceBeforeWithdraw);
-
-    console.log('FAILED WITHDRAW - Validation Successful!');
   }
 }; //End - Execute Withdraw Process

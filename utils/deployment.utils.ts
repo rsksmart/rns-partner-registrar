@@ -12,7 +12,7 @@ export const deployContract = async <C extends Contract, A = {}>(
   factory?: Factory<C>,
   signer?: SignerWithAddress
 ): Promise<{
-  contract: Contract;
+  contract: C;
   signers: SignerWithAddress[];
   contractFactory: Factory<C>;
 }> => {
@@ -25,7 +25,7 @@ export const deployContract = async <C extends Contract, A = {}>(
   await contract.deployed();
 
   return {
-    contract,
+    contract: contract as C,
     signers: await ethers.getSigners(),
     contractFactory,
   };

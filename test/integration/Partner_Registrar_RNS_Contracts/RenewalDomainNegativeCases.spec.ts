@@ -13,16 +13,9 @@ import {
   purchaseDomainWithoutCommit,
   TwoStepsDomainOwnershipRenewal,
 } from '../utils/operations';
-import {
-  PartnerRegistrar,
-  NodeOwner,
-  ERC677Token,
-  PartnerRenewer,
-  PartnerConfiguration,
-} from 'typechain-types';
+import { NodeOwner, ERC677Token, PartnerConfiguration } from 'typechain-types';
 
 import {
-  runRenewalTestFlow,
   validateCorrectMoneyAmountWasPayed,
   validateNegativeFlowExpectedResults,
   validatePurchasedDomainHasCorrectOwner,
@@ -32,7 +25,6 @@ import {
 } from './RegisterDomain.spec';
 import { MockContract } from '@defi-wonderland/smock';
 import { oneRBTC } from 'test/utils/mock.utils';
-import { partnerConfiguration } from 'typechain-types/contracts';
 
 describe('Renewal Name - Negative Test Cases', () => {
   it('Test Case No. 11 - Should Throw an Error; No Money Was Payed for Renotation & Expiration Date Is NOT Altered', async () => {
@@ -484,10 +476,6 @@ describe('Renewal Name - Negative Test Cases', () => {
 
     await (await RIF.transfer(buyerUser.address, oneRBTC.mul(10))).wait(); //To Make User Has Money To Both Purchase and Renovate
 
-    console.log(
-      'DINERO ANTES DE COMPRAR: ' + (await RIF.balanceOf(buyerUser.address))
-    );
-
     const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
     await validatePurchasedDomainISAvailable(NodeOwner, domainName);
@@ -509,10 +497,6 @@ describe('Renewal Name - Negative Test Cases', () => {
       PartnerConfiguration
     );
 
-    console.log(
-      'DINERO DESPUES DE COMPRAR: ' + (await RIF.balanceOf(buyerUser.address))
-    );
-
     validatePurchaseExpectedResults(
       NodeOwner,
       domainName,
@@ -530,13 +514,7 @@ describe('Renewal Name - Negative Test Cases', () => {
 
     const namePrice = await calculateNamePriceByDuration(durationforRenovation);
 
-    console.log('BUG DEBUG: ' + namePrice);
-
     const moneyBeforeRenovation = await RIF.balanceOf(buyerUser.address);
-
-    console.log(
-      'DINERO ANTES DE RENOVAR: ' + (await RIF.balanceOf(buyerUser.address))
-    );
 
     await TwoStepsDomainOwnershipRenewal(
       domainName,
@@ -547,10 +525,6 @@ describe('Renewal Name - Negative Test Cases', () => {
       PartnerRenewer,
       RIF,
       numberOfMonthsToSimulate
-    );
-
-    console.log(
-      'DINERO DESPUES DE RENOVAR: ' + (await RIF.balanceOf(buyerUser.address))
     );
 
     const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
