@@ -45,8 +45,6 @@ describe('Registration With Emojis & Transfer Validation', () => {
     const domainName =
       generateRandomStringWithLettersAndNumbers(10, false, true) + '🥹';
 
-    console.log('Name: ' + domainName);
-
     const duration = BigNumber.from('1');
 
     const buyerUser: SignerWithAddress = regularUser;
@@ -120,16 +118,12 @@ describe('Registration With Emojis & Transfer Validation', () => {
       )
     ).wait();
 
-    console.log('Transfer Done - New Owner Is: ' + newNameOwner.address);
-
     //Validate the Domain Name Owner Is the correct
     await validatePurchasedDomainHasCorrectOwner(
       domainName,
       NodeOwner,
       newNameOwner
     );
-
-    console.log('Transfer Done - Test Successful!');
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('6');
@@ -184,8 +178,6 @@ describe('Registration With Emojis & Transfer Validation', () => {
 
     const domainName =
       '😄' + generateRandomStringWithLettersAndNumbers(10, true, false);
-
-    console.log('Name: ' + domainName);
 
     const duration = BigNumber.from('2');
 
@@ -368,16 +360,12 @@ describe('Registration With Emojis & Transfer Validation', () => {
       )
     ).wait();
 
-    console.log('Transfer Done - New Owner Is: ' + newNameOwner.address);
-
     //Validate the Domain Name Owner Is the correct
     await validatePurchasedDomainHasCorrectOwner(
       domainName,
       NodeOwner,
       newNameOwner
     );
-
-    console.log('Transfer Done - Test Successful!');
 
     //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const numberOfMonthsToSimulate = BigNumber.from('6');

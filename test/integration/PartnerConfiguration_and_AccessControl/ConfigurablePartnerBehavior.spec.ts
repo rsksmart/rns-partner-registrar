@@ -53,8 +53,6 @@ describe('Configurable Partner Behavior', () => {
     const PartnerConfigurationAsHLO =
       PartnerConfiguration.connect(highLevelOperator);
 
-    console.log('Login As High Level Operator - Done');
-
     const behaviorConfigurationToTest = 'Minimum Domain Length';
 
     const parameterNewValue = BigNumber.from('10');
@@ -226,8 +224,6 @@ describe('Configurable Partner Behavior', () => {
     const PartnerConfigurationAsHLO =
       PartnerConfiguration.connect(highLevelOperator);
 
-    console.log('Login As High Level Operator - Done');
-
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
@@ -396,8 +392,6 @@ describe('Configurable Partner Behavior', () => {
     const PartnerConfigurationAsHLO =
       PartnerConfiguration.connect(highLevelOperator);
 
-    console.log('Login As High Level Operator - Done');
-
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
@@ -444,8 +438,6 @@ describe('Configurable Partner Behavior', () => {
 
     const PartnerConfigurationAsHLO =
       PartnerConfiguration.connect(highLevelOperator);
-
-    console.log('Login As High Level Operator - Done');
 
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
@@ -701,8 +693,6 @@ describe('Configurable Partner Behavior', () => {
 
     const PartnerConfigurationAsHLO =
       PartnerConfiguration.connect(highLevelOperator);
-
-    console.log('Login As High Level Operator - Done');
 
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
@@ -1027,8 +1017,6 @@ describe('Configurable Partner Behavior', () => {
     const PartnerConfigurationAsHLO =
       PartnerConfiguration.connect(highLevelOperator);
 
-    console.log('Login As High Level Operator - Done');
-
     await runPartnerBehaviorConfigCRUDProcess(
       behaviorConfigurationToTest,
       parameterNewValue,
@@ -1132,8 +1120,6 @@ describe('Configurable Partner Behavior', () => {
         partnerConfigurationToTest +
         ' was altered with an invalid value!'
     ).to.be.equals(maximumLengthBeforeChange);
-
-    console.log('Error Accomplished - ' + expectedError + ' - OK');
   }); //it
 
   it('Test Case No. 24 - Should throw the following error: Min length cannot be greater than the max length', async () => {
@@ -1198,8 +1184,6 @@ describe('Configurable Partner Behavior', () => {
         partnerConfigurationToTest +
         ' was altered with an invalid value!'
     ).to.be.equals(minLengthBeforeChange);
-
-    console.log('Error Accomplished - ' + expectedError + ' - OK');
   }); //it
 
   it('Test Case No. 25 - Should throw the following error: Max duration cannot be less than the min duration', async () => {
@@ -1264,8 +1248,6 @@ describe('Configurable Partner Behavior', () => {
         partnerConfigurationToTest +
         ' was altered with an invalid value!'
     ).to.be.equals(maximumDurationBeforeChange);
-
-    console.log('Error Accomplished - ' + expectedError + ' - OK');
   }); //it
 
   it('Test Case No. 26 - Should throw the following error: Min duration cannot be greater than the max duration', async () => {
@@ -1329,8 +1311,6 @@ describe('Configurable Partner Behavior', () => {
         partnerConfigurationToTest +
         ' was altered with an invalid value!'
     ).to.be.equals(minLengthBeforeChange);
-
-    console.log('Error Accomplished - ' + expectedError + ' - OK');
   }); //it
 
   it('Test Case No. 27 - Set 100% to the Discount Percentage; The Purchases should be successful', async () => {
@@ -1710,19 +1690,11 @@ describe('Configurable Partner Behavior', () => {
 
     const partnerAddress = partner.address;
 
-    console.log(
-      'Balance BEFORE Purchases - ' + (await RIF.balanceOf(buyerUser.address))
-    );
-
     let domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
 
     let moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
     let duration = BigNumber.from('3');
-
-    console.log('Purchase Of 1 Step - In Progress...');
-
-    console.log('Duration - ' + duration);
 
     await purchaseDomainUsingTransferAndCallWithoutCommit(
       domainName,
@@ -1734,12 +1706,6 @@ describe('Configurable Partner Behavior', () => {
       partnerAddress,
       PartnerConfiguration,
       true
-    );
-
-    console.log('Purchase Of 1 Step - Done');
-
-    console.log(
-      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
     );
 
     //Validate the previous Purchase was successful!
@@ -1759,10 +1725,6 @@ describe('Configurable Partner Behavior', () => {
 
     duration = BigNumber.from('1');
 
-    console.log('Purchase Of 2 Steps - In Progress...');
-
-    console.log('Duration - ' + duration);
-
     await purchaseDomainWithoutCommit(
       domainName,
       duration,
@@ -1773,12 +1735,6 @@ describe('Configurable Partner Behavior', () => {
       partnerAddress,
       PartnerConfiguration,
       true
-    );
-
-    console.log('Purchase Of 2 Steps - Done');
-
-    console.log(
-      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
     );
 
     //Validate the previous Purchase was successful!
@@ -1798,10 +1754,6 @@ describe('Configurable Partner Behavior', () => {
 
     duration = BigNumber.from('4');
 
-    console.log('Purchase Of 3 Steps - In Progress...');
-
-    console.log('Duration - ' + duration);
-
     await purchaseDomainWithCommit(
       domainName,
       duration,
@@ -1816,8 +1768,6 @@ describe('Configurable Partner Behavior', () => {
       true
     );
 
-    console.log('Purchase Of 3 Steps - Done');
-
     //Validate the previous Purchase was successful!
     await validatePurchaseExpectedResults(
       NodeOwner,
@@ -1827,10 +1777,6 @@ describe('Configurable Partner Behavior', () => {
       duration,
       RIF,
       PartnerConfiguration
-    );
-
-    console.log(
-      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
     );
   }); //it
   it.skip('Test Case No. 29.2 - Sending more than the required money & DISCOUNT 100%; The contract should return the additional money', async () => {
@@ -1867,19 +1813,11 @@ describe('Configurable Partner Behavior', () => {
 
     const partnerAddress = partner.address;
 
-    console.log(
-      'Balance BEFORE Purchases - ' + (await RIF.balanceOf(buyerUser.address))
-    );
-
     let domainName = generateRandomStringWithLettersAndNumbers(10, true, false);
 
     let moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
 
     let duration = BigNumber.from('3');
-
-    console.log('Purchase Of 1 Step - In Progress...');
-
-    console.log('Duration - ' + duration);
 
     await purchaseDomainUsingTransferAndCallWithoutCommit(
       domainName,
@@ -1891,12 +1829,6 @@ describe('Configurable Partner Behavior', () => {
       partnerAddress,
       PartnerConfiguration,
       true
-    );
-
-    console.log('Purchase Of 1 Step - Done');
-
-    console.log(
-      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
     );
 
     //Validate the previous Purchase was successful!
@@ -1916,10 +1848,6 @@ describe('Configurable Partner Behavior', () => {
 
     duration = BigNumber.from('1');
 
-    console.log('Purchase Of 2 Steps - In Progress...');
-
-    console.log('Duration - ' + duration);
-
     await purchaseDomainWithoutCommit(
       domainName,
       duration,
@@ -1930,12 +1858,6 @@ describe('Configurable Partner Behavior', () => {
       partnerAddress,
       PartnerConfiguration,
       true
-    );
-
-    console.log('Purchase Of 2 Steps - Done');
-
-    console.log(
-      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
     );
 
     //Validate the previous Purchase was successful!
@@ -1955,10 +1877,6 @@ describe('Configurable Partner Behavior', () => {
 
     duration = BigNumber.from('4');
 
-    console.log('Purchase Of 3 Steps - In Progress...');
-
-    console.log('Duration - ' + duration);
-
     await purchaseDomainWithCommit(
       domainName,
       duration,
@@ -1973,8 +1891,6 @@ describe('Configurable Partner Behavior', () => {
       true
     );
 
-    console.log('Purchase Of 3 Steps - Done');
-
     //Validate the previous Purchase was successful!
     await validatePurchaseExpectedResults(
       NodeOwner,
@@ -1984,10 +1900,6 @@ describe('Configurable Partner Behavior', () => {
       duration,
       RIF,
       PartnerConfiguration
-    );
-
-    console.log(
-      'Balance AFTER Purchase - ' + (await RIF.balanceOf(buyerUser.address))
     );
   }); //it
 }); //describe - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2000,8 +1912,6 @@ export const runPartnerBehaviorConfigCRUDProcess = async (
     parameterName,
     PartnerConfiguration
   );
-
-  console.log(parameterName + ' BEFORE: ' + valueBeforeChange);
 
   if (parameterName.includes('Minimum Domain Length'))
     await (await PartnerConfiguration.setMinLength(parameterNewValue)).wait();
@@ -2030,13 +1940,6 @@ export const runPartnerBehaviorConfigCRUDProcess = async (
       parameterName +
       "' option did NOT save the new correct value!"
   ).to.be.equals(parameterNewValue);
-
-  console.log(
-    parameterName +
-      ' AFTER: ' +
-      valueAfterChange +
-      ' --- Partner Behavior Test Successful!'
-  );
 }; // End - Partner Behavior CRUD Flow - - - - - - - - - - - - - - - - -
 
 export const getPartnerParameterValue = async (
@@ -2152,21 +2055,13 @@ export const purchaseDomain = async (
     );
   }
 
-  console.log('Current Duration: ' + duration);
-
-  console.log('Current Length: ' + domainLength);
-
   const domainName = generateRandomStringWithLettersAndNumbers(
     domainLength.toNumber(),
     true,
     false
   );
 
-  console.log('Current Name: ' + domainName);
-
   const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
-
-  console.log('User Balance BEFORE Purchase: ' + moneyBeforePurchase);
 
   const balanceBeforePurchaseCommision = await FeeManager.getBalance(
     partnerAddress
@@ -2179,8 +2074,6 @@ export const purchaseDomain = async (
       typeOfProcess.includes('Purchase Of 1 Step') ||
       typeOfProcess.includes('Renewal Of 1 Step')
     ) {
-      console.log('Purchase Of 1 Step - In Progress...');
-
       await purchaseDomainUsingTransferAndCallWithoutCommit(
         domainName,
         duration,
@@ -2191,15 +2084,11 @@ export const purchaseDomain = async (
         partnerAddress,
         PartnerConfiguration
       );
-
-      console.log('Purchase Of 1 Step - Done');
     } // if
     else if (
       typeOfProcess.includes('Purchase Of 2 Steps') ||
       typeOfProcess.includes('Renewal Of 2 Steps')
     ) {
-      console.log('Purchase Of 2 Steps - In Progress...');
-
       await purchaseDomainWithoutCommit(
         domainName,
         duration,
@@ -2210,12 +2099,8 @@ export const purchaseDomain = async (
         partnerAddress,
         PartnerConfiguration
       );
-
-      console.log('Purchase Of 2 Steps - Done');
     } // if
     else if (typeOfProcess.includes('Purchase Of 3 Steps')) {
-      console.log('Purchase Of 3 Steps - In Progress...');
-
       await purchaseDomainWithCommit(
         domainName,
         duration,
@@ -2227,8 +2112,6 @@ export const purchaseDomain = async (
         PartnerConfiguration,
         BigNumber.from('10')
       );
-
-      console.log('Purchase Of 3 Steps - Done');
     } // if
     else throw new Error('Invalid Process Name Option: ' + typeOfProcess);
   } catch (error) {
@@ -2251,8 +2134,6 @@ export const purchaseDomain = async (
     );
 
     expect(currentError, bugDescription).to.contains('Error');
-
-    console.log('Error Message Accomplished - ' + expectedError + ' - OK');
   } // catch
 
   const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
@@ -2273,16 +2154,6 @@ export const purchaseDomain = async (
       errorFound + '',
       'Not Expected Error Was Thrown! But Data Used Was Valid!'
     ).to.be.equals('false');
-
-    console.log('SUCCESFUL PURCHASE - Partner Behavior Test OK!');
-    console.log(
-      'User Balance AFTER Purchase: ' + (await RIF.balanceOf(buyerUser.address))
-    );
-
-    console.log(
-      'Expiration TIme Of the Name: ' +
-        (await NodeOwner.expirationTime(nameToTokenId(domainName)))
-    );
   } // If - Valid Parameter Flow
   else {
     //Validate the previous process failed this time and the contract threw a coherent error message.
@@ -2295,8 +2166,6 @@ export const purchaseDomain = async (
       moneyAfterPurchase,
       'Invalid ' + partnerConfigurationToTest
     );
-
-    console.log('FAILED PURCHASE - Partner Behavior Test OK!');
   }
 
   //Validate the commission was payed to the referred partner
@@ -2353,13 +2222,7 @@ export const runRenovateFlow = async (
     partnerAddress
   );
 
-  console.log('Renewal Duration: ' + duration);
-
-  console.log('User Money BEFORE Renewal: ' + moneyBeforeRenovation);
-
   if (typeOfProcess.includes('Renewal Of 1 Step')) {
-    console.log('Renewal Of 1 Step - In Progress..');
-
     await oneStepDomainOwnershipRenewal(
       domainName,
       duration,
@@ -2370,11 +2233,7 @@ export const runRenovateFlow = async (
       RIF,
       numberOfMonthsToSimulate
     );
-
-    console.log('Renewal Of 1 Step - Done');
   } else if (typeOfProcess.includes('Renewal Of 2 Steps')) {
-    console.log('Renewal Of 2 Steps - In Progress..');
-
     await TwoStepsDomainOwnershipRenewal(
       domainName,
       duration,
@@ -2385,13 +2244,9 @@ export const runRenovateFlow = async (
       RIF,
       numberOfMonthsToSimulate
     );
-
-    console.log('Renewal Of 2 Steps - Done');
   }
 
   const moneyAfterRenovation = await RIF.balanceOf(buyerUser.address);
-
-  console.log('User Money AFTER Renewal: ' + moneyAfterRenovation);
 
   await validateRenewalExpectedResults(
     NodeOwner,

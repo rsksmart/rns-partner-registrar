@@ -106,7 +106,6 @@ describe('Fee Manager', () => {
           depositAmount.sub(partnerFee)
         );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -128,7 +127,6 @@ describe('Fee Manager', () => {
           .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
           .withArgs(owner.address);
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -166,7 +164,6 @@ describe('Fee Manager', () => {
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(registrar.address, feeManager.address, depositAmount);
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -207,7 +204,6 @@ describe('Fee Manager', () => {
             depositAmount.sub(partnerFee)
           );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -252,7 +248,6 @@ describe('Fee Manager', () => {
           ethers.constants.Zero
         );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -265,7 +260,6 @@ describe('Fee Manager', () => {
           feeManager.connect(partner).withdraw()
         ).to.be.revertedWithCustomError(feeManager, 'ZeroBalance');
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -281,7 +275,6 @@ describe('Fee Manager', () => {
             await feeManager.connect(partner).getBalance(partner.address)
           );
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });
@@ -316,7 +309,6 @@ describe('Fee Manager', () => {
           .to.emit(feeManager, DEPOSIT_SUCCESSFUL_EVENT)
           .withArgs(depositAmount, partner.address);
       } catch (error) {
-        console.log(error);
         throw error;
       }
     });

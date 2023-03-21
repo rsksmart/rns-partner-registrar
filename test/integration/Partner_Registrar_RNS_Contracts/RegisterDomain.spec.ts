@@ -2348,13 +2348,6 @@ export const validateCorrectMoneyAmountWasPayed = async (
     moneyAfterPurchase + '',
     'BUG: The spent balance is incorrect (The balance after purchase is incorrect)!'
   ).to.be.equals(expectedBalance + '');
-
-  console.log(
-    'Amount Payed With Discount Successful: ' +
-      moneyAfterPurchase +
-      ' (RIFF) Vs. ' +
-      expectedBalance
-  );
 };
 
 export const validateNegativeFlowExpectedResults = async (
@@ -2410,11 +2403,7 @@ export const validateRenewalExpectedResults = async (
     buyerUser
   );
 
-  console.log('Renewal Flow - Domains Has The Correct Owner! (OK)');
-
   await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
-
-  console.log('Renewal Flow - Domains Is NOT Available! (OK)');
 
   await validateCorrectMoneyAmountWasPayed(
     duration,
@@ -2422,8 +2411,6 @@ export const validateRenewalExpectedResults = async (
     moneyBeforeRenovation,
     PartnerConfiguration
   );
-
-  console.log('Renewal Flow - User payed the correct price! (OK)');
 
   //Validate Expiration Time Is Correct according to the Duration Renovation and Time Simulated
   const tokenId = nameToTokenId(domainName);
@@ -2450,8 +2437,6 @@ export const validateRenewalExpectedResults = async (
     timeDifference,
     'BUG: Expiration Date Is Incorrect (More Than 5 Minutes Of Difference)!'
   ).to.be.lessThanOrEqual(300);
-
-  console.log('Renewal Flow - Expiration Time Is Correctly Updated! (OK)');
 }; //End - Validate Renewal Expected Results
 
 export const runRenewalTestFlow = async (
@@ -2525,8 +2510,6 @@ export const validateCommissionPayedToPartner = async (
 
   const feePercentage = await PartnerConfiguration.getFeePercentage();
 
-  console.log('Current Fee Percentage: ' + feePercentage);
-
   if (wasPurchaseSuccessful) {
     let expectedPrice = calculateNamePriceByDuration(duration);
 
@@ -2545,27 +2528,17 @@ export const validateCommissionPayedToPartner = async (
       feePercentage
     );
 
-    console.log('Current Fee Amount: ' + expectedCommision);
-
     const expectedBalanceAfterPurchaseCommision =
       balanceBeforePurchaseCommision.add(expectedCommision);
-
-    console.log(
-      'Current Partner Fee Balance: ' + currentBalanceAfterPurchaseCommision
-    );
 
     expect(
       +currentBalanceAfterPurchaseCommision,
       'BUG: Fee balance of the Partner was NOT updated as expected!'
     ).to.be.equals(+expectedBalanceAfterPurchaseCommision);
-
-    console.log('SUCCESSFUL PURCHASE - Comission Validation Successful!');
   } else {
     expect(
       +currentBalanceAfterPurchaseCommision,
       'BUG: Fee Balance of the Partner was altered, despite of the failed purchase!'
     ).to.be.equals(+balanceBeforePurchaseCommision);
-
-    console.log('FAILED PURCHASE - Comission Validation Successful!');
   }
 }; //End - Renewal Flow

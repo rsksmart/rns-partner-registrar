@@ -55,12 +55,11 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   ); // Contract Execution
 
   //Validate given price is correct
+
   validateNamePrice(duration, currentNamePrice, partnerConfiguration);
 
   if (includeExtraMoney)
     currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('2'))); //Test Cases to validate the extra money is refunded
-
-  console.log('Purchase Of 1 Step - MONEY SENT: ' + currentNamePrice);
 
   await (
     await RIFAsRegularUser.transferAndCall(
@@ -110,15 +109,11 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
 
   expect(canReveal, "BUG: 'CanReveal' threw true!").to.be.false;
 
-  console.log('CanReveal False - OK!');
-
   await time.increase(+expectedCommitmentAge);
 
   canReveal = await registrar.connect(nameOwner).canReveal(commitment);
 
   expect(canReveal, "BUG: 'CanReveal' threw false!").to.be.true;
-
-  console.log('CanReveal True - OK!');
 
   const data = getAddrRegisterData(
     domainName,
@@ -186,8 +181,6 @@ export const purchaseDomainWithoutCommit = async (
   if (sendExtraMoney)
     currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('3'))); //Test Cases to validate the extra money is refunded
 
-  console.log('Purchase Of 2 Steps - MONEY SENT: ' + currentNamePrice);
-
   //step 1
   await (
     await RIFAsRegularUser.approve(registrar.address, currentNamePrice)
@@ -250,15 +243,11 @@ export const purchaseDomainWithCommit = async (
 
     expect(canReveal, "BUG: 'CanReveal' threw true!").to.be.false;
 
-    console.log('CanReveal False - OK!');
-
     await time.increase(+expectedCommitmentAge);
 
     canReveal = await registrar.connect(nameOwner).canReveal(commitment);
 
     expect(canReveal, "BUG: 'CanReveal' threw false!").to.be.true;
-
-    console.log('CanReveal True - OK!');
   }
 
   const RIFAsRegularUser = RIF.connect(nameOwner);
@@ -276,8 +265,6 @@ export const purchaseDomainWithCommit = async (
 
   if (sentExtraMoney)
     currentNamePrice = currentNamePrice.add(oneRBTC.mul(BigNumber.from('5'))); //Test Cases to validate the extra money is refunded
-
-  console.log('Purchase Of 3 Steps - MONEY SENT: ' + currentNamePrice);
 
   //step 2
   await (
@@ -345,7 +332,7 @@ export const generateRandomStringWithLettersAndNumbers = (
     }
   }
 
-  //console.log('RNS Log - Generated Name: ' + domainName);
+  //
 
   if (length == 0) return '';
   else return domainName;
@@ -365,13 +352,7 @@ export const validateNamePrice = async (
 
   const discountedAmount = expectPrice.mul(discountPercentage).div(oneHundred);
 
-  console.log('Amount To Discount: ' + discountedAmount);
-
   expectPrice = expectPrice.sub(discountedAmount);
-
-  console.log(
-    'Expected Price: ' + expectPrice + '. Current Price: ' + currentNamePrice
-  );
 
   expect(+expectPrice, 'The calculated domain price is incorrect!').to.equal(
     +currentNamePrice
@@ -519,8 +500,6 @@ export const oneStepDomainOwnershipRenewal = async (
 
   const RIFAsNameOwner = RIF.connect(nameOwner);
 
-  console.log('name price to renovate: ' + namePrice);
-
   await (
     await RIFAsNameOwner.transferAndCall(
       PartnerRenewer.address,
@@ -528,8 +507,6 @@ export const oneStepDomainOwnershipRenewal = async (
       renewData
     )
   ).wait();
-
-  console.log('RNS Log - One Step Renewal Executed! ');
 }; // End - One Step Renewal
 
 export const TwoStepsDomainOwnershipRenewal = async (
@@ -556,8 +533,6 @@ export const TwoStepsDomainOwnershipRenewal = async (
   await (
     await PartnerRenewerAsNameOwner.renew(domain, duration, partnerAddress)
   ).wait();
-
-  console.log('RNS Log - Two Step Renewal executed! ');
 }; // End - Two Steps Renewal
 
 export const simulateMonthsTime = async (numberOfMonths: BigNumber) => {
@@ -610,8 +585,6 @@ export const runWithdrawTestProcess = async (
         errorFound + '',
         'BUG: Error Message (Fee Balance Empty) was NOT thrown!'
       ).to.be.equals('true');
-
-      console.log('FAILED WITHDRAW - Warning Message Successful!');
     }
   } // If
   else {
@@ -623,14 +596,6 @@ export const runWithdrawTestProcess = async (
   const currentFEEBalanceAfterWithdraw = await FeeManager.getBalance(
     partnerAddress
   );
-
-  console.log('Balance RIF - PRE Retiro: ' + RIFBalanceBeforeWithdraw);
-
-  console.log('Balance FEE - PRE Retiro: ' + FEEBalanceBeforeWithdraw);
-
-  console.log('Balance RIF - POST Retiro: ' + currentRIFBalanceAfterWithdraw);
-
-  console.log('Balance FEE - POST Retiro: ' + currentFEEBalanceAfterWithdraw);
 
   if (!isFeeBalanceEmpty) {
     expect(
@@ -646,8 +611,6 @@ export const runWithdrawTestProcess = async (
       +currentRIFBalanceAfterWithdraw,
       'BUG: The RIF Balance Of the partner was Not updated successfully'
     ).to.be.equals(+expectedRIFAmountOfMoney);
-
-    console.log('SUCCESSFUL WITHDRAW - Validation Successful!');
   } else {
     expect(
       +currentFEEBalanceAfterWithdraw,
@@ -658,7 +621,5 @@ export const runWithdrawTestProcess = async (
       +currentRIFBalanceAfterWithdraw,
       'BUG: The RIF Balance of the partner was altered despite the withdraw was not executed!'
     ).to.be.equals(+RIFBalanceBeforeWithdraw);
-
-    console.log('FAILED WITHDRAW - Validation Successful!');
   }
 }; //End - Execute Withdraw Process

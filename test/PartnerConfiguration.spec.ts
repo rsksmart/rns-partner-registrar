@@ -214,7 +214,6 @@ describe('Partner Configuration', () => {
       const expires = BigNumber.from(1);
       const name = 'cheta';
 
-      console.log(oneRBTC.mul(100));
       (await PartnerConfiguration.setDiscount(oneRBTC.mul(100))).wait();
 
       const duration = BigNumber.from(1);

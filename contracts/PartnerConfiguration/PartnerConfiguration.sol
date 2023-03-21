@@ -333,9 +333,6 @@ contract PartnerConfiguration is IPartnerConfiguration, HasAccessControl {
 
     function _applyDiscount(uint256 price) private view returns (uint256) {
         uint256 discount = _discount;
-        // 100% discount applied
-        if (_discount == _PERCENT100_WITH_PRECISION18) return 0;
-
         // No discount to be applied
         if (discount == 0) return price;
 
