@@ -1,29 +1,16 @@
 import { initialSetup } from '../utils/initialSetup';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { BigNumber, Contract, ethers, Signer } from 'ethers';
-import {
-  NodeOwner,
-  ERC677Token,
-  PartnerConfiguration,
-  PartnerRenewer,
-  FeeManager,
-  PartnerRegistrar,
-  PartnerConfiguration,
-} from 'typechain-types';
+import { BigNumber, Contract } from 'ethers';
+import { PartnerConfiguration, PartnerConfiguration } from 'typechain-types';
 import { oneRBTC } from 'test/utils/mock.utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { MockContract } from '@defi-wonderland/smock';
 import {
   getPartnerParameterValue,
-  purchaseDomain,
   runPartnerBehaviorConfigCRUDProcess,
   runPurchasesFlow,
   runRenovateFlow,
 } from './ConfigurablePartnerBehavior.spec';
-import { validatePurchasedDomainHasCorrectOwner } from '../Partner_Registrar_RNS_Contracts/RegisterDomain.spec';
-import { nameToTokenId } from '../utils/operations';
-import { Sign } from 'crypto';
 
 describe('Access Control Implementarion', () => {
   it("Test Case No. 1 - The 'IsOwnerRole function should throw FALSE", async () => {

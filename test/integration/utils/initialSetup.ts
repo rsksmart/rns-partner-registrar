@@ -2,11 +2,7 @@ import { ethers } from 'hardhat';
 import { deployContract, Factory } from '../../../utils/deployment.utils';
 import { deployContract as deployContractAsMock } from '../../utils/mock.utils';
 import { oneRBTC } from '../../utils/mock.utils';
-import {
-  NodeOwner,
-  RegistrarAccessControl,
-  RegistrarAccessControl__factory,
-} from 'typechain-types';
+import { NodeOwner, RegistrarAccessControl } from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
 import { ERC677Token__factory } from 'typechain-types';

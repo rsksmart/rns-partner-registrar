@@ -1,38 +1,17 @@
 import { initialSetup } from '../utils/initialSetup';
-import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
-import {
-  SECRET,
-  MINIMUM_DOMAIN_NAME_LENGTH,
-  MAXIMUM_DOMAIN_NAME_LENGTH,
-  FEE_PERCENTAGE,
-} from '../utils/constants';
-import { expect } from 'chai';
-import { BigNumber, Contract } from 'ethers';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { SECRET } from '../utils/constants';
+import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
-  calculateNamePriceByDuration,
   purchaseDomainUsingTransferAndCallWithoutCommit,
   nameToTokenId,
-  purchaseDomainUsingTransferAndCallWithCommit,
   generateRandomStringWithLettersAndNumbers,
   purchaseDomainWithoutCommit,
   purchaseDomainWithCommit,
-  TwoStepsDomainOwnershipRenewal,
-  oneStepDomainOwnershipRenewal,
   runWithdrawTestProcess,
 } from '../utils/operations';
-import {
-  PartnerRegistrar,
-  NodeOwner,
-  ERC677Token,
-  PartnerRenewer,
-  FeeManager,
-  PartnerConfiguration,
-} from 'typechain-types';
-import { MockContract } from '@defi-wonderland/smock';
-import { ConstructorFragment } from '@ethersproject/abi';
-import { calculatePercentageWPrecision, oneRBTC } from '../../utils/mock.utils';
-import { partnerConfiguration } from 'typechain-types/contracts';
+
 import {
   runRenewalTestFlow,
   validateCommissionPayedToPartner,

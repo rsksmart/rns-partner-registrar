@@ -7,7 +7,6 @@ import {
   INVALID_PARTNER_ERR,
   PARTNER_CONFIGURATION_CHANGED_EVENT,
 } from 'test/utils/constants.utils';
-import { partnerConfiguration } from 'typechain-types/contracts';
 import { initialSetup } from '../utils/initialSetup';
 
 describe('Partners Management - Add and replace partner config', () => {

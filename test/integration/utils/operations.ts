@@ -15,10 +15,8 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { MockContract } from '@defi-wonderland/smock';
-import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
+import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
-import { initialSetup } from './initialSetup';
-import { SECRET } from './constants';
 
 //Purchase 1 Step (Commit = 0)
 export const purchaseDomainUsingTransferAndCallWithoutCommit = async (

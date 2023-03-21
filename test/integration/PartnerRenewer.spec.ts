@@ -1,17 +1,10 @@
 import { ethers } from 'hardhat';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { deployContract, Factory } from '../../utils/deployment.utils';
 import { deployContract as deployContractAsMock } from '../utils/mock.utils';
-import {
-  calculatePercentageWPrecision,
-  getAddrRegisterData,
-  getRenewData,
-  oneRBTC,
-} from '../utils/mock.utils';
+import { oneRBTC } from '../utils/mock.utils';
 import { NodeOwner, RegistrarAccessControl__factory } from 'typechain-types';
 import { PartnerManager } from 'typechain-types';
 import { PartnerRegistrar } from 'typechain-types';
-import { expect } from 'chai';
 import { IFeeManager } from '../../typechain-types/contracts/FeeManager/IFeeManager';
 import NodeOwnerAbi from '../external-abis/NodeOwner.json';
 import RNSAbi from '../external-abis/RNS.json';
@@ -23,14 +16,6 @@ import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
 import { keccak256, toUtf8Bytes, namehash } from 'ethers/lib/utils';
-import { BigNumber } from 'ethers';
-import { duration } from '@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time';
-import {
-  UN_NECESSARY_MODIFICATION_ERROR_MSG,
-  NAME_RENEWED_EVENT,
-  FEE_MANAGER_CHANGED_EVENT,
-} from 'test/utils/constants.utils';
-import { SECRET } from './utils/constants';
 
 const NAME = 'cheta';
 const LABEL = keccak256(toUtf8Bytes(NAME));

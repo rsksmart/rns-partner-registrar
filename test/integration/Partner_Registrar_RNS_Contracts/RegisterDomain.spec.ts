@@ -1,11 +1,6 @@
 import { initialSetup } from '../utils/initialSetup';
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
-import {
-  SECRET,
-  MINIMUM_DOMAIN_NAME_LENGTH,
-  MAXIMUM_DOMAIN_NAME_LENGTH,
-  FEE_PERCENTAGE,
-} from '../utils/constants';
+import { SECRET } from '../utils/constants';
 import { expect } from 'chai';
 import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -22,7 +17,6 @@ import {
   runWithdrawTestProcess,
 } from '../utils/operations';
 import {
-  PartnerRegistrar,
   NodeOwner,
   ERC677Token,
   PartnerRenewer,
@@ -30,9 +24,7 @@ import {
   PartnerConfiguration,
 } from 'typechain-types';
 import { MockContract } from '@defi-wonderland/smock';
-import { ConstructorFragment } from '@ethersproject/abi';
 import { calculatePercentageWPrecision, oneRBTC } from '../../utils/mock.utils';
-import { partnerConfiguration } from 'typechain-types/contracts';
 
 describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
   it('Test Case No. 2 - Domain should NOT be purchased; throw an error message; Money should NOT be deducted from the Balance; Commision should NOT be deposited', async () => {
