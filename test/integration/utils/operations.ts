@@ -506,7 +506,7 @@ export const oneStepDomainOwnershipRenewal = async (
       namePrice,
       renewData
     )
-  ).wait();
+  ).wait(); //ERROR
 }; // End - One Step Renewal
 
 export const TwoStepsDomainOwnershipRenewal = async (
