@@ -161,15 +161,15 @@ contract PartnerRegistrar is
             }
 
             _collectFees(partner, cost);
+        }
 
-            uint256 difference = amount - cost;
+          uint256 difference = amount - cost;
             if (difference > 0) {
                 bool success = _rif.transfer(from, difference);
                 if (!success) {
                     revert TokenTransferFailed(address(_rif), from, difference);
                 }
             }
-        }
     }
 
     function _collectFees(address partner, uint256 amount) private {
