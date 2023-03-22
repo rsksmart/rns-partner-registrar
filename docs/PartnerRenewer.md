@@ -1,171 +1,78 @@
-# PartnerRenewer
+# Solidity API
 
-*Identity Team @IOVLabs*
+## PartnerRenewer
 
-> Implements the interface IBaseRenewer to renew names in RNS.
-
-
-
-
-
-## Methods
-
-### owner
+### constructor
 
 ```solidity
-function owner() external view returns (address)
+constructor(contract IAccessControl accessControl, contract NodeOwner nodeOwner, contract IERC677 rif, contract IPartnerManager partnerManager) public
 ```
 
-
-
-*Returns the address of the current owner.*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-### renew
+### onlyPartner
 
 ```solidity
-function renew(string name, uint256 duration, address partner) external nonpayable
+modifier onlyPartner(address partner)
 ```
-
-allows domain name owner to renew their ownership
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| name | string | the domain name to be renewed |
-| duration | uint256 | the duration of the renewal |
-| partner | address | Partner address |
-
-### renounceOwnership
-
-```solidity
-function renounceOwnership() external nonpayable
-```
-
-
-
-*Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.*
-
 
 ### setFeeManager
 
 ```solidity
-function setFeeManager(contract IFeeManager feeManager) external nonpayable
+function setFeeManager(contract IFeeManager feeManager) external
 ```
 
 sets the fee manager to use. Mandatory for the renewer to work.
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| feeManager | contract IFeeManager | the fee manager to use |
+        @param feeManager the fee manager to use
+        @custom:emits-event emits the FeeManagerSet event
 
 ### tokenFallback
 
 ```solidity
-function tokenFallback(address from, uint256 value, bytes data) external nonpayable returns (bool)
+function tokenFallback(address from, uint256 value, bytes data) external returns (bool)
 ```
 
 ERC-677 token fallback function.
 
-*Follow &#39;Register encoding&#39; to execute a one-transaction regitration.*
+_Follow 'Register encoding' to execute a one-transaction regitration._
 
 #### Parameters
 
 | Name | Type | Description |
-|---|---|---|
+| ---- | ---- | ----------- |
 | from | address | token sender. |
 | value | uint256 | amount of tokens sent. |
 | data | bytes | data associated with transaction. |
 
-#### Returns
+#### Return Values
 
 | Name | Type | Description |
-|---|---|---|
-| _0 | bool | true if successfull. |
+| ---- | ---- | ----------- |
+| [0] | bool | true if successfull. |
 
-### transferOwnership
+### price
 
 ```solidity
-function transferOwnership(address newOwner) external nonpayable
+function price(string name, uint256 duration, address partner) external view returns (uint256)
 ```
 
+calculates the price of a name
+        @param name the name to register
+        @param duration the duration of the registration in years
+        @param partner Partner address
+        @return the price of the name
 
+### renew
 
-*Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.*
+```solidity
+function renew(string name, uint256 duration, address partner) public
+```
+
+allows domain name owner to renew their ownership
 
 #### Parameters
 
 | Name | Type | Description |
-|---|---|---|
-| newOwner | address | undefined |
-
-
-
-## Events
-
-### FeeManagerChanged
-
-```solidity
-event FeeManagerChanged(address hostContract, address feeManagerContract)
-```
-
-event emitted when a fee manager contract is set
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| hostContract  | address | undefined |
-| feeManagerContract  | address | undefined |
-
-### NameRenewed
-
-```solidity
-event NameRenewed(address indexed partner, uint256 duration)
-```
-
-event emitted when a domain has been successfully renewed
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| partner `indexed` | address | undefined |
-| duration  | uint256 | undefined |
-
-### OwnershipTransferred
-
-```solidity
-event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-```
-
-
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| previousOwner `indexed` | address | undefined |
-| newOwner `indexed` | address | undefined |
-
-
+| ---- | ---- | ----------- |
+| name | string | the domain name to be renewed |
+| duration | uint256 | the duration of the renewal |
+| partner | address | Partner address |
 

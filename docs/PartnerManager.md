@@ -1,65 +1,21 @@
-# PartnerManager
+# Solidity API
 
-_Identity Team @IOVLabs_
+## PartnerManager
 
-> Keeps track of the whitelisted partners and its configurations.
-
-## Methods
-
-### addPartner
+### Partner
 
 ```solidity
-function addPartner(address partner, address configurationContract) external nonpayable
+struct Partner {
+  bool isPartner;
+  contract IPartnerConfiguration configuration;
+}
 ```
 
-adds a partner to the whitelist and sets its configuration
-
-#### Parameters
-
-| Name                 | Type    | Description                                                                 |
-| -------------------- | ------- | --------------------------------------------------------------------------- |
-| partner              | address | address for the partner that will be whitelisted                            |
-| partnerConfiguration | address | address of the contract that implements the partner configuration interface |
-
-### getPartnerConfiguration
+### constructor
 
 ```solidity
-function getPartnerConfiguration(address partner) external view returns (contract IPartnerConfiguration)
+constructor(contract IAccessControl accessControl) public
 ```
-
-returns the configuration for a partner
-
-#### Parameters
-
-| Name    | Type    | Description             |
-| ------- | ------- | ----------------------- |
-| partner | address | address for the partner |
-
-#### Returns
-
-| Name | Type                           | Description |
-| ---- | ------------------------------ | ----------- |
-| \_0  | contract IPartnerConfiguration | undefined   |
-
-### getPartnerOwnerAccount
-
-```solidity
-function getPartnerOwnerAccount(address partner) external view returns (address)
-```
-
-returns the owner account of a partner
-
-#### Parameters
-
-| Name    | Type    | Description             |
-| ------- | ------- | ----------------------- |
-| partner | address | address for the partner |
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | address | undefined   |
 
 ### isPartner
 
@@ -71,133 +27,65 @@ returns true if the partner is whitelisted
 
 #### Parameters
 
-| Name    | Type    | Description             |
-| ------- | ------- | ----------------------- |
+| Name | Type | Description |
+| ---- | ---- | ----------- |
 | partner | address | address for the partner |
 
-#### Returns
+### addPartner
+
+```solidity
+function addPartner(address partner, contract IPartnerConfiguration partnerConfiguration) external
+```
+
+adds a partner to the whitelist and sets its configuration
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| \_0  | bool | undefined   |
-
-### owner
-
-```solidity
-function owner() external view returns (address)
-```
-
-_Returns the address of the current owner._
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | address | undefined   |
+| partner | address | address for the partner that will be whitelisted |
+| partnerConfiguration | contract IPartnerConfiguration | address of the contract that implements the partner configuration interface |
 
 ### removePartner
 
 ```solidity
-function removePartner(address partner) external nonpayable
+function removePartner(address partner) external
 ```
 
 removes a partner from the whitelist
 
 #### Parameters
 
-| Name    | Type    | Description                                                     |
-| ------- | ------- | --------------------------------------------------------------- |
+| Name | Type | Description |
+| ---- | ---- | ----------- |
 | partner | address | address for the partner that will be removed from the whitelist |
-
-### renounceOwnership
-
-```solidity
-function renounceOwnership() external nonpayable
-```
-
-_Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner._
 
 ### setPartnerConfiguration
 
 ```solidity
-function setPartnerConfiguration(address partner, contract IPartnerConfiguration partnerConfiguration) external nonpayable
+function setPartnerConfiguration(address partner, contract IPartnerConfiguration partnerConfiguration) external
 ```
 
 sets the configuration for a partner
 
 #### Parameters
 
-| Name                 | Type                           | Description             |
-| -------------------- | ------------------------------ | ----------------------- |
-| partner              | address                        | address for the partner |
-| partnerConfiguration | contract IPartnerConfiguration | undefined               |
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| partner | address | address for the partner |
+| partnerConfiguration | contract IPartnerConfiguration |  |
 
-### transferOwnership
+### getPartnerConfiguration
 
 ```solidity
-function transferOwnership(address newOwner) external nonpayable
+function getPartnerConfiguration(address partner) public view returns (contract IPartnerConfiguration)
 ```
 
-_Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner._
+returns the configuration for a partner
 
 #### Parameters
 
-| Name     | Type    | Description |
-| -------- | ------- | ----------- |
-| newOwner | address | undefined   |
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| partner | address | address for the partner |
 
-## Events
-
-### OwnershipTransferred
-
-```solidity
-event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-```
-
-#### Parameters
-
-| Name                    | Type    | Description |
-| ----------------------- | ------- | ----------- |
-| previousOwner `indexed` | address | undefined   |
-| newOwner `indexed`      | address | undefined   |
-
-### PartnerAdded
-
-```solidity
-event PartnerAdded(address indexed partner, address indexed ownerAccount)
-```
-
-#### Parameters
-
-| Name                   | Type    | Description |
-| ---------------------- | ------- | ----------- |
-| partner `indexed`      | address | undefined   |
-| ownerAccount `indexed` | address | undefined   |
-
-### PartnerConfigurationChanged
-
-```solidity
-event PartnerConfigurationChanged(address partner, address configurationContract)
-```
-
-event emitted when the configuration for a partner is set
-
-#### Parameters
-
-| Name                  | Type    | Description |
-| --------------------- | ------- | ----------- |
-| partner               | address | undefined   |
-| configurationContract | address | undefined   |
-
-### PartnerRemoved
-
-```solidity
-event PartnerRemoved(address indexed partner, address indexed ownerAccount)
-```
-
-#### Parameters
-
-| Name                   | Type    | Description |
-| ---------------------- | ------- | ----------- |
-| partner `indexed`      | address | undefined   |
-| ownerAccount `indexed` | address | undefined   |

@@ -6,6 +6,7 @@ import 'hardhat-watcher';
 import 'tsconfig-paths/register';
 import '@nomiclabs/hardhat-ethers';
 import '@nomicfoundation/hardhat-chai-matchers';
+import 'solidity-docgen';
 
 import { HardhatUserConfig } from 'hardhat/config';
 
@@ -89,6 +90,7 @@ export default <HardhatUserConfig>{
     path: './docs',
     clear: true,
     runOnCompile: false,
+    pages: 'items',
   },
   settings: {
     outputSelection: {
