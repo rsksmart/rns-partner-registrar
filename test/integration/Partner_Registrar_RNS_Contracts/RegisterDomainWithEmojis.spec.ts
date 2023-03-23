@@ -404,7 +404,7 @@ describe('Registration With Emojis & Transfer Validation', () => {
   }); //it
 
   it('Test Case No. 4 - Renewal With Extra Money: Additional Money was not deducted from buyer balance or added to partner commission', async () => {
-    //Test Case No. 1
+    //Test Case No. 4
     //User Role:                          Regular User                                         (OK)
     //Domain Name - Chars:                Only Numbers + Emoji                                 (OK)
     //Renewal Type:                       1 Step (Additional Money)
