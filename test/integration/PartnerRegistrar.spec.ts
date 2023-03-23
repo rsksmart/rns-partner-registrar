@@ -134,7 +134,7 @@ describe('New Domain Registration (Integration)', () => {
       )
     ).wait();
 
-    const currentBalance = await RIF.balanceOf(nameOwner.address);
+    let currentBalance = await RIF.balanceOf(nameOwner.address);
 
     expect(currentBalance.eq(prevBalance)).to.be.true;
 
@@ -145,6 +145,8 @@ describe('New Domain Registration (Integration)', () => {
         renewData
       )
     ).wait();
+
+    currentBalance = await RIF.balanceOf(nameOwner.address);
 
     expect(currentBalance.eq(prevBalance)).to.be.true;
   });
