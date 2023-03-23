@@ -161,13 +161,13 @@ contract PartnerRegistrar is
             }
 
             _collectFees(partner, cost);
+        }
 
-            uint256 difference = amount - cost;
-            if (difference > 0) {
-                bool success = _rif.transfer(from, difference);
-                if (!success) {
-                    revert TokenTransferFailed(address(_rif), from, difference);
-                }
+        uint256 difference = amount - cost;
+        if (difference > 0) {
+            bool success = _rif.transfer(from, difference);
+            if (!success) {
+                revert TokenTransferFailed(address(_rif), from, difference);
             }
         }
     }

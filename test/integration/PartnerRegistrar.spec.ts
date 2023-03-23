@@ -11,9 +11,14 @@ import { ONLY_RIF_TOKEN_ERR } from '../utils/constants.utils';
 import {
   calculatePercentageWPrecision,
   getAddrRegisterData,
+  getRenewData,
+  oneRBTC,
 } from 'test/utils/mock.utils';
 import { expect } from 'chai';
 import { namehash } from 'ethers/lib/utils';
+import { BigNumber } from 'ethers';
+import { deployContract } from '../../utils/deployment.utils';
+import { PartnerConfiguration } from 'typechain-types';
 
 describe('New Domain Registration (Integration)', () => {
   it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
@@ -76,6 +81,74 @@ describe('New Domain Registration (Integration)', () => {
     expect(+partnerBalanceInFeeManager).to.equal(
       +expectedPartnerAccountBalance
     );
+  });
+
+  it('Should return user funds if the discount is 100% (register/renew)', async () => {
+    const {
+      RIF,
+      nameOwner,
+      PartnerRegistrar,
+      PartnerRenewer,
+      partner,
+      PartnerManager,
+      accessControl,
+    } = await loadFixture(initialSetup);
+
+    const { contract: PartnerConfiguration } =
+      await deployContract<PartnerConfiguration>('PartnerConfiguration', {
+        accessControl: accessControl.address,
+        minLength: 5,
+        maxLength: 20,
+        minDuration: 1,
+        maxDuration: 5,
+        feePercentage: FEE_PERCENTAGE,
+        discount: oneRBTC.mul(100),
+        minCommitmentAge: 0,
+      });
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    const registerData = getAddrRegisterData(
+      NAME,
+      nameOwner.address,
+      SECRET(),
+      OneYearDuration,
+      nameOwner.address,
+      partner.address
+    );
+
+    const renewData = getRenewData(NAME, OneYearDuration, partner.address);
+
+    const prevBalance = await RIF.balanceOf(nameOwner.address);
+
+    await (
+      await RIF.connect(nameOwner).transferAndCall(
+        PartnerRegistrar.address,
+        BigNumber.from(1),
+        registerData
+      )
+    ).wait();
+
+    let currentBalance = await RIF.balanceOf(nameOwner.address);
+
+    expect(currentBalance.eq(prevBalance)).to.be.true;
+
+    await (
+      await RIF.connect(nameOwner).transferAndCall(
+        PartnerRenewer.address,
+        BigNumber.from(1),
+        renewData
+      )
+    ).wait();
+
+    currentBalance = await RIF.balanceOf(nameOwner.address);
+
+    expect(currentBalance.eq(prevBalance)).to.be.true;
   });
 
   it('Should revert if not RIF token', async () => {
