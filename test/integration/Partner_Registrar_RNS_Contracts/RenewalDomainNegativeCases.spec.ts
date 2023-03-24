@@ -16,6 +16,8 @@ import {
 import { NodeOwner, ERC677Token, PartnerConfiguration } from 'typechain-types';
 
 import {
+  runRenewalTestFlow,
+  validateCommissionPayedToPartner,
   validateCorrectMoneyAmountWasPayed,
   validateNegativeFlowExpectedResults,
   validatePurchasedDomainHasCorrectOwner,
@@ -541,7 +543,510 @@ describe('Renewal Name - Negative Test Cases', () => {
       PartnerConfiguration
     );
   }); //it
-}); // End - Describe
+
+  it('Test Case No. 16 - Should Throw an Error; No Money Was Payed for Renotation; Expiration Time was not altered', async () => {
+    //Test Case No. 16
+    //User Role:                    Regular User  (OK)
+    //Renewal's Number Of Steps:    One Step (Transfer And Call) (OK)
+    //Domain Status:                Ready To Renovation (OK)
+    //Duration:                     1 year (OK)
+    //Partner Status:               NOT WHITE LISTED (-)
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      owner,
+      PartnerRenewer,
+      notWhitelistedPartner,
+      FeeManager,
+    } = await loadFixture(initialSetup);
+
+    const domainName = generateRandomStringWithLettersAndNumbers(
+      10,
+      true,
+      true
+    );
+
+    const duration = BigNumber.from('1');
+
+    const buyerUser: SignerWithAddress = owner;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    const balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    //INPUT
+    //1st - Domain Name to Purchase
+    //2nd - Duration (years)
+    //4th - Role User (Regular, Partner, RNS Owner)
+    await purchaseDomainWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
+
+    //Expected Results
+
+    //Validate Domain Name ISN'T Available anymore
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
+
+    //Validate the correct money amount from the buyer
+    const moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase,
+      PartnerConfiguration
+    );
+
+    //Validate the commission was payed to the referred partner
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true,
+      PartnerConfiguration
+    );
+
+    await validatePurchaseExpectedResults(
+      NodeOwner,
+      domainName,
+      buyerUser,
+      moneyBeforePurchase,
+      duration,
+      RIF,
+      PartnerConfiguration
+    );
+
+    //Transfer Name to Not Whited List User (Positive Case) - - - - - - - - - - - - - - - - - - - - - - - - -
+    const NodeOwnerAsBuyer = NodeOwner.connect(buyerUser);
+
+    await (
+      await NodeOwnerAsBuyer.transferFrom(
+        buyerUser.address,
+        notWhitelistedPartner.address,
+        nameToTokenId(domainName)
+      )
+    ).wait();
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      notWhitelistedPartner
+    ); //NOTE: DOMAINS CAN BE TRANSFERED TO NOT WHITE-LISTED (Confirmed with TL)
+
+    //Transfer Back to Not Original Buyer
+    const NodeOwnerAsBuyerBack = NodeOwner.connect(notWhitelistedPartner);
+
+    await (
+      await NodeOwnerAsBuyerBack.transferFrom(
+        notWhitelistedPartner.address,
+        buyerUser.address,
+        nameToTokenId(domainName)
+      )
+    ).wait();
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
+
+    const moneyBeforeRenovation = await RIF.balanceOf(buyerUser.address);
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('6');
+
+    const durationforRenovation = BigNumber.from('1');
+
+    let errorFound: boolean = false;
+
+    const expirationTimeBeforeRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    try {
+      await runRenewalTestFlow(
+        numberOfMonthsToSimulate,
+        durationforRenovation,
+        domainName,
+        notWhitelistedPartner.address,
+        buyerUser,
+        PartnerRenewer,
+        RIF,
+        NodeOwner,
+        moneyAfterPurchase,
+        false,
+        duration,
+        PartnerConfiguration
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Not-Whited-Listed Error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains('InvalidPartner');
+
+      expect(currentError, bugDescription).to.contains(
+        notWhitelistedPartner.address
+      );
+
+      expect(currentError, bugDescription).to.contains(
+        'VM Exception while processing transaction: reverted with custom error'
+      );
+
+      expect(currentError, bugDescription).to.contains('Error');
+    }
+
+    const moneyAfterRenovationFailed = await RIF.balanceOf(buyerUser.address);
+
+    //Expected Result - Validate Error was displayed
+    expect(
+      errorFound + '',
+      'BUG: Error Message (Renewal With Not-White Listed User) was NOT thrown!'
+    ).to.be.equals('true');
+
+    //Expected Result - Money should NOT be deducted from the Balance
+    expect(
+      moneyBeforeRenovation + '',
+      'BUG: NOT Renovated domain was deducted from New User Balance!'
+    ).to.be.equals(moneyAfterRenovationFailed + '');
+
+    const expirationTimeAfterRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    //Expected Result - Expiration not Altered!
+    expect(
+      expirationTimeBeforeRenovation,
+      'BUG: Domain Expiration Time Was Altered But The Renewal should be Failed!'
+    ).equals(expirationTimeAfterRenovation);
+  }); //it
+
+  it('Test Case No. 17.1 - Renewal 1 Step - With LESS Money: Renewal flow was not executed', async () => {
+    //Test Case No. 17.1
+    //User Role:                          Regular User                                         (OK)
+    //Domain Name - Chars:                Only Numbers + Emoji                                 (OK)
+    //Renewal Type:                       1 Step (LESS Money than Required)
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+      PartnerRenewer,
+      FeeManager,
+    } = await loadFixture(initialSetup);
+
+    const domainName =
+      generateRandomStringWithLettersAndNumbers(8, false, true) + '🥹🥹';
+
+    const duration = BigNumber.from('1');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    let balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
+
+    //Expected Results
+    //Validate Domain Name ISN'T Available anymore
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
+
+    //Validate the correct money amount from the buyer
+    let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase,
+      PartnerConfiguration
+    );
+
+    //Validate the commission was payed to the referred partner
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true,
+      PartnerConfiguration
+    );
+
+    balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('6');
+
+    moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    const partnerAddress = partner.address;
+
+    const namePrice = await calculateNamePriceByDuration(duration);
+
+    let errorFound: boolean = false;
+
+    const expirationTimeBeforeRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    try {
+      await oneStepDomainOwnershipRenewal(
+        domainName,
+        duration,
+        namePrice.sub(oneRBTC.mul(BigNumber.from('1'))), //LESS Money
+        partnerAddress,
+        buyerUser,
+        PartnerRenewer,
+        RIF,
+        numberOfMonthsToSimulate
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Insuficient Tokens Error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains(
+        'InsufficientTokensTransfered'
+      );
+
+      expect(currentError, bugDescription).to.contains(namePrice);
+
+      expect(currentError, bugDescription).to.contains(
+        'VM Exception while processing transaction: reverted with custom error'
+      );
+
+      expect(currentError, bugDescription).to.contains('Error');
+    }
+
+    const moneyAfterRenovationFailed = await RIF.balanceOf(buyerUser.address);
+
+    //Expected Result - Validate Error was displayed
+    expect(
+      errorFound + '',
+      'BUG: Error Message (Renewal With Not-White Listed User) was NOT thrown!'
+    ).to.be.equals('true');
+
+    //Expected Result - Money should NOT be deducted from the Balance
+    expect(
+      moneyAfterPurchase + '',
+      'BUG: NOT Renovated domain was deducted from New User Balance!'
+    ).to.be.equals(moneyAfterRenovationFailed + '');
+
+    const expirationTimeAfterRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    //Expected Result - Expiration not Altered!
+    expect(
+      expirationTimeBeforeRenovation,
+      'BUG: Domain Expiration Time Was Altered But The Renewal should be Failed!'
+    ).equals(expirationTimeAfterRenovation);
+  }); //it
+
+  it('Test Case No. 17.2 - Renewal 2 Step - With LESS Money: Renewal flow was not executed', async () => {
+    //Test Case No. 17.2
+    //User Role:                          Regular User                                         (OK)
+    //Domain Name - Chars:                Only Numbers + Emoji                                 (OK)
+    //Renewal Type:                       2 Steps (LESS Money than Required)
+
+    const {
+      NodeOwner,
+      PartnerRegistrar,
+      partner,
+      RIF,
+      PartnerConfiguration,
+      regularUser,
+      PartnerRenewer,
+      FeeManager,
+    } = await loadFixture(initialSetup);
+
+    const domainName =
+      generateRandomStringWithLettersAndNumbers(8, false, true) + '🥹🥹';
+
+    const duration = BigNumber.from('1');
+
+    const buyerUser: SignerWithAddress = regularUser;
+
+    const moneyBeforePurchase = await RIF.balanceOf(buyerUser.address);
+
+    let balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
+
+    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+
+    await purchaseDomainUsingTransferAndCallWithoutCommit(
+      domainName,
+      duration,
+      SECRET(),
+      buyerUser,
+      PartnerRegistrar,
+      RIF,
+      partner.address,
+      PartnerConfiguration
+    );
+
+    //Expected Results
+    //Validate Domain Name ISN'T Available anymore
+    await validatePurchasedDomainIsNotAvailable(NodeOwner, domainName);
+
+    //Validate the Domain Name Owner Is the correct
+    await validatePurchasedDomainHasCorrectOwner(
+      domainName,
+      NodeOwner,
+      buyerUser
+    );
+
+    //Validate the correct money amount from the buyer
+    let moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    await validateCorrectMoneyAmountWasPayed(
+      duration,
+      moneyAfterPurchase,
+      moneyBeforePurchase,
+      PartnerConfiguration
+    );
+
+    //Validate the commission was payed to the referred partner
+    await validateCommissionPayedToPartner(
+      duration,
+      partner.address,
+      balanceBeforePurchaseCommision,
+      FeeManager,
+      true,
+      PartnerConfiguration
+    );
+
+    balanceBeforePurchaseCommision = await FeeManager.getBalance(
+      partner.address
+    );
+
+    //Domain Renewal Flow - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const numberOfMonthsToSimulate = BigNumber.from('6');
+
+    moneyAfterPurchase = await RIF.balanceOf(buyerUser.address);
+
+    const partnerAddress = partner.address;
+
+    const namePrice = await calculateNamePriceByDuration(duration);
+
+    let errorFound: boolean = false;
+
+    const expirationTimeBeforeRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    try {
+      await TwoStepsDomainOwnershipRenewal(
+        domainName,
+        duration,
+        namePrice.sub(oneRBTC.mul(BigNumber.from('1'))), //LESS Money
+        partnerAddress,
+        buyerUser,
+        PartnerRenewer,
+        RIF,
+        numberOfMonthsToSimulate
+      );
+    } catch (error) {
+      errorFound = true;
+
+      const currentError = error + '';
+
+      const bugDescription =
+        'BUG: The Insuficient Tokens Error message was NOT displayed correctly';
+
+      expect(currentError, bugDescription).to.contains(
+        'insufficient allowance'
+      );
+
+      expect(currentError, bugDescription).to.contains(
+        'VM Exception while processing transaction: reverted with reason'
+      );
+
+      expect(currentError, bugDescription).to.contains('Error');
+    }
+
+    const moneyAfterRenovationFailed = await RIF.balanceOf(buyerUser.address);
+
+    //Expected Result - Validate Error was displayed
+    expect(
+      errorFound + '',
+      'BUG: Error Message (Renewal With Not-White Listed User) was NOT thrown!'
+    ).to.be.equals('true');
+
+    //Expected Result - Money should NOT be deducted from the Balance
+    expect(
+      moneyAfterPurchase + '',
+      'BUG: NOT Renovated domain was deducted from New User Balance!'
+    ).to.be.equals(moneyAfterRenovationFailed + '');
+
+    const expirationTimeAfterRenovation = await NodeOwner.expirationTime(
+      nameToTokenId(domainName)
+    );
+
+    //Expected Result - Expiration not Altered!
+    expect(
+      expirationTimeBeforeRenovation,
+      'BUG: Domain Expiration Time Was Altered But The Renewal should be Failed!'
+    ).equals(expirationTimeAfterRenovation);
+  }); //it
+}); // End - Describe - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export const validatePurchaseExpectedResults = async (
   NodeOwner: NodeOwner,
