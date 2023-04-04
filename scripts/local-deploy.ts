@@ -5,7 +5,8 @@ import RNSAbi from '../test/external-abis/RNS.json';
 import { deployContract, Factory } from 'utils/deployment.utils';
 import { namehash } from 'ethers/lib/utils';
 import NodeOwnerAbi from '../test/external-abis/NodeOwner.json';
-import ResolverAbi from '../test/external-abis/ResolverV1.json';
+import DefinitiveResolver from '../test/external-abis/ResolverV1.json';
+import PublicResolver from '../test/external-abis/PublicResolver.json';
 import MultichainResolverAbi from '../test/external-abis/MultiChainResolver.json';
 import NameResolverAbi from '../test/external-abis/NameResolver.json';
 import ReverseSetupAbi from '../test/external-abis/ReverseSetup.json';
@@ -63,24 +64,40 @@ async function main() {
 
     console.log('NodeOwner:', NodeOwnerContract.address);
 
-    const { contract: ResolverContract } = await deployContract<Resolver>(
-      'ResolverV1',
-      {},
+    const { contract: DefinitiveResolverContract } =
+      await deployContract<Resolver>(
+        'ResolverV1',
+        {},
+        (await ethers.getContractFactory(
+          DefinitiveResolver.abi,
+          DefinitiveResolver.bytecode
+        )) as Factory<Resolver>
+      );
+
+    console.log('Definitive Resolver:', DefinitiveResolverContract.address);
+
+    await (
+      await DefinitiveResolverContract.initialize(RNSContract.address)
+    ).wait();
+
+    const { contract: PublicResolverContract } = await deployContract<Resolver>(
+      'PublicResolver',
+      {
+        _rns: RNSContract.address,
+      },
       (await ethers.getContractFactory(
-        ResolverAbi.abi,
-        ResolverAbi.bytecode
+        PublicResolver.abi,
+        PublicResolver.bytecode
       )) as Factory<Resolver>
     );
 
-    console.log('ResolverV1:', ResolverContract.address);
-
-    await (await ResolverContract.initialize(RNSContract.address)).wait();
+    console.log('Public Resolver:', PublicResolverContract.address);
 
     const { contract: MultiChainResolver } = await deployContract<Contract>(
       'MultiChainResolver',
       {
         _rns: RNSContract.address,
-        _publicResolver: ResolverContract.address,
+        _publicResolver: PublicResolverContract.address,
       },
       (await ethers.getContractFactory(
         MultichainResolverAbi.abi,
@@ -300,11 +317,11 @@ async function main() {
     console.log('PartnerRegistrar added to nodeowner');
 
     await (
-      await RNSContract.setDefaultResolver(ResolverContract.address)
+      await RNSContract.setDefaultResolver(PublicResolverContract.address)
     ).wait();
     console.log('default resolver set');
     await (
-      await NodeOwnerContract.setRootResolver(ResolverContract.address)
+      await NodeOwnerContract.setRootResolver(PublicResolverContract.address)
     ).wait();
     console.log('node root resolver set');
 
@@ -312,32 +329,36 @@ async function main() {
 
     console.log('Writing contract addresses to file...');
     const content = {
-      rns: RNSContract.address,
-      registrar: PartnerRegistrarContract.address,
-      reverseRegistrar: ReverseRegistrar.address,
-      publicResolver: ResolverContract.address,
-      nameResolver: NameResolver.address,
-      multiChainResolver: MultiChainResolver.address,
-      rif: RIF.address,
-      fifsRegistrar: PartnerRegistrarContract.address,
-      fifsAddrRegistrar: PartnerRegistrarContract.address,
-      rskOwner: NodeOwnerContract.address,
-      renewer: PartnerRenewerContract.address,
-      partnerManager: PartnerManagerContract.address,
-      feeManager: FeeManager.address,
-      registrarAccessControl: RegistrarAccessControlContract.address,
+      rns: RNSContract.address.toLowerCase(),
+      registrar: PartnerRegistrarContract.address.toLowerCase(),
+      reverseRegistrar: ReverseRegistrar.address.toLowerCase(),
+      publicResolver: PublicResolverContract.address.toLowerCase(),
+      nameResolver: NameResolver.address.toLowerCase(),
+      multiChainResolver: MultiChainResolver.address.toLowerCase(),
+      definitiveResolver: DefinitiveResolverContract.address.toLowerCase(),
+      // TODO: Replace with actual string resolver contract?
+      stringResolver: DefinitiveResolverContract.address.toLowerCase(),
+      rif: RIF.address.toLowerCase(),
+      fifsRegistrar: PartnerRegistrarContract.address.toLowerCase(),
+      fifsAddrRegistrar: PartnerRegistrarContract.address.toLowerCase(),
+      rskOwner: NodeOwnerContract.address.toLowerCase(),
+      renewer: PartnerRenewerContract.address.toLowerCase(),
+      partnerManager: PartnerManagerContract.address.toLowerCase(),
+      feeManager: FeeManager.address.toLowerCase(),
+      registrarAccessControl:
+        RegistrarAccessControlContract.address.toLowerCase(),
       partners: {
         default: {
-          account: iov.address,
-          config: DefaultPartnerConfiguration.address,
+          account: iov.address.toLowerCase(),
+          config: DefaultPartnerConfiguration.address.toLowerCase(),
         },
         buenbit: {
-          account: partner.address,
-          config: PartnerOneConfiguration.address,
+          account: partner.address.toLowerCase(),
+          config: PartnerOneConfiguration.address.toLowerCase(),
         },
         thefellowship: {
-          account: partnerTwo.address,
-          config: PartnerTwoConfiguration.address,
+          account: partnerTwo.address.toLowerCase(),
+          config: PartnerTwoConfiguration.address.toLowerCase(),
         },
       },
     };
