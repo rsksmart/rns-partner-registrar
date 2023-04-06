@@ -10,6 +10,7 @@ import PublicResolver from '../test/external-abis/PublicResolver.json';
 import MultichainResolverAbi from '../test/external-abis/MultiChainResolver.json';
 import NameResolverAbi from '../test/external-abis/NameResolver.json';
 import ReverseSetupAbi from '../test/external-abis/ReverseSetup.json';
+import ReverseRegistrarJson from '../test/external-abis/ReverseRegistrar.json';
 import { oneRBTC } from 'test/utils/mock.utils';
 import {
   ERC677Token,
@@ -126,8 +127,8 @@ async function main() {
         _rns: RNSContract.address,
       },
       (await ethers.getContractFactory(
-        NameResolverAbi.abi,
-        NameResolverAbi.bytecode
+        ReverseRegistrarJson.abi,
+        ReverseRegistrarJson.bytecode
       )) as Factory<Contract>
     );
 
