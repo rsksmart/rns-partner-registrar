@@ -5,12 +5,14 @@ import RNSAbi from '../test/external-abis/RNS.json';
 import { deployContract, Factory } from 'utils/deployment.utils';
 import { namehash } from 'ethers/lib/utils';
 import NodeOwnerAbi from '../test/external-abis/NodeOwner.json';
-import ResolverAbi from '../test/external-abis/ResolverV1.json';
+import DefinitiveResolver from '../test/external-abis/ResolverV1.json';
+import PublicResolver from '../test/external-abis/PublicResolver.json';
 import NameResolverAbi from '../test/external-abis/NameResolver.json';
 import ReverseSetupAbi from '../test/external-abis/ReverseSetup.json';
+import MultichainResolverAbi from '../test/external-abis/MultiChainResolver.json';
+import ReverseRegistrarJson from '../test/external-abis/ReverseRegistrar.json';
 import { oneRBTC } from 'test/utils/mock.utils';
 import {
-  ERC677Token,
   FeeManager,
   NodeOwner,
   PartnerConfiguration,
@@ -67,18 +69,51 @@ async function main() {
 
     console.log('NodeOwner:', NodeOwnerContract.address);
 
-    const { contract: ResolverContract } = await deployContract<Resolver>(
-      'ResolverV1',
-      {},
+    const { contract: DefinitiveResolverContract } =
+      await deployContract<Resolver>(
+        'ResolverV1',
+        {},
+        (await ethers.getContractFactory(
+          DefinitiveResolver.abi,
+          DefinitiveResolver.bytecode
+        )) as Factory<Resolver>
+      );
+
+    console.log(
+      'DefinitiveResolverContract:',
+      DefinitiveResolverContract.address
+    );
+
+    await (
+      await DefinitiveResolverContract.initialize(RNSContract.address)
+    ).wait();
+
+    const { contract: PublicResolverContract } = await deployContract<Resolver>(
+      'PublicResolver',
+      {
+        _rns: RNSContract.address,
+      },
       (await ethers.getContractFactory(
-        ResolverAbi.abi,
-        ResolverAbi.bytecode
+        PublicResolver.abi,
+        PublicResolver.bytecode
       )) as Factory<Resolver>
     );
 
-    console.log('ResolverV1:', ResolverContract.address);
+    console.log('Public Resolver:', PublicResolverContract.address);
 
-    await (await ResolverContract.initialize(RNSContract.address)).wait();
+    const { contract: MultiChainResolver } = await deployContract<Contract>(
+      'MultiChainResolver',
+      {
+        _rns: RNSContract.address,
+        _publicResolver: PublicResolverContract.address,
+      },
+      (await ethers.getContractFactory(
+        MultichainResolverAbi.abi,
+        MultichainResolverAbi.bytecode
+      )) as Factory<Contract>
+    );
+
+    console.log('MultiChainResolver:', MultiChainResolver.address);
 
     const { contract: NameResolver } = await deployContract<Contract>(
       'NameResolver',
@@ -99,8 +134,8 @@ async function main() {
         _rns: RNSContract.address,
       },
       (await ethers.getContractFactory(
-        NameResolverAbi.abi,
-        NameResolverAbi.bytecode
+        ReverseRegistrarJson.abi,
+        ReverseRegistrarJson.bytecode
       )) as Factory<Contract>
     );
 
@@ -147,11 +182,11 @@ async function main() {
     console.log('reverse run');
 
     await (
-      await RNSContract.setDefaultResolver(ResolverContract.address)
+      await RNSContract.setDefaultResolver(PublicResolverContract.address)
     ).wait();
     console.log('default resolver set');
     await (
-      await NodeOwnerContract.setRootResolver(ResolverContract.address)
+      await NodeOwnerContract.setRootResolver(PublicResolverContract.address)
     ).wait();
     console.log('node root resolver set');
 
@@ -290,10 +325,12 @@ async function main() {
 
     console.log('Writing contract addresses to file...');
     const content = {
-      rns: RNSContract.address,
+      rns: RNSContract.address.toLowerCase(),
       registrar: PartnerRegistrarContract.address,
       reverseRegistrar: ReverseRegistrar.address,
-      publicResolver: ResolverContract.address,
+      publicResolver: PublicResolverContract.address,
+      definitiveResolver: DefinitiveResolverContract.address.toLowerCase(),
+      stringResolver: '0x0000000000000000000000000000000000000000',
       nameResolver: NameResolver.address,
       tRif: tRIF_ADDRESS,
       fifsRegistrar: PartnerRegistrarContract.address,
