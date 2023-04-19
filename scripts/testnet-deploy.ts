@@ -36,7 +36,8 @@ const tRIF_ADDRESS =
 
 async function main() {
   try {
-    const [owner, highLevelOperator, pool] = await ethers.getSigners();
+    const [owner, highLevelOperator, pool, defaultPartner] =
+      await ethers.getSigners();
 
     /* ********** RNS OLD SUITE DEPLOY STARTS HERE ********** */
 
@@ -275,6 +276,23 @@ async function main() {
       await PartnerRenewerContract.setFeeManager(FeeManager.address)
     ).wait();
 
+    console.log('******* setting up new suite contracts contracts *********');
+
+    await (
+      await NodeOwnerContract.addRegistrar(PartnerRegistrarContract.address)
+    ).wait();
+
+    console.log('new partner registrar added');
+
+    await (
+      await NodeOwnerContract.addRenewer(PartnerRenewerContract.address)
+    ).wait();
+
+    console.log('new partner renewer added');
+
+    // create and add defaultParnter
+    console.log('adding default partner');
+
     const { contract: DefaultPartnerConfiguration } =
       await deployContract<PartnerConfiguration>(
         'PartnerConfiguration',
@@ -297,19 +315,14 @@ async function main() {
       DefaultPartnerConfiguration.address
     );
 
-    console.log('******* setting up new suite contracts contracts *********');
-
     await (
-      await NodeOwnerContract.addRegistrar(PartnerRegistrarContract.address)
+      await PartnerManagerContract.addPartner(
+        defaultPartner.address,
+        DefaultPartnerConfiguration.address
+      )
     ).wait();
 
-    console.log('new partner registrar added');
-
-    await (
-      await NodeOwnerContract.addRenewer(PartnerRenewerContract.address)
-    ).wait();
-
-    console.log('new partner renewer added');
+    console.log('default partner added');
 
     // Ownership transfer
     console.log(
@@ -326,21 +339,28 @@ async function main() {
     console.log('Writing contract addresses to file...');
     const content = {
       rns: RNSContract.address.toLowerCase(),
-      registrar: PartnerRegistrarContract.address,
-      reverseRegistrar: ReverseRegistrar.address,
-      publicResolver: PublicResolverContract.address,
+      registrar: PartnerRegistrarContract.address.toLowerCase(),
+      reverseRegistrar: ReverseRegistrar.address.toLowerCase(),
+      publicResolver: PublicResolverContract.address.toLowerCase(),
+      nameResolver: NameResolver.address.toLowerCase(),
+      multiChainResolver: MultiChainResolver.address.toLowerCase(),
       definitiveResolver: DefinitiveResolverContract.address.toLowerCase(),
       stringResolver: '0x0000000000000000000000000000000000000000',
-      nameResolver: NameResolver.address,
-      tRif: tRIF_ADDRESS,
-      fifsRegistrar: PartnerRegistrarContract.address,
-      fifsAddrRegistrar: PartnerRegistrarContract.address,
-      rskOwner: NodeOwnerContract.address,
-      renewer: PartnerRenewerContract.address,
-      partnerManager: PartnerManagerContract.address,
-      feeManager: FeeManager.address,
-      defaultPartnerConfiguration: DefaultPartnerConfiguration.address,
-      registrarAccessControl: RegistrarAccessControlContract.address,
+      rif: tRIF_ADDRESS.toLowerCase(),
+      fifsRegistrar: PartnerRegistrarContract.address.toLowerCase(),
+      fifsAddrRegistrar: PartnerRegistrarContract.address.toLowerCase(),
+      rskOwner: NodeOwnerContract.address.toLowerCase(),
+      renewer: PartnerRenewerContract.address.toLowerCase(),
+      partnerManager: PartnerManagerContract.address.toLowerCase(),
+      feeManager: FeeManager.address.toLowerCase(),
+      registrarAccessControl:
+        RegistrarAccessControlContract.address.toLowerCase(),
+      partners: {
+        default: {
+          account: defaultPartner.address.toLowerCase(),
+          config: DefaultPartnerConfiguration.address.toLowerCase(),
+        },
+      },
     };
 
     fs.writeFileSync(
