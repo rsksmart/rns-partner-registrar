@@ -337,8 +337,7 @@ async function main() {
       nameResolver: NameResolver.address.toLowerCase(),
       multiChainResolver: MultiChainResolver.address.toLowerCase(),
       definitiveResolver: DefinitiveResolverContract.address.toLowerCase(),
-      // TODO: Replace with actual string resolver contract?
-      stringResolver: DefinitiveResolverContract.address.toLowerCase(),
+      stringResolver: '0x0000000000000000000000000000000000000000',
       rif: RIF.address.toLowerCase(),
       fifsRegistrar: PartnerRegistrarContract.address.toLowerCase(),
       fifsAddrRegistrar: PartnerRegistrarContract.address.toLowerCase(),
