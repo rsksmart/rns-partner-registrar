@@ -290,7 +290,7 @@ async function main() {
 
     console.log('new partner renewer added');
 
-    // create and add defaultParnter
+    // create and add default Partner
     console.log('adding default partner');
 
     const { contract: DefaultPartnerConfiguration } =
