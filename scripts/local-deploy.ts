@@ -28,6 +28,8 @@ import {
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
+const newtldNode = namehash('sovryn');
+const newtldAsSha3 = utils.id('sovryn');
 const reverseTldAsSha3 = utils.id('reverse');
 const ZERO_FEE_PERCENTAGE = oneRBTC.mul(0); //0%
 const HALF_FEE_PERCENTAGE = oneRBTC.mul(50); //50%
@@ -56,6 +58,18 @@ async function main() {
       {
         _rns: RNSContract.address,
         _rootNode: tldNode,
+      },
+      (await ethers.getContractFactory(
+        NodeOwnerAbi.abi,
+        NodeOwnerAbi.bytecode
+      )) as Factory<NodeOwner>
+    );
+
+    const { contract: TLDNodeOwnerContract } = await deployContract<NodeOwner>(
+      'NodeOwner',
+      {
+        _rns: RNSContract.address,
+        _rootNode: newtldNode,
       },
       (await ethers.getContractFactory(
         NodeOwnerAbi.abi,
@@ -185,6 +199,16 @@ async function main() {
         rootNode: tldNode,
       });
 
+    const { contract: TLDRegistrarContract } =
+      await deployContract<PartnerRegistrar>('PartnerRegistrar', {
+        accessControl: RegistrarAccessControlContract.address,
+        nodeOwner: TLDNodeOwnerContract.address,
+        rif: RIF.address,
+        partnerManager: PartnerManagerContract.address,
+        rns: RNSContract.address,
+        rootNode: newtldNode,
+      });
+
     const { contract: PartnerRenewerContract } =
       await deployContract<PartnerRenewer>('PartnerRenewer', {
         accessControl: RegistrarAccessControlContract.address,
@@ -194,12 +218,24 @@ async function main() {
       });
 
     console.log('PartnerRegistrar:', PartnerRegistrarContract.address);
+    console.log('Sovryn PartnerRegistrar:', PartnerRegistrarContract.address);
 
     const { contract: FeeManager } = await deployContract<FeeManager>(
       'FeeManager',
       {
         rif: RIF.address,
         partnerRegistrar: PartnerRegistrarContract.address,
+        partnerRenewer: PartnerRenewerContract.address,
+        partnerManager: PartnerManagerContract.address,
+        pool: pool.address,
+      }
+    );
+
+    const { contract: TLDFeeManager } = await deployContract<FeeManager>(
+      'FeeManager',
+      {
+        rif: RIF.address,
+        partnerRegistrar: TLDRegistrarContract.address,
         partnerRenewer: PartnerRenewerContract.address,
         partnerManager: PartnerManagerContract.address,
         pool: pool.address,
@@ -213,6 +249,10 @@ async function main() {
     ).wait();
     await (
       await PartnerRenewerContract.setFeeManager(FeeManager.address)
+    ).wait();
+
+    await (
+      await TLDRegistrarContract.setFeeManager(TLDFeeManager.address)
     ).wait();
 
     const { contract: DefaultPartnerConfiguration } =
@@ -301,6 +341,14 @@ async function main() {
       )
     ).wait();
 
+    await (
+      await RNSContract.setSubnodeOwner(
+        rootNodeId,
+        newtldAsSha3,
+        TLDNodeOwnerContract.address
+      )
+    ).wait();
+
     console.log('reverse tld set');
 
     await (await ReverseSetup.run()).wait();
@@ -315,6 +363,10 @@ async function main() {
       await NodeOwnerContract.addRenewer(PartnerRenewerContract.address)
     ).wait();
 
+    await (
+      await TLDNodeOwnerContract.addRegistrar(TLDRegistrarContract.address)
+    ).wait();
+
     console.log('PartnerRegistrar added to nodeowner');
 
     await (
@@ -323,6 +375,10 @@ async function main() {
     console.log('default resolver set');
     await (
       await NodeOwnerContract.setRootResolver(PublicResolverContract.address)
+    ).wait();
+
+    await (
+      await TLDNodeOwnerContract.setRootResolver(PublicResolverContract.address)
     ).wait();
     console.log('node root resolver set');
 
@@ -345,6 +401,7 @@ async function main() {
       renewer: PartnerRenewerContract.address.toLowerCase(),
       partnerManager: PartnerManagerContract.address.toLowerCase(),
       feeManager: FeeManager.address.toLowerCase(),
+      sovrynRegistrar: TLDRegistrarContract.address.toLowerCase(),
       registrarAccessControl:
         RegistrarAccessControlContract.address.toLowerCase(),
       partners: {
