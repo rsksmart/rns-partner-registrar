@@ -186,7 +186,7 @@ contract PartnerRegistrar is
             );
         }
 
-        _feeManager.deposit(partner, amount);
+        _feeManager.deposit(partner, amount, _rootNode);
     }
 
     // - Via ERC-20

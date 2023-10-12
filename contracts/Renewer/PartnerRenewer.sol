@@ -24,6 +24,7 @@ contract PartnerRenewer is
     IERC677 private _rif;
     IPartnerManager private _partnerManager;
     IFeeManager private _feeManager;
+    bytes32 private _rootNode;
 
     // sha3('renew(string,uint,address)')
     bytes4 private constant _RENEW_SIGNATURE = 0x8d7016ca;
@@ -34,11 +35,13 @@ contract PartnerRenewer is
         IAccessControl accessControl,
         NodeOwner nodeOwner,
         IERC677 rif,
-        IPartnerManager partnerManager
+        IPartnerManager partnerManager,
+        bytes32 rootNode
     ) HasAccessControl(accessControl) {
         _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
+        _rootNode = rootNode;
     }
 
     modifier onlyPartner(address partner) {
@@ -139,7 +142,7 @@ contract PartnerRenewer is
             );
         }
 
-        _feeManager.deposit(partner, amount);
+        _feeManager.deposit(partner, amount, _rootNode);
     }
 
     /**

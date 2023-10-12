@@ -37,22 +37,61 @@ interface IFeeManager {
     event DepositSuccessful(uint256 amount, address from);
 
     /**
+     * @notice event emitted when a new TLD is registered
+     * @param tld the TLD that was registered
+     * @param registrar address of the registrar
+     * @param renewer address of the renewer
+     */
+    event TldAdded(
+        bytes32 tld,
+        string tldName,
+        address registrar,
+        address renewer
+    );
+
+    /**
      * @notice allows the partner to withdraw the balance of their revenue
+     * @param tld the TLD of the sale
      * @custom:emits-event emits the WithdrawalSuccessful event
      */
-    function withdraw() external;
+    function withdraw(bytes32 tld) external;
 
     /**
      * @notice allows the registrar and renewer to deposit the partners revenue share
      * @param partner address of the partners that triggered the deposit
      * @param amount amount of tokens from the sale
+     * @param tld the TLD of the sale
      * @custom:emits-event emits the DepositSuccessful event
      */
-    function deposit(address partner, uint256 amount) external;
+    function deposit(address partner, uint256 amount, bytes32 tld) external;
 
     /**
      * @notice allows checking the revenue balance of any partner
      * @param partner address of the partner
      */
-    function getBalance(address partner) external view returns (uint256);
+    function getBalance(
+        address partner,
+        bytes32 tld
+    ) external view returns (uint256);
+
+    /**
+     * @notice registers a new TLD to the fee manager
+     * @param tld the TLD to be registered
+     * @param registrar address of the tld
+     * @param renewer address of the tld
+     */
+    function addNewTld(
+        bytes32 tld,
+        address registrar,
+        address renewer,
+        string memory tldName
+    ) external;
+
+    /**
+     * @notice returns the TLD information
+     * @param tld whose information is being retrieved
+     */
+    function getTld(
+        bytes32 tld
+    ) external view returns (string memory, address, address);
 }
