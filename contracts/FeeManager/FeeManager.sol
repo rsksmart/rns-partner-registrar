@@ -6,6 +6,7 @@ import "./IFeeManager.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../Registrar/IBaseRegistrar.sol";
 import "../Renewer/IBaseRenewer.sol";
+import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
 
 /**
@@ -15,18 +16,21 @@ import "../Access/HasAccessControl.sol";
 contract FeeManager is IFeeManager, HasAccessControl {
     RIF private _rif;
 
+    mapping(IBaseRegistrar => bool) private _whitelistedRegistrars;
+    mapping(IBaseRenewer => bool) private _whitelistedRenewers;
+    mapping(IPartnerManager => bool) private _whitelistedPartnerManagers;
     mapping(address => uint256) private _balances;
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
 
-    IBaseRegistrar private _registrar;
-    IBaseRenewer private _renewer;
-    IPartnerManager private _partnerManager;
+    // IBaseRegistrar private _registrar;
+    // IBaseRenewer private _renewer;
+    // IPartnerManager private _partnerManager;
     address private _pool;
 
     modifier onlyDepositor() {
         if (
-            !(msg.sender == address(_registrar) ||
-                msg.sender == address(_renewer))
+            !(_isEntityWhitelisted(msg.sender, "registrar") ||
+                _isEntityWhitelisted(msg.sender, "renewar"))
         ) {
             revert NotAuthorized(msg.sender);
         }
@@ -35,16 +39,10 @@ contract FeeManager is IFeeManager, HasAccessControl {
 
     constructor(
         RIF rif,
-        IBaseRegistrar registrar,
-        IBaseRenewer renewer,
-        IPartnerManager partnerManager,
         address pool,
         IAccessControl accessControl
     ) HasAccessControl(accessControl) {
         _rif = rif;
-        _registrar = registrar;
-        _renewer = renewer;
-        _partnerManager = partnerManager;
         _pool = pool;
     }
 
@@ -70,17 +68,26 @@ contract FeeManager is IFeeManager, HasAccessControl {
      */
     function deposit(
         address partner,
-        uint256 amount
-    ) external override onlyDepositor {
+        uint256 amount,
+        address partnerManager
+    ) external override {
         emit DepositSuccessful(amount, partner);
+
+        bool validateManager = _isEntityWhitelisted(
+            partnerManager,
+            "partner_manager"
+        );
+        if (!validateManager) {
+            revert InvalidEntity(partnerManager, "partner_manager");
+        }
 
         if (!_rif.transferFrom(msg.sender, address(this), amount)) {
             revert TransferFailed(msg.sender, address(this), amount);
         }
 
         uint256 partnerFee = (amount *
-            _getPartnerConfiguration(partner).getFeePercentage()) /
-            _PERCENT100_WITH_PRECISION18;
+            _getPartnerConfiguration(partner, partnerManager)
+                .getFeePercentage()) / _PERCENT100_WITH_PRECISION18;
         _balances[partner] += partnerFee;
 
         uint256 balance = amount - partnerFee;
@@ -91,9 +98,18 @@ contract FeeManager is IFeeManager, HasAccessControl {
     }
 
     function _getPartnerConfiguration(
-        address partner
+        address partner,
+        address partnerManager
     ) private view returns (IPartnerConfiguration) {
-        return _partnerManager.getPartnerConfiguration(partner);
+        bool validateManager = _isEntityWhitelisted(
+            partnerManager,
+            "partner_manager"
+        );
+        if (!validateManager) {
+            revert InvalidEntity(partnerManager, "partner_manager");
+        }
+
+        return IPartnerManager(partnerManager).getPartnerConfiguration(partner);
     }
 
     /**
@@ -118,52 +134,55 @@ contract FeeManager is IFeeManager, HasAccessControl {
 
         _pool = newPoolAddress;
     }
-
-    function getRegistrar() public view returns (address) {
-        return address(_registrar);
-    }
-
-    function setRegistrar(
-        address newRegistrarAddress
-    ) public onlyHighLevelOperator {
-        if (newRegistrarAddress == address(_registrar)) {
-            revert("old value is same as new value");
+    
+    /**
+       @inheritdoc IFeeManager
+     */
+    function whiteListEntity(
+        address entity,
+        string memory registrarRenewarOrPartnerManager
+    ) external override onlyHighLevelOperator {
+        if (
+            keccak256(abi.encodePacked(registrarRenewarOrPartnerManager)) ==
+            keccak256(abi.encodePacked("registrar"))
+        ) {
+            _whitelistedRegistrars[IBaseRegistrar(entity)] = true;
+        } else if (
+            keccak256(abi.encodePacked(registrarRenewarOrPartnerManager)) ==
+            keccak256(abi.encodePacked("renewer"))
+        ) {
+            _whitelistedRenewers[IBaseRenewer(entity)] = true;
+        } else if (
+            keccak256(abi.encodePacked(registrarRenewarOrPartnerManager)) ==
+            keccak256(abi.encodePacked("partner_manager"))
+        ) {
+            _whitelistedPartnerManagers[IPartnerManager(entity)] = true;
+        } else {
+            revert InvalidEntity(entity, registrarRenewarOrPartnerManager);
         }
-
-        emit RegistrarChanged(msg.sender, newRegistrarAddress);
-
-        _registrar = IBaseRegistrar(newRegistrarAddress);
     }
 
-    function getRenewer() public view returns (address) {
-        return address(_renewer);
-    }
-
-    function setRenewer(
-        address newRenewerAddress
-    ) public onlyHighLevelOperator {
-        if (newRenewerAddress == address(_renewer)) {
-            revert("old value is same as new value");
+    function _isEntityWhitelisted(
+        address entity,
+        string memory registrarRenewarOrPartnerManager
+    ) private view returns (bool) {
+        if (
+            keccak256(abi.encodePacked(registrarRenewarOrPartnerManager)) ==
+            keccak256(abi.encodePacked("registrar"))
+        ) {
+            return _whitelistedRegistrars[IBaseRegistrar(entity)];
+        } else if (
+            keccak256(abi.encodePacked(registrarRenewarOrPartnerManager)) ==
+            keccak256(abi.encodePacked("renewer"))
+        ) {
+            return _whitelistedRenewers[IBaseRenewer(entity)];
+        } else if (
+            keccak256(abi.encodePacked(registrarRenewarOrPartnerManager)) ==
+            keccak256(abi.encodePacked("partner_manager"))
+        ) {
+            return _whitelistedPartnerManagers[IPartnerManager(entity)];
+        } else {
+            return false;
         }
-
-        emit RenewerChanged(msg.sender, newRenewerAddress);
-
-        _renewer = IBaseRenewer(newRenewerAddress);
-    }
-
-    function getPartnerManager() public view returns (address) {
-        return address(_partnerManager);
-    }
-
-    function setPartnerManager(
-        address newPartnerManager
-    ) public onlyHighLevelOperator {
-        if (newPartnerManager == address(_partnerManager)) {
-            revert("old value is same as new value");
-        }
-
-        emit PartnerManagerChanged(msg.sender, newPartnerManager);
-
-        _partnerManager = IPartnerManager(newPartnerManager);
     }
 }

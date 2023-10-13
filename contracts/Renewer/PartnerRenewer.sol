@@ -113,7 +113,7 @@ contract PartnerRenewer is
                 revert InsufficientTokensTransfered(cost, amount);
             }
 
-            _collectFees(partner, cost);
+            _collectFees(partner, cost, address(_partnerManager));
         }
 
         uint256 difference = amount - cost;
@@ -125,7 +125,11 @@ contract PartnerRenewer is
         }
     }
 
-    function _collectFees(address partner, uint256 amount) private {
+    function _collectFees(
+        address partner,
+        uint256 amount,
+        address partnerManager
+    ) private {
         if (_feeManager == IFeeManager(address(0))) {
             revert CustomError("Fee Manager not set");
         }
@@ -139,7 +143,7 @@ contract PartnerRenewer is
             );
         }
 
-        _feeManager.deposit(partner, amount);
+        _feeManager.deposit(partner, amount, partnerManager);
     }
 
     /**
@@ -181,7 +185,7 @@ contract PartnerRenewer is
                 revert TokenTransferFailed(msg.sender, address(this), cost);
             }
 
-            _collectFees(partner, cost);
+            _collectFees(partner, cost, address(_partnerManager));
         }
     }
 

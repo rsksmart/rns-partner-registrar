@@ -116,12 +116,14 @@ const initialSetup = async () => {
 
   const FeeManager = await deployContract<FeeManager__factory>('FeeManager', [
     RIF.address,
-    PartnerRegistrar.address,
-    PartnerRenewer.address,
-    PartnerManager.address,
     pool.address,
     accessControl.address,
   ]);
+
+  // whiteList contracts on feeManager
+  await FeeManager.whiteListEntity(PartnerRegistrar.address, 'registrar');
+  await FeeManager.whiteListEntity(PartnerRenewer.address, 'renewer');
+  await FeeManager.whiteListEntity(PartnerManager.address, 'partner_manager');
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
 
