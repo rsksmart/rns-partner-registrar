@@ -124,13 +124,23 @@ export const initialSetup = async () => {
     'FeeManager',
     {
       rif: RIF.address,
-      registrar: PartnerRegistrar.address,
-      renewer: PartnerRenewer.address,
-      partnerManager: PartnerManager.address,
       pool: pool.address,
       accessControl: accessControl.address,
     }
   );
+
+  // whiteList contracts on feeManager
+  await (
+    await FeeManager.whiteListEntity(PartnerRegistrar.address, 'registrar')
+  ).wait();
+
+  await (
+    await FeeManager.whiteListEntity(PartnerRenewer.address, 'renewer')
+  ).wait();
+
+  await (
+    await FeeManager.whiteListEntity(PartnerManager.address, 'partner_manager')
+  ).wait();
 
   await (
     await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
