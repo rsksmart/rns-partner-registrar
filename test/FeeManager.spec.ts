@@ -62,9 +62,9 @@ async function testSetup() {
   ]);
 
   // whiteList contracts on feeManager
-  await feeManager.whiteListEntity(registrar.address, 'registrar');
-  await feeManager.whiteListEntity(renewer.address, 'renewer');
-  await feeManager.whiteListEntity(PartnerManager.address, 'partner_manager');
+  await feeManager.whiteListRegistrarOrRenewer(registrar.address);
+  await feeManager.whiteListRegistrarOrRenewer(renewer.address);
+  await feeManager.whiteListPartnerManager(PartnerManager.address);
 
   return {
     RIF,

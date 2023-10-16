@@ -179,15 +179,15 @@ export const initialSetup = async () => {
 
   // whiteList contracts on feeManager
   await (
-    await FeeManager.whiteListEntity(PartnerRegistrar.address, 'registrar')
+    await FeeManager.whiteListRegistrarOrRenewer(PartnerRegistrar.address)
   ).wait();
 
   await (
-    await FeeManager.whiteListEntity(PartnerRenewer.address, 'renewer')
+    await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address)
   ).wait();
 
   await (
-    await FeeManager.whiteListEntity(PartnerManager.address, 'partner_manager')
+    await FeeManager.whiteListPartnerManager(PartnerManager.address)
   ).wait();
 
   return {

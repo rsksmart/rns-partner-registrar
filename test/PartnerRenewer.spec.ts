@@ -121,9 +121,9 @@ const initialSetup = async () => {
   ]);
 
   // whiteList contracts on feeManager
-  await FeeManager.whiteListEntity(PartnerRegistrar.address, 'registrar');
-  await FeeManager.whiteListEntity(PartnerRenewer.address, 'renewer');
-  await FeeManager.whiteListEntity(PartnerManager.address, 'partner_manager');
+  await FeeManager.whiteListRegistrarOrRenewer(PartnerRegistrar.address);
+  await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address);
+  await FeeManager.whiteListPartnerManager(PartnerManager.address);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
 

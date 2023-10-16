@@ -90,9 +90,6 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   }
 
   const registrarAsNameOwner = registrar.connect(nameOwner);
-  console.log(
-    `registrar: ${registrar.address}, nameOwner: ${nameOwner.address}`
-  );
 
   const commitment = await registrarAsNameOwner.makeCommitment(
     hashName(domainName),

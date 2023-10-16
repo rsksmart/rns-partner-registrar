@@ -84,10 +84,13 @@ interface IFeeManager {
     /**
      * @notice whitelists a registrar or renewer
      * @param entity address of the registrar or renewer
-     * @param registrarRenewarOrPartnerManager string indicating if the entity is a registrar, renewer or partner manager
      */
-    function whiteListEntity(
-        address entity,
-        string memory registrarRenewarOrPartnerManager
+    function whiteListRegistrarOrRenewer(
+        address entity
+    ) external;
+
+
+    function whiteListPartnerManager(
+        address entity
     ) external;
 }
