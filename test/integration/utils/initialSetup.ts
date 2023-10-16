@@ -129,19 +129,6 @@ export const initialSetup = async () => {
     }
   );
 
-  // whiteList contracts on feeManager
-  await (
-    await FeeManager.whiteListEntity(PartnerRegistrar.address, 'registrar')
-  ).wait();
-
-  await (
-    await FeeManager.whiteListEntity(PartnerRenewer.address, 'renewer')
-  ).wait();
-
-  await (
-    await FeeManager.whiteListEntity(PartnerManager.address, 'partner_manager')
-  ).wait();
-
   await (
     await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
   ).wait();
@@ -188,6 +175,19 @@ export const initialSetup = async () => {
 
   await (
     await accessControl.addHighLevelOperator(highLevelOperator.address)
+  ).wait();
+
+  // whiteList contracts on feeManager
+  await (
+    await FeeManager.whiteListEntity(PartnerRegistrar.address, 'registrar')
+  ).wait();
+
+  await (
+    await FeeManager.whiteListEntity(PartnerRenewer.address, 'renewer')
+  ).wait();
+
+  await (
+    await FeeManager.whiteListEntity(PartnerManager.address, 'partner_manager')
   ).wait();
 
   return {
