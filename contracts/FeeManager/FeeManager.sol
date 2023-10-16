@@ -22,10 +22,7 @@ contract FeeManager is IFeeManager, HasAccessControl {
     address private _pool;
 
     modifier onlyAuthorised() {
-
-        if (
-            !(_getWhitelistedRegistrarOrRenewer(msg.sender))
-        ) {
+        if (!(_getWhitelistedRegistrarOrRenewer(msg.sender))) {
             revert NotAuthorized(msg.sender);
         }
         _;
@@ -129,7 +126,6 @@ contract FeeManager is IFeeManager, HasAccessControl {
     function whiteListRegistrarOrRenewer(
         address entity
     ) external override onlyHighLevelOperator {
-        
         _whitelistedRegistrarsAndRenewers[entity] = true;
     }
 
