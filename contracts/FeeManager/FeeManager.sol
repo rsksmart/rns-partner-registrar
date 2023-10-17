@@ -68,7 +68,12 @@ contract FeeManager is IFeeManager, HasAccessControl {
         address partner,
         uint256 amount,
         address partnerManager
-    ) external override onlyAuthorised onlyWhiteListedPartnerManager(partnerManager) {
+    )
+        external
+        override
+        onlyAuthorised
+        onlyWhiteListedPartnerManager(partnerManager)
+    {
         emit DepositSuccessful(amount, partner);
 
         if (!_rif.transferFrom(msg.sender, address(this), amount)) {
@@ -90,7 +95,12 @@ contract FeeManager is IFeeManager, HasAccessControl {
     function _getPartnerConfiguration(
         address partner,
         address partnerManager
-    ) private onlyWhiteListedPartnerManager(partnerManager) view returns (IPartnerConfiguration) {
+    )
+        private
+        view
+        onlyWhiteListedPartnerManager(partnerManager)
+        returns (IPartnerConfiguration)
+    {
         return IPartnerManager(partnerManager).getPartnerConfiguration(partner);
     }
 
