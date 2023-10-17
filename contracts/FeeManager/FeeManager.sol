@@ -22,8 +22,15 @@ contract FeeManager is IFeeManager, HasAccessControl {
     address private _pool;
 
     modifier onlyAuthorised() {
-        if (!(_getWhitelistedRegistrarOrRenewer(msg.sender))) {
+        if (!(_whitelistedRegistrarsAndRenewers[msg.sender])) {
             revert NotAuthorized(msg.sender);
+        }
+        _;
+    }
+
+    modifier onlyWhiteListedPartnerManager(address partnerManager) {
+        if (!(_whitelistedPartnerManagers[partnerManager])) {
+            revert InvalidEntity(partnerManager, "Partner Manager");
         }
         _;
     }
@@ -61,13 +68,8 @@ contract FeeManager is IFeeManager, HasAccessControl {
         address partner,
         uint256 amount,
         address partnerManager
-    ) external override onlyAuthorised {
+    ) external override onlyAuthorised onlyWhiteListedPartnerManager(partnerManager) {
         emit DepositSuccessful(amount, partner);
-
-        bool validateManager = _getWhitelistedPartnerManager(partnerManager);
-        if (!validateManager) {
-            revert InvalidEntity(partnerManager, "partner_manager");
-        }
 
         if (!_rif.transferFrom(msg.sender, address(this), amount)) {
             revert TransferFailed(msg.sender, address(this), amount);
@@ -88,12 +90,7 @@ contract FeeManager is IFeeManager, HasAccessControl {
     function _getPartnerConfiguration(
         address partner,
         address partnerManager
-    ) private view returns (IPartnerConfiguration) {
-        bool validateManager = _getWhitelistedPartnerManager(partnerManager);
-        if (!validateManager) {
-            revert InvalidEntity(partnerManager, "partner_manager");
-        }
-
+    ) private onlyWhiteListedPartnerManager(partnerManager) view returns (IPartnerConfiguration) {
         return IPartnerManager(partnerManager).getPartnerConfiguration(partner);
     }
 
@@ -136,17 +133,5 @@ contract FeeManager is IFeeManager, HasAccessControl {
         address partnerManager
     ) external override onlyHighLevelOperator {
         _whitelistedPartnerManagers[partnerManager] = true;
-    }
-
-    function _getWhitelistedRegistrarOrRenewer(
-        address entity
-    ) private view returns (bool) {
-        return _whitelistedRegistrarsAndRenewers[entity];
-    }
-
-    function _getWhitelistedPartnerManager(
-        address partnerManager
-    ) private view returns (bool) {
-        return _whitelistedPartnerManagers[partnerManager];
     }
 }
