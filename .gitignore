@@ -1,5 +1,6 @@
 node_modules
 .env
+.env.*
 coverage
 coverage.json
 typechain-types
@@ -15,4 +16,5 @@ artifacts
 .eslintcache
 contracts.json
 deployedAddresses.json
-testnetDeployedAddresses.json
+deployedTestnetAddresses.json
+deployedMainnetAddresses.json

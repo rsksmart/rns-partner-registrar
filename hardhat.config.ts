@@ -6,6 +6,7 @@ import 'hardhat-watcher';
 import 'tsconfig-paths/register';
 import '@nomiclabs/hardhat-ethers';
 import '@nomicfoundation/hardhat-chai-matchers';
+import 'dotenv/config';
 
 import { HardhatUserConfig } from 'hardhat/config';
 
@@ -43,6 +44,13 @@ export default <HardhatUserConfig>{
         mnemonic: process.env.HDWALLET_MNEMONIC || '',
       },
       chainId: 31,
+    },
+    mainnet: {
+      url: 'https://public-node.rsk.co',
+      accounts: {
+        mnemonic: process.env.HDWALLET_MNEMONIC || '',
+      },
+      chainId: 30,
     },
   },
   typechain: {

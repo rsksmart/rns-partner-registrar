@@ -23,6 +23,9 @@ import {
   RNS,
   RegistrarAccessControl,
 } from 'typechain-types';
+require('dotenv').config({ path: '.env.testnet' });
+
+console.log('Running script on env.', process.env.NODE_ENV);
 
 const rootNodeId = ethers.constants.HashZero;
 const tldNode = namehash('rsk');
@@ -365,7 +368,7 @@ async function main() {
     };
 
     fs.writeFileSync(
-      './testnetDeployedAddresses.json',
+      './deployedTestnetAddresses.json',
       JSON.stringify(content, null, 2)
     );
 
