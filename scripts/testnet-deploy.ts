@@ -29,6 +29,7 @@ const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
 const FEE_PERCENTAGE = oneRBTC.mul(0); //0%
+const POOL_ADDRESS = '0xcd32d5b7c2e1790029d3106d9f8347f42a3dfd60' // multisig testnet address
 
 // TODO: define tRIF address
 const tRIF_ADDRESS =
@@ -36,7 +37,7 @@ const tRIF_ADDRESS =
 
 async function main() {
   try {
-    const [owner, highLevelOperator, pool, defaultPartner] =
+    const [owner, highLevelOperator, defaultPartner] =
       await ethers.getSigners();
 
     /* ********** RNS OLD SUITE DEPLOY STARTS HERE ********** */
@@ -261,7 +262,7 @@ async function main() {
         partnerRegistrar: PartnerRegistrarContract.address,
         partnerRenewer: PartnerRenewerContract.address,
         partnerManager: PartnerManagerContract.address,
-        pool: pool.address,
+        pool: POOL_ADDRESS,
       },
       undefined,
       highLevelOperator
