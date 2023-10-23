@@ -9,7 +9,7 @@ import {
 } from '../typechain-types';
 import fs from 'fs';
 import { namehash } from 'ethers/lib/utils';
-require('dotenv').config({ path: '.env.testnet' });
+require('dotenv').config({ path: '.env.mainnet' });
 
 console.log('Running script on env.', process.env.NODE_ENV);
 
@@ -113,6 +113,7 @@ async function main() {
     await (await partnerRenewer.setFeeManager(feeManager.address)).wait();
     console.log('et Fee manager on partner renewer');
 
+    // Needs to be executed by the Multisign
     // console.log('Adding new registrar and renewer to old nodeOwner');
     // const NodeOwnerContract = await ethers.getContractAt(
     //   'NodeOwner',
@@ -129,6 +130,23 @@ async function main() {
     // await (await NodeOwnerContract.addRenewer(partnerRenewer.address)).wait();
     //
     // console.log('new partner renewer added');
+
+    console.log('Adding new registrar and renewer to old nodeOwner');
+    const NodeOwnerContract = await ethers.getContractAt(
+      'NodeOwner',
+      RNS_NODE_OWNER,
+      owner
+    );
+
+    await (
+      await NodeOwnerContract.addRegistrar(partnerRegistrar.address)
+    ).wait();
+
+    console.log('new partner registrar added');
+
+    await (await NodeOwnerContract.addRenewer(partnerRenewer.address)).wait();
+
+    console.log('new partner renewer added');
 
     const defaultPartnerConfiguration =
       await deployContract<PartnerConfiguration>('PartnerConfiguration', {
