@@ -40,6 +40,7 @@ export const PARTNER_ADDED_EVENT = 'PartnerAdded';
 export const PARTNER_REMOVED_EVENT = 'PartnerRemoved';
 
 export const POOL_CHANGED_EVENT = 'PoolChanged';
+export const REGISTRAR_CHANGED_EVENT = 'RegistrarChanged';
 
 // CONSTANT VALUES
 export const DEFAULT_MIN_LENGTH = 3;

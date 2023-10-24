@@ -19,6 +19,7 @@ import {
   DEPOSIT_SUCCESSFUL_EVENT,
   WITHDRAWAL_SUCCESSFUL_EVENT,
   POOL_CHANGED_EVENT,
+  REGISTRAR_CHANGED_EVENT,
 } from './utils/constants.utils';
 
 async function testSetup() {
@@ -29,7 +30,7 @@ async function testSetup() {
     partnerOwnerAccount,
     account3,
     pool,
-    newPool,
+    newValue,
     attacker,
     ...accounts
   ] = await ethers.getSigners();
@@ -57,13 +58,14 @@ async function testSetup() {
     feeManager,
     owner,
     registrar,
+    renewer,
     PartnerManager,
     PartnerConfiguration,
     partnerOwnerAccount,
     account3,
     accounts,
     pool,
-    newPool,
+    newValue,
     attacker,
     oneRBTC,
   };
@@ -280,7 +282,7 @@ describe('Fee Manager', () => {
 
   describe('setPool', () => {
     it('Should change the pool address', async () => {
-      const { feeManager, newPool, registrar } = await testSetup();
+      const { feeManager, newValue: newPool, registrar } = await testSetup();
 
       feeManager.connect(registrar).setPool(newPool.address);
 
@@ -289,16 +291,8 @@ describe('Fee Manager', () => {
       expect(alreadyChangedPool).to.be.equal(newPool.address);
     });
 
-    it('Should emit poolChanged event', async () => {
-      const { feeManager, newPool, registrar } = await testSetup();
-
-      await expect(feeManager.connect(registrar).setPool(newPool.address))
-        .to.emit(feeManager, POOL_CHANGED_EVENT)
-        .withArgs(registrar.address, newPool.address);
-    });
-
     it('Should revert if not called by an authorized entity', async () => {
-      const { feeManager, newPool, attacker } = await testSetup();
+      const { feeManager, newValue: newPool, attacker } = await testSetup();
 
       await expect(feeManager.connect(attacker).setPool(newPool.address))
         .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
@@ -312,6 +306,36 @@ describe('Fee Manager', () => {
 
       await expect(
         feeManager.connect(registrar).setPool(actualPoolAddress)
+      ).to.be.revertedWith('old value is same as new value');
+    });
+  });
+
+  describe('setRegistrar', () => {
+    it('Should change the registrar address', async () => {
+      const { feeManager, newValue: newRegistrar, renewer } = await testSetup();
+
+      feeManager.connect(renewer).setRegistrar(newRegistrar.address);
+
+      const alreadyChangedRegistrar = await feeManager.getRegistrar();
+
+      expect(alreadyChangedRegistrar).to.be.equal(newRegistrar.address);
+    });
+
+    it('Should revert if not called by an authorized entity', async () => {
+      const { feeManager, newValue: newPool, attacker } = await testSetup();
+
+      await expect(feeManager.connect(attacker).setRegistrar(newPool.address))
+        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .withArgs(attacker.address);
+    });
+
+    it('Should revert if the new registrar address is the same as the old one', async () => {
+      const { feeManager, renewer } = await testSetup();
+
+      const actualregistrarAddress = feeManager.getPool();
+
+      await expect(
+        feeManager.connect(renewer).setPool(actualregistrarAddress)
       ).to.be.revertedWith('old value is same as new value');
     });
   });
@@ -377,6 +401,24 @@ describe('Fee Manager', () => {
       await expect(feeManager.connect(account3).withdraw())
         .to.emit(feeManager, WITHDRAWAL_SUCCESSFUL_EVENT)
         .withArgs(partnerBalance, account3.address);
+    });
+
+    it('Should emit PoolChanged event', async () => {
+      const { feeManager, newValue: newPool, registrar } = await testSetup();
+
+      await expect(feeManager.connect(registrar).setPool(newPool.address))
+        .to.emit(feeManager, POOL_CHANGED_EVENT)
+        .withArgs(registrar.address, newPool.address);
+    });
+
+    it('Should emit RegistraChanged event', async () => {
+      const { feeManager, newValue: newRegistrar, renewer } = await testSetup();
+
+      await expect(
+        feeManager.connect(renewer).setRegistrar(newRegistrar.address)
+      )
+        .to.emit(feeManager, REGISTRAR_CHANGED_EVENT)
+        .withArgs(renewer.address, newRegistrar.address);
     });
   });
 });

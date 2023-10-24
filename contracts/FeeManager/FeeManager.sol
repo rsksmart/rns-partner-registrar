@@ -116,4 +116,18 @@ contract FeeManager is IFeeManager {
 
         _pool = newPoolAddresss;
     }
+
+    function getRegistrar() public view returns (address) {
+        return address(_registrar);
+    }
+
+    function setRegistrar(address newRegistrarAddresss) public onlyAuthorised {
+        if (newRegistrarAddresss == address(_registrar)) {
+            revert("old value is same as new value");
+        }
+
+        emit RegistrarChanged(msg.sender, newRegistrarAddresss);
+
+        _registrar = IBaseRegistrar(newRegistrarAddresss);
+    }
 }

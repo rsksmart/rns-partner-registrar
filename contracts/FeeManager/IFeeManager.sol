@@ -39,9 +39,16 @@ interface IFeeManager {
     /**
      * @notice event emitted when the pool address is changed
      * @param changedBy address of the account that changed the pool address
-     * @param poolAddress address of the new pool
+     * @param newPoolAddress address of the new pool
      */
-    event PoolChanged(address changedBy, address poolAddress);
+    event PoolChanged(address changedBy, address newPoolAddress);
+
+    /**
+     * @notice event emitted when the registrar address is changed
+     * @param changedBy address of the account that changed the registrar address
+     * @param newRegistrarAddress address of the new registrar
+     */
+    event RegistrarChanged(address changedBy, address newRegistrarAddress);
 
     /**
      * @notice allows the partner to withdraw the balance of their revenue
@@ -73,4 +80,15 @@ interface IFeeManager {
      * @param poolAddresss address of the new pool
      */
     function setPool(address poolAddresss) external;
+
+    /**
+     * @notice allows checking the address of the registrar
+     */
+    function getRegistrar() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the registrar
+     * @param newRegistrarAddresss address of the new registrar
+     */
+    function setRegistrar(address newRegistrarAddresss) external;
 }
