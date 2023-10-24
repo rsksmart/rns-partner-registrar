@@ -211,4 +211,18 @@ contract PartnerRenewer is
     ) private view returns (IPartnerConfiguration) {
         return _partnerManager.getPartnerConfiguration(partner);
     }
+
+    function getPartnerManager() external view returns (address) {
+        return address(_partnerManager);
+    }
+
+    function setPartnerManager(
+        address partnerManager
+    ) external onlyHighLevelOperator {
+        if (address(_partnerManager) == partnerManager) {
+            revert("old value is same as new value");
+        }
+        emit PartnerManagerChanged(msg.sender, address(partnerManager));
+        _partnerManager = IPartnerManager(partnerManager);
+    }
 }
