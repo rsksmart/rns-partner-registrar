@@ -102,4 +102,18 @@ contract FeeManager is IFeeManager {
     ) external view override returns (uint256) {
         return _balances[partner];
     }
+
+    function getPool() public view returns (address) {
+        return _pool;
+    }
+
+    function setPool(address newPoolAddresss) public onlyAuthorised {
+        if (newPoolAddresss == _pool) {
+            revert("old value is same as new value");
+        }
+
+        emit PoolChanged(msg.sender, newPoolAddresss);
+
+        _pool = newPoolAddresss;
+    }
 }

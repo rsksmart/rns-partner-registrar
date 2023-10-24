@@ -18,6 +18,7 @@ import { FakeContract, MockContract } from '@defi-wonderland/smock';
 import {
   DEPOSIT_SUCCESSFUL_EVENT,
   WITHDRAWAL_SUCCESSFUL_EVENT,
+  POOL_CHANGED_EVENT,
 } from './utils/constants.utils';
 
 async function testSetup() {
@@ -28,6 +29,8 @@ async function testSetup() {
     partnerOwnerAccount,
     account3,
     pool,
+    newPool,
+    attacker,
     ...accounts
   ] = await ethers.getSigners();
 
@@ -60,6 +63,8 @@ async function testSetup() {
     account3,
     accounts,
     pool,
+    newPool,
+    attacker,
     oneRBTC,
   };
 }
@@ -138,20 +143,14 @@ describe('Fee Manager', () => {
           registrar,
           account3: partner,
           RIF,
-          pool,
           PartnerConfiguration,
           PartnerManager,
-          oneRBTC,
-          partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
         RIF.transferFrom.returns(false);
         RIF.transfer.returns(true);
         const depositAmount = ethers.BigNumber.from(10);
         const feePercentage = ethers.BigNumber.from(10);
-        const partnerFee = depositAmount
-          .mul(feePercentage)
-          .div(oneRBTC.mul(100));
 
         PartnerConfiguration.getFeePercentage.returns(feePercentage);
         PartnerManager.getPartnerConfiguration.returns(
@@ -178,7 +177,6 @@ describe('Fee Manager', () => {
           PartnerConfiguration,
           PartnerManager,
           oneRBTC,
-          partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
         RIF.transferFrom.returns(true);
@@ -280,6 +278,44 @@ describe('Fee Manager', () => {
     });
   });
 
+  describe('setPool', () => {
+    it('Should change the pool address', async () => {
+      const { feeManager, newPool, registrar } = await testSetup();
+
+      feeManager.connect(registrar).setPool(newPool.address);
+
+      const alreadyChangedPool = await feeManager.getPool();
+
+      expect(alreadyChangedPool).to.be.equal(newPool.address);
+    });
+
+    it('Should emit poolChanged event', async () => {
+      const { feeManager, newPool, registrar } = await testSetup();
+
+      await expect(feeManager.connect(registrar).setPool(newPool.address))
+        .to.emit(feeManager, POOL_CHANGED_EVENT)
+        .withArgs(registrar.address, newPool.address);
+    });
+
+    it('Should revert if not called by an authorized entity', async () => {
+      const { feeManager, newPool, attacker } = await testSetup();
+
+      await expect(feeManager.connect(attacker).setPool(newPool.address))
+        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .withArgs(attacker.address);
+    });
+
+    it('Should revert if the new pool address is the same as the old one', async () => {
+      const { feeManager, registrar } = await testSetup();
+
+      const actualPoolAddress = feeManager.getPool();
+
+      await expect(
+        feeManager.connect(registrar).setPool(actualPoolAddress)
+      ).to.be.revertedWith('old value is same as new value');
+    });
+  });
+
   describe('Fee Manager Events', () => {
     it('Should emit the DepositSuccessful on successful deposit', async () => {
       try {
@@ -290,7 +326,6 @@ describe('Fee Manager', () => {
           PartnerManager,
           PartnerConfiguration,
           RIF,
-          partnerOwnerAccount,
         } = await loadFixture(testSetup);
 
         const depositAmount = ethers.BigNumber.from(10);

@@ -37,6 +37,13 @@ interface IFeeManager {
     event DepositSuccessful(uint256 amount, address from);
 
     /**
+     * @notice event emitted when the pool address is changed
+     * @param changedBy address of the account that changed the pool address
+     * @param poolAddress address of the new pool
+     */
+    event PoolChanged(address changedBy, address poolAddress);
+
+    /**
      * @notice allows the partner to withdraw the balance of their revenue
      * @custom:emits-event emits the WithdrawalSuccessful event
      */
@@ -55,4 +62,15 @@ interface IFeeManager {
      * @param partner address of the partner
      */
     function getBalance(address partner) external view returns (uint256);
+
+    /**
+     * @notice allows checking the address of the pool
+     */
+    function getPool() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the pool
+     * @param poolAddresss address of the new pool
+     */
+    function setPool(address poolAddresss) external;
 }
