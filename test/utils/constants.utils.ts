@@ -34,6 +34,8 @@ export const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
 export const NAME_REGISTERED_EVENT = 'NameRegistered';
 export const PARTNER_CONFIGURATION_CHANGED_EVENT =
   'PartnerConfigurationChanged';
+
+export const PARTNER_MANAGER_CHANGED_EVENT = 'PartnerManagerChanged';
 export const PARTNER_ADDED_EVENT = 'PartnerAdded';
 export const PARTNER_REMOVED_EVENT = 'PartnerRemoved';
 

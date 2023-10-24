@@ -24,6 +24,13 @@ interface IBaseRegistrar {
     event FeeManagerChanged(address hostContract, address feeManagerContract);
 
     /**
+     * @notice event emitted when a partner manager contract is set
+     * @param changedBy the address of user that changed the partner manager address
+     * @param partnerManager the address of the partner manager being set
+     */
+    event PartnerManagerChanged(address changedBy, address partnerManager);
+
+    /**
         @notice returns the partner manager that the registrar has been configured to use
     */
     function getPartnerManager() external view returns (IPartnerManager);
@@ -102,8 +109,14 @@ interface IBaseRegistrar {
     function canReveal(bytes32 commitment) external view returns (bool);
 
     /**
+     * @notice sets the _partnerManager
+     * @param partnerManager address of the partner manager to be set
+     */
+    function setPartnerManager(address partnerManager) external;
+
+    /**
      * @notice error thrown when the partner is not whitelisted
-     * @param partner address of the invlalid partner
+     * @param partner address of the invalid partner
      */
     error InvalidPartner(address partner);
 
