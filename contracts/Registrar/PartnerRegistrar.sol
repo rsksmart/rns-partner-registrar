@@ -51,6 +51,8 @@ contract PartnerRegistrar is
         _partnerManager = partnerManager;
         _rns = rns;
         _rootNode = rootNode;
+
+        emit PartnerManagerChanged(msg.sender, address(partnerManager));
     }
 
     modifier onlyPartner(address partner) {
@@ -348,5 +350,15 @@ contract PartnerRegistrar is
         }
 
         return _partnerManager.getPartnerConfiguration(partner);
+    }
+
+    function setPartnerManager(
+        address partnerManager
+    ) external onlyHighLevelOperator {
+        if (address(_partnerManager) == partnerManager) {
+            revert("old value is same as new value");
+        }
+        emit PartnerManagerChanged(msg.sender, address(partnerManager));
+        _partnerManager = IPartnerManager(partnerManager);
     }
 }
