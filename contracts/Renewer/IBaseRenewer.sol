@@ -54,6 +54,11 @@ interface IBaseRenewer {
     event PartnerManagerChanged(address changedBy, address partnerManager);
 
     /**
+     * @notice returns the fee manager that the registrar has been configured to use
+     */
+    function getFeeManager() external view returns (address);
+
+    /**
         @notice sets the fee manager to use. Mandatory for the renewer to work.
         @param feeManager the fee manager to use
         @custom:emits-event emits the FeeManagerSet event
@@ -61,8 +66,8 @@ interface IBaseRenewer {
     function setFeeManager(IFeeManager feeManager) external;
 
     /**
-        @notice returns the partner manager that the registrar has been configured to use
-    */
+     * @notice returns the partner manager that the registrar has been configured to use
+     */
     function getPartnerManager() external view returns (address);
 
     /**

@@ -32,6 +32,7 @@ import {
   DEFAULT_FEE_PERCENTAGE,
   PARTNER_MANAGER_CHANGED_EVENT,
   ONLY_HIGH_LEVEL_OPERATOR_ERR,
+  FEE_MANAGER_CHANGED_EVENT,
 } from './utils/constants.utils';
 import { OneYearDuration } from './integration/utils/constants';
 
@@ -125,6 +126,7 @@ const initialSetup = async () => {
   ]);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
+  await PartnerRenewer.setFeeManager(FeeManager.address);
 
   return {
     RNS,
@@ -234,6 +236,64 @@ describe('Price,', () => {
 
       expect(
         PartnerRenewer.setPartnerManager(oldPartnerManager)
+      ).to.be.revertedWith('old value is same as new value');
+    });
+  });
+
+  describe('Fee Manager', () => {
+    it('Should return the partner manager', async () => {
+      const { PartnerRenewer, FeeManager } = await loadFixture(initialSetup);
+
+      expect(await PartnerRenewer.getFeeManager()).to.be.equal(
+        FeeManager.address
+      );
+    });
+
+    it('Should successfully modify fee manager address', async () => {
+      const { PartnerRenewer, alternateFeeManager } = await loadFixture(
+        initialSetup
+      );
+
+      await (
+        await PartnerRenewer.setFeeManager(alternateFeeManager.address)
+      ).wait();
+
+      expect(await PartnerRenewer.getFeeManager()).to.be.equal(
+        alternateFeeManager.address
+      );
+    });
+
+    it('Should emit FeeManagerChanged when successfully changing fee manager address', async () => {
+      const { PartnerRenewer, alternateFeeManager, owner } = await loadFixture(
+        initialSetup
+      );
+
+      await expect(PartnerRenewer.setFeeManager(alternateFeeManager.address))
+        .to.emit(PartnerRenewer, FEE_MANAGER_CHANGED_EVENT)
+        .withArgs(PartnerRenewer.address, alternateFeeManager.address);
+    });
+
+    it('Should not allow non HighLevel Operator to modify fee manager address', async () => {
+      const { PartnerRenewer, attacker, alternateFeeManager } =
+        await loadFixture(initialSetup);
+
+      expect(
+        PartnerRenewer.connect(attacker).setFeeManager(
+          alternateFeeManager.address
+        )
+      ).to.be.revertedWithCustomError(
+        PartnerRenewer,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+    });
+
+    it('Should revert if new fee manager address is the same', async () => {
+      const { PartnerRenewer } = await loadFixture(initialSetup);
+
+      const oldPartnerManager = await PartnerRenewer.getFeeManager();
+
+      expect(
+        PartnerRenewer.setFeeManager(oldPartnerManager)
       ).to.be.revertedWith('old value is same as new value');
     });
   });
