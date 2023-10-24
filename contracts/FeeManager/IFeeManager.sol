@@ -51,6 +51,13 @@ interface IFeeManager {
     event RegistrarChanged(address changedBy, address newRegistrarAddress);
 
     /**
+     * @notice event emitted when the renewer address is changed
+     * @param changedBy address of the account that changed the renewer address
+     * @param newRenewerAddress address of the new renewer
+     */
+    event RenewerChanged(address changedBy, address newRenewerAddress);
+
+    /**
      * @notice allows the partner to withdraw the balance of their revenue
      * @custom:emits-event emits the WithdrawalSuccessful event
      */
@@ -77,9 +84,9 @@ interface IFeeManager {
 
     /**
      * @notice allows modifying the address of the pool
-     * @param poolAddresss address of the new pool
+     * @param newPoolAddress address of the new pool
      */
-    function setPool(address poolAddresss) external;
+    function setPool(address newPoolAddress) external;
 
     /**
      * @notice allows checking the address of the registrar
@@ -88,7 +95,18 @@ interface IFeeManager {
 
     /**
      * @notice allows modifying the address of the registrar
-     * @param newRegistrarAddresss address of the new registrar
+     * @param newRegistrarAddress address of the new registrar
      */
-    function setRegistrar(address newRegistrarAddresss) external;
+    function setRegistrar(address newRegistrarAddress) external;
+
+    /**
+     * @notice allows checking the address of the renewer
+     */
+    function getRenewer() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the renewer
+     * @param newRenewerAddress address of the new renewer
+     */
+    function setRenewer(address newRenewerAddress) external;
 }

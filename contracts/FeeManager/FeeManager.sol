@@ -107,27 +107,41 @@ contract FeeManager is IFeeManager {
         return _pool;
     }
 
-    function setPool(address newPoolAddresss) public onlyAuthorised {
-        if (newPoolAddresss == _pool) {
+    function setPool(address newPoolAddress) public onlyAuthorised {
+        if (newPoolAddress == _pool) {
             revert("old value is same as new value");
         }
 
-        emit PoolChanged(msg.sender, newPoolAddresss);
+        emit PoolChanged(msg.sender, newPoolAddress);
 
-        _pool = newPoolAddresss;
+        _pool = newPoolAddress;
     }
 
     function getRegistrar() public view returns (address) {
         return address(_registrar);
     }
 
-    function setRegistrar(address newRegistrarAddresss) public onlyAuthorised {
-        if (newRegistrarAddresss == address(_registrar)) {
+    function setRegistrar(address newRegistrarAddress) public onlyAuthorised {
+        if (newRegistrarAddress == address(_registrar)) {
             revert("old value is same as new value");
         }
 
-        emit RegistrarChanged(msg.sender, newRegistrarAddresss);
+        emit RegistrarChanged(msg.sender, newRegistrarAddress);
 
-        _registrar = IBaseRegistrar(newRegistrarAddresss);
+        _registrar = IBaseRegistrar(newRegistrarAddress);
+    }
+
+    function getRenewer() public view returns (address) {
+        return address(_renewer);
+    }
+
+    function setRenewer(address newRenewerAddress) public onlyAuthorised {
+        if (newRenewerAddress == address(_renewer)) {
+            revert("old value is same as new value");
+        }
+
+        emit RenewerChanged(msg.sender, newRenewerAddress);
+
+        _renewer = IBaseRenewer(newRenewerAddress);
     }
 }

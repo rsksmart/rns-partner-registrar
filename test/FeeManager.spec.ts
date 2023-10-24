@@ -20,6 +20,7 @@ import {
   WITHDRAWAL_SUCCESSFUL_EVENT,
   POOL_CHANGED_EVENT,
   REGISTRAR_CHANGED_EVENT,
+  RENEWER_CHANGED_EVENT,
 } from './utils/constants.utils';
 
 async function testSetup() {
@@ -322,9 +323,15 @@ describe('Fee Manager', () => {
     });
 
     it('Should revert if not called by an authorized entity', async () => {
-      const { feeManager, newValue: newPool, attacker } = await testSetup();
+      const {
+        feeManager,
+        newValue: newRegistrar,
+        attacker,
+      } = await testSetup();
 
-      await expect(feeManager.connect(attacker).setRegistrar(newPool.address))
+      await expect(
+        feeManager.connect(attacker).setRegistrar(newRegistrar.address)
+      )
         .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
         .withArgs(attacker.address);
     });
@@ -332,10 +339,40 @@ describe('Fee Manager', () => {
     it('Should revert if the new registrar address is the same as the old one', async () => {
       const { feeManager, renewer } = await testSetup();
 
-      const actualregistrarAddress = feeManager.getPool();
+      const actualregistrarAddress = feeManager.getRegistrar();
 
       await expect(
-        feeManager.connect(renewer).setPool(actualregistrarAddress)
+        feeManager.connect(renewer).setRegistrar(actualregistrarAddress)
+      ).to.be.revertedWith('old value is same as new value');
+    });
+  });
+
+  describe('setRenewer', () => {
+    it('Should change the renewer address', async () => {
+      const { feeManager, newValue: newRenewer, registrar } = await testSetup();
+
+      feeManager.connect(registrar).setRenewer(newRenewer.address);
+
+      const alreadyChangedRenewer = await feeManager.getRenewer();
+
+      expect(alreadyChangedRenewer).to.be.equal(newRenewer.address);
+    });
+
+    it('Should revert if not called by an authorized entity', async () => {
+      const { feeManager, newValue: newRenewer, attacker } = await testSetup();
+
+      await expect(feeManager.connect(attacker).setRenewer(newRenewer.address))
+        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .withArgs(attacker.address);
+    });
+
+    it('Should revert if the new renewer address is the same as the old one', async () => {
+      const { feeManager, registrar } = await testSetup();
+
+      const actualRenewerAddress = feeManager.getRenewer();
+
+      await expect(
+        feeManager.connect(registrar).setRenewer(actualRenewerAddress)
       ).to.be.revertedWith('old value is same as new value');
     });
   });
@@ -419,6 +456,14 @@ describe('Fee Manager', () => {
       )
         .to.emit(feeManager, REGISTRAR_CHANGED_EVENT)
         .withArgs(renewer.address, newRegistrar.address);
+    });
+
+    it('Should emit RenewerChanged event', async () => {
+      const { feeManager, newValue: newRenewer, registrar } = await testSetup();
+
+      await expect(feeManager.connect(registrar).setRenewer(newRenewer.address))
+        .to.emit(feeManager, RENEWER_CHANGED_EVENT)
+        .withArgs(registrar.address, newRenewer.address);
     });
   });
 });
