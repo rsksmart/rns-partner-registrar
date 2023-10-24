@@ -30,6 +30,8 @@ import {
   DEFAULT_MAX_DURATION,
   DEFAULT_DISCOUNT,
   DEFAULT_FEE_PERCENTAGE,
+  PARTNER_MANAGER_CHANGED_EVENT,
+  ONLY_HIGH_LEVEL_OPERATOR_ERR,
 } from './utils/constants.utils';
 import { OneYearDuration } from './integration/utils/constants';
 
@@ -50,6 +52,7 @@ const initialSetup = async () => {
   const alternateFeeManager = signers[5];
   const attacker = signers[5];
   const highLevelOperator = signers[6];
+  const newPartnerManager = signers[7];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
@@ -140,6 +143,7 @@ const initialSetup = async () => {
     highLevelOperator,
     accessControl,
     PartnerRenewer,
+    newPartnerManager,
   };
 };
 
@@ -172,5 +176,65 @@ describe('Price,', () => {
       partner.address
     );
     expect(price).to.be.equal(oneRBTC.mul(2));
+  });
+
+  describe('Partner Manager', () => {
+    it('Should return the partner manager', async () => {
+      const { PartnerRenewer, PartnerManager } = await loadFixture(
+        initialSetup
+      );
+
+      expect(await PartnerRenewer.getPartnerManager()).to.be.equal(
+        PartnerManager.address
+      );
+    });
+
+    it('Should successfully modify partner manager address', async () => {
+      const { PartnerRenewer, newPartnerManager } = await loadFixture(
+        initialSetup
+      );
+
+      await (
+        await PartnerRenewer.setPartnerManager(newPartnerManager.address)
+      ).wait();
+
+      expect(await PartnerRenewer.getPartnerManager()).to.be.equal(
+        newPartnerManager.address
+      );
+    });
+
+    it('Should emit PartnerManagerChanged when successfully changing partner manager address', async () => {
+      const { PartnerRenewer, newPartnerManager, owner } = await loadFixture(
+        initialSetup
+      );
+
+      await expect(PartnerRenewer.setPartnerManager(newPartnerManager.address))
+        .to.emit(PartnerRenewer, PARTNER_MANAGER_CHANGED_EVENT)
+        .withArgs(owner.address, newPartnerManager.address);
+    });
+
+    it('Should not allow non HighLevel Operator to modify partner manager address', async () => {
+      const { PartnerRenewer, attacker, newPartnerManager, accessControl } =
+        await loadFixture(initialSetup);
+
+      expect(
+        PartnerRenewer.connect(attacker).setPartnerManager(
+          newPartnerManager.address
+        )
+      ).to.be.revertedWithCustomError(
+        PartnerRenewer,
+        ONLY_HIGH_LEVEL_OPERATOR_ERR
+      );
+    });
+
+    it('Should revert if new partner manager address is the same', async () => {
+      const { PartnerRenewer } = await loadFixture(initialSetup);
+
+      const oldPartnerManager = await PartnerRenewer.getPartnerManager();
+
+      expect(
+        PartnerRenewer.setPartnerManager(oldPartnerManager)
+      ).to.be.revertedWith('old value is same as new value');
+    });
   });
 });
