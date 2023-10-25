@@ -29,7 +29,7 @@ const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
 const FEE_PERCENTAGE = oneRBTC.mul(0); //0%
-const POOL_ADDRESS = '0xcd32d5b7c2e1790029d3106d9f8347f42a3dfd60' // multisig testnet address
+const POOL_ADDRESS = '0xcd32d5b7c2e1790029d3106d9f8347f42a3dfd60'; // multisig testnet address
 
 // TODO: define tRIF address
 const tRIF_ADDRESS =
