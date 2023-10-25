@@ -94,6 +94,7 @@ async function main() {
       partnerRenewer: partnerRenewer.address,
       partnerManager: partnerManager.address,
       pool: POOL,
+      accessControl: accessControl.address,
     });
 
     await (await partnerRegistrar.setFeeManager(feeManager.address)).wait();
