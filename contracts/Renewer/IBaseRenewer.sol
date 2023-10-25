@@ -77,6 +77,11 @@ interface IBaseRenewer {
     function setPartnerManager(address partnerManager) external;
 
     /**
+        @notice returns the fee manager that the registrar has been configured to use
+    */
+    function getFeeManager() external view returns (address);
+
+    /**
      * @notice error thrown when the partner is not whitelisted
      * @param partner address of the invlalid partner
      */

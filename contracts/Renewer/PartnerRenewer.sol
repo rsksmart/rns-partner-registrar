@@ -239,4 +239,8 @@ contract PartnerRenewer is
         emit PartnerManagerChanged(msg.sender, address(partnerManager));
         _partnerManager = IPartnerManager(partnerManager);
     }
+
+    function getFeeManager() external view returns (address) {
+        return address(_feeManager);
+    }
 }

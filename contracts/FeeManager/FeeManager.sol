@@ -144,4 +144,20 @@ contract FeeManager is IFeeManager {
 
         _renewer = IBaseRenewer(newRenewerAddress);
     }
+
+    function getPartnerManager() public view returns (address) {
+        return address(_partnerManager);
+    }
+
+    function setPartnerManager(
+        address newPartnerManager
+    ) public onlyAuthorised {
+        if (newPartnerManager == address(_partnerManager)) {
+            revert("old value is same as new value");
+        }
+
+        emit PartnerManagerChanged(msg.sender, newPartnerManager);
+
+        _partnerManager = IPartnerManager(newPartnerManager);
+    }
 }

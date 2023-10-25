@@ -58,6 +58,16 @@ interface IFeeManager {
     event RenewerChanged(address changedBy, address newRenewerAddress);
 
     /**
+     * @notice event emitted when the partner managaer address is changed
+     * @param changedBy address of the account that changed the partner manager address
+     * @param newPartnerManagerAddress address of the new partner manager
+     */
+    event PartnerManagerChanged(
+        address changedBy,
+        address newPartnerManagerAddress
+    );
+
+    /**
      * @notice allows the partner to withdraw the balance of their revenue
      * @custom:emits-event emits the WithdrawalSuccessful event
      */
@@ -109,4 +119,15 @@ interface IFeeManager {
      * @param newRenewerAddress address of the new renewer
      */
     function setRenewer(address newRenewerAddress) external;
+
+    /**
+     * @notice allows checking the address of the partner manager
+     */
+    function getPartnerManager() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the partner manager
+     * @param newPartnerManagerAddress address of the new partner manager
+     */
+    function setPartnerManager(address newPartnerManagerAddress) external;
 }

@@ -21,6 +21,7 @@ import {
   POOL_CHANGED_EVENT,
   REGISTRAR_CHANGED_EVENT,
   RENEWER_CHANGED_EVENT,
+  PARTNER_MANAGER_CHANGED_EVENT,
 } from './utils/constants.utils';
 
 async function testSetup() {
@@ -377,6 +378,54 @@ describe('Fee Manager', () => {
     });
   });
 
+  describe('setPartnerManager', () => {
+    it('Should change the partner manager address', async () => {
+      const {
+        feeManager,
+        newValue: newPartnerManager,
+        registrar,
+      } = await testSetup();
+
+      feeManager
+        .connect(registrar)
+        .setPartnerManager(newPartnerManager.address);
+
+      const alreadyChangedPartnerManager = await feeManager.getPartnerManager();
+
+      expect(alreadyChangedPartnerManager).to.be.equal(
+        newPartnerManager.address
+      );
+    });
+
+    it('Should revert if not called by an authorized entity', async () => {
+      const {
+        feeManager,
+        newValue: newPartnerManager,
+        attacker,
+      } = await testSetup();
+
+      await expect(
+        feeManager
+          .connect(attacker)
+          .setPartnerManager(newPartnerManager.address)
+      )
+        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .withArgs(attacker.address);
+    });
+
+    it('Should revert if the new partner manager address is the same as the old one', async () => {
+      const { feeManager, registrar } = await testSetup();
+
+      const actualPartnerManagerAddress = feeManager.getPartnerManager();
+
+      await expect(
+        feeManager
+          .connect(registrar)
+          .setPartnerManager(actualPartnerManagerAddress)
+      ).to.be.revertedWith('old value is same as new value');
+    });
+  });
+
   describe('Fee Manager Events', () => {
     it('Should emit the DepositSuccessful on successful deposit', async () => {
       try {
@@ -464,6 +513,22 @@ describe('Fee Manager', () => {
       await expect(feeManager.connect(registrar).setRenewer(newRenewer.address))
         .to.emit(feeManager, RENEWER_CHANGED_EVENT)
         .withArgs(registrar.address, newRenewer.address);
+    });
+
+    it('Should emit PartnerManagerChanged event', async () => {
+      const {
+        feeManager,
+        newValue: newPartnerManager,
+        registrar,
+      } = await testSetup();
+
+      await expect(
+        feeManager
+          .connect(registrar)
+          .setPartnerManager(newPartnerManager.address)
+      )
+        .to.emit(feeManager, PARTNER_MANAGER_CHANGED_EVENT)
+        .withArgs(registrar.address, newPartnerManager.address);
     });
   });
 });

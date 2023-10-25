@@ -36,10 +36,7 @@ import {
 } from './utils/constants.utils';
 import { OneYearDuration } from './integration/utils/constants';
 
-const SECRET = keccak256(toUtf8Bytes('test'));
-
 const LABEL = keccak256(toUtf8Bytes('cheta'));
-const DURATION = 1;
 const ROOT_NODE = namehash('rsk');
 const MIN_COMMITMENT_AGE = 1;
 keccak256(toUtf8Bytes('this is a dummy'));
@@ -126,6 +123,7 @@ const initialSetup = async () => {
   ]);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
+
   await PartnerRenewer.setFeeManager(FeeManager.address);
 
   return {
@@ -241,7 +239,7 @@ describe('Price,', () => {
   });
 
   describe('Fee Manager', () => {
-    it('Should return the partner manager', async () => {
+    it('Should return the fee manager', async () => {
       const { PartnerRenewer, FeeManager } = await loadFixture(initialSetup);
 
       expect(await PartnerRenewer.getFeeManager()).to.be.equal(
@@ -263,7 +261,7 @@ describe('Price,', () => {
       );
     });
 
-    it('Should emit FeeManagerChanged when successfully changing fee manager address', async () => {
+    it('Should emit FeeManagerChanged', async () => {
       const { PartnerRenewer, alternateFeeManager, owner } = await loadFixture(
         initialSetup
       );
@@ -290,11 +288,11 @@ describe('Price,', () => {
     it('Should revert if new fee manager address is the same', async () => {
       const { PartnerRenewer } = await loadFixture(initialSetup);
 
-      const oldPartnerManager = await PartnerRenewer.getFeeManager();
+      const oldFeeManager = await PartnerRenewer.getFeeManager();
 
-      expect(
-        PartnerRenewer.setFeeManager(oldPartnerManager)
-      ).to.be.revertedWith('old value is same as new value');
+      expect(PartnerRenewer.setFeeManager(oldFeeManager)).to.be.revertedWith(
+        'old value is same as new value'
+      );
     });
   });
 });
