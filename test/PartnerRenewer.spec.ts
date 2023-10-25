@@ -147,35 +147,37 @@ const initialSetup = async () => {
   };
 };
 
-describe('Price,', () => {
-  it('should return the price', async () => {
-    const {
-      PartnerRenewer,
-      partner,
-      PartnerManager,
-      partnerOwner,
-      PartnerConfiguration,
-    } = await loadFixture(initialSetup);
+describe('Partner Renewer,', () => {
+  describe('Price', () => {
+    it('should return the price', async () => {
+      const {
+        PartnerRenewer,
+        partner,
+        PartnerManager,
+        partnerOwner,
+        PartnerConfiguration,
+      } = await loadFixture(initialSetup);
 
-    await (
-      await PartnerManager.addPartner(partner.address, partnerOwner.address)
-    ).wait();
+      await (
+        await PartnerManager.addPartner(partner.address, partnerOwner.address)
+      ).wait();
 
-    await (
-      await PartnerManager.setPartnerConfiguration(
-        partner.address,
-        PartnerConfiguration.address
-      )
-    ).wait();
+      await (
+        await PartnerManager.setPartnerConfiguration(
+          partner.address,
+          PartnerConfiguration.address
+        )
+      ).wait();
 
-    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+      (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
 
-    const price = await PartnerRenewer.price(
-      LABEL,
-      OneYearDuration,
-      partner.address
-    );
-    expect(price).to.be.equal(oneRBTC.mul(2));
+      const price = await PartnerRenewer.price(
+        LABEL,
+        OneYearDuration,
+        partner.address
+      );
+      expect(price).to.be.equal(oneRBTC.mul(2));
+    });
   });
 
   describe('Partner Manager', () => {

@@ -206,18 +206,10 @@ contract PartnerRenewer is
             );
     }
 
-
     function _getPartnerConfiguration(
         address partner
     ) private view returns (IPartnerConfiguration) {
         return _partnerManager.getPartnerConfiguration(partner);
-    }
-
-    /**
-     * @inheritdoc IBaseRenewer
-     */
-    function getFeeManager() external view returns (address) {
-        return address(_feeManager);
     }
 
     /**
