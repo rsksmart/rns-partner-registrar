@@ -332,7 +332,9 @@ export const generateRandomStringWithLettersAndNumbers = (
     }
   }
 
-  //
+  if (domainName.length > length) {
+    domainName = domainName.substring(0, length);
+  }
 
   if (length == 0) return '';
   else return domainName;
