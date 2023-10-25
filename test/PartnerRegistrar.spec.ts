@@ -129,6 +129,7 @@ const initialSetup = async () => {
     PartnerRenewer.address,
     PartnerManager.address,
     pool.address,
+    accessControl.address,
   ]);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);

@@ -6,12 +6,13 @@ import "./IFeeManager.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../Registrar/IBaseRegistrar.sol";
 import "../Renewer/IBaseRenewer.sol";
+import "../Access/HasAccessControl.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title  Keeps track of the balances of the collected revenue made by the partners.
 */
-contract FeeManager is IFeeManager {
+contract FeeManager is IFeeManager, HasAccessControl {
     RIF private _rif;
 
     mapping(address => uint256) private _balances;
@@ -22,7 +23,7 @@ contract FeeManager is IFeeManager {
     IPartnerManager private _partnerManager;
     address private _pool;
 
-    modifier onlyAuthorised() {
+    modifier onlyDepositor() {
         if (
             !(msg.sender == address(_registrar) ||
                 msg.sender == address(_renewer))
@@ -37,8 +38,9 @@ contract FeeManager is IFeeManager {
         IBaseRegistrar registrar,
         IBaseRenewer renewer,
         IPartnerManager partnerManager,
-        address pool
-    ) {
+        address pool,
+        IAccessControl accessControl
+    ) HasAccessControl(accessControl) {
         _rif = rif;
         _registrar = registrar;
         _renewer = renewer;
@@ -69,7 +71,7 @@ contract FeeManager is IFeeManager {
     function deposit(
         address partner,
         uint256 amount
-    ) external override onlyAuthorised {
+    ) external override onlyDepositor {
         emit DepositSuccessful(amount, partner);
 
         if (!_rif.transferFrom(msg.sender, address(this), amount)) {
@@ -107,7 +109,7 @@ contract FeeManager is IFeeManager {
         return _pool;
     }
 
-    function setPool(address newPoolAddress) public onlyAuthorised {
+    function setPool(address newPoolAddress) public onlyHighLevelOperator {
         if (newPoolAddress == _pool) {
             revert("old value is same as new value");
         }
@@ -121,7 +123,9 @@ contract FeeManager is IFeeManager {
         return address(_registrar);
     }
 
-    function setRegistrar(address newRegistrarAddress) public onlyAuthorised {
+    function setRegistrar(
+        address newRegistrarAddress
+    ) public onlyHighLevelOperator {
         if (newRegistrarAddress == address(_registrar)) {
             revert("old value is same as new value");
         }
@@ -135,7 +139,9 @@ contract FeeManager is IFeeManager {
         return address(_renewer);
     }
 
-    function setRenewer(address newRenewerAddress) public onlyAuthorised {
+    function setRenewer(
+        address newRenewerAddress
+    ) public onlyHighLevelOperator {
         if (newRenewerAddress == address(_renewer)) {
             revert("old value is same as new value");
         }
@@ -151,7 +157,7 @@ contract FeeManager is IFeeManager {
 
     function setPartnerManager(
         address newPartnerManager
-    ) public onlyAuthorised {
+    ) public onlyHighLevelOperator {
         if (newPartnerManager == address(_partnerManager)) {
             revert("old value is same as new value");
         }

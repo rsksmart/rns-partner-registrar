@@ -3,6 +3,7 @@ import { ethers } from 'hardhat';
 import MyRIF from '../artifacts/contracts/RIF.sol/RIF.json';
 import PartnerManagerJson from '../artifacts/contracts/PartnerManager/IPartnerManager.sol/IPartnerManager.json';
 import MyPartnerConfiguration from '../artifacts/contracts/PartnerConfiguration/IPartnerConfiguration.sol/IPartnerConfiguration.json';
+import { RegistrarAccessControl__factory } from 'typechain-types';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chairc';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -34,6 +35,7 @@ async function testSetup() {
     pool,
     newValue,
     attacker,
+    highLevelOperator,
     ...accounts
   ] = await ethers.getSigners();
 
@@ -47,12 +49,22 @@ async function testSetup() {
     MyPartnerConfiguration.abi
   );
 
+  const accessControl = await deployContract<RegistrarAccessControl__factory>(
+    'RegistrarAccessControl',
+    []
+  );
+
+  await (
+    await accessControl.addHighLevelOperator(highLevelOperator.address)
+  ).wait();
+
   const feeManager = await deployContract<FeeManager__factory>('FeeManager', [
     RIF.address,
     registrar.address,
     renewer.address,
     PartnerManager.address,
     pool.address,
+    accessControl.address,
   ]);
 
   return {
@@ -70,6 +82,8 @@ async function testSetup() {
     newValue,
     attacker,
     oneRBTC,
+    accessControl,
+    highLevelOperator,
   };
 }
 
@@ -284,9 +298,13 @@ describe('Fee Manager', () => {
 
   describe('setPool', () => {
     it('Should change the pool address', async () => {
-      const { feeManager, newValue: newPool, registrar } = await testSetup();
+      const {
+        feeManager,
+        newValue: newPool,
+        highLevelOperator,
+      } = await testSetup();
 
-      feeManager.connect(registrar).setPool(newPool.address);
+      feeManager.connect(highLevelOperator).setPool(newPool.address);
 
       const alreadyChangedPool = await feeManager.getPool();
 
@@ -297,26 +315,30 @@ describe('Fee Manager', () => {
       const { feeManager, newValue: newPool, attacker } = await testSetup();
 
       await expect(feeManager.connect(attacker).setPool(newPool.address))
-        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .to.be.revertedWithCustomError(feeManager, 'OnlyHighLevelOperator')
         .withArgs(attacker.address);
     });
 
     it('Should revert if the new pool address is the same as the old one', async () => {
-      const { feeManager, registrar } = await testSetup();
+      const { feeManager, highLevelOperator } = await testSetup();
 
       const actualPoolAddress = feeManager.getPool();
 
       await expect(
-        feeManager.connect(registrar).setPool(actualPoolAddress)
+        feeManager.connect(highLevelOperator).setPool(actualPoolAddress)
       ).to.be.revertedWith('old value is same as new value');
     });
   });
 
   describe('setRegistrar', () => {
     it('Should change the registrar address', async () => {
-      const { feeManager, newValue: newRegistrar, renewer } = await testSetup();
+      const {
+        feeManager,
+        newValue: newRegistrar,
+        highLevelOperator,
+      } = await testSetup();
 
-      feeManager.connect(renewer).setRegistrar(newRegistrar.address);
+      feeManager.connect(highLevelOperator).setRegistrar(newRegistrar.address);
 
       const alreadyChangedRegistrar = await feeManager.getRegistrar();
 
@@ -333,26 +355,32 @@ describe('Fee Manager', () => {
       await expect(
         feeManager.connect(attacker).setRegistrar(newRegistrar.address)
       )
-        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .to.be.revertedWithCustomError(feeManager, 'OnlyHighLevelOperator')
         .withArgs(attacker.address);
     });
 
     it('Should revert if the new registrar address is the same as the old one', async () => {
-      const { feeManager, renewer } = await testSetup();
+      const { feeManager, highLevelOperator } = await testSetup();
 
       const actualregistrarAddress = feeManager.getRegistrar();
 
       await expect(
-        feeManager.connect(renewer).setRegistrar(actualregistrarAddress)
+        feeManager
+          .connect(highLevelOperator)
+          .setRegistrar(actualregistrarAddress)
       ).to.be.revertedWith('old value is same as new value');
     });
   });
 
   describe('setRenewer', () => {
     it('Should change the renewer address', async () => {
-      const { feeManager, newValue: newRenewer, registrar } = await testSetup();
+      const {
+        feeManager,
+        newValue: newRenewer,
+        highLevelOperator,
+      } = await testSetup();
 
-      feeManager.connect(registrar).setRenewer(newRenewer.address);
+      feeManager.connect(highLevelOperator).setRenewer(newRenewer.address);
 
       const alreadyChangedRenewer = await feeManager.getRenewer();
 
@@ -363,17 +391,17 @@ describe('Fee Manager', () => {
       const { feeManager, newValue: newRenewer, attacker } = await testSetup();
 
       await expect(feeManager.connect(attacker).setRenewer(newRenewer.address))
-        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .to.be.revertedWithCustomError(feeManager, 'OnlyHighLevelOperator')
         .withArgs(attacker.address);
     });
 
     it('Should revert if the new renewer address is the same as the old one', async () => {
-      const { feeManager, registrar } = await testSetup();
+      const { feeManager, highLevelOperator } = await testSetup();
 
       const actualRenewerAddress = feeManager.getRenewer();
 
       await expect(
-        feeManager.connect(registrar).setRenewer(actualRenewerAddress)
+        feeManager.connect(highLevelOperator).setRenewer(actualRenewerAddress)
       ).to.be.revertedWith('old value is same as new value');
     });
   });
@@ -383,11 +411,11 @@ describe('Fee Manager', () => {
       const {
         feeManager,
         newValue: newPartnerManager,
-        registrar,
+        highLevelOperator,
       } = await testSetup();
 
       feeManager
-        .connect(registrar)
+        .connect(highLevelOperator)
         .setPartnerManager(newPartnerManager.address);
 
       const alreadyChangedPartnerManager = await feeManager.getPartnerManager();
@@ -409,18 +437,18 @@ describe('Fee Manager', () => {
           .connect(attacker)
           .setPartnerManager(newPartnerManager.address)
       )
-        .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+        .to.be.revertedWithCustomError(feeManager, 'OnlyHighLevelOperator')
         .withArgs(attacker.address);
     });
 
     it('Should revert if the new partner manager address is the same as the old one', async () => {
-      const { feeManager, registrar } = await testSetup();
+      const { feeManager, highLevelOperator } = await testSetup();
 
       const actualPartnerManagerAddress = feeManager.getPartnerManager();
 
       await expect(
         feeManager
-          .connect(registrar)
+          .connect(highLevelOperator)
           .setPartnerManager(actualPartnerManagerAddress)
       ).to.be.revertedWith('old value is same as new value');
     });
@@ -490,45 +518,61 @@ describe('Fee Manager', () => {
     });
 
     it('Should emit PoolChanged event', async () => {
-      const { feeManager, newValue: newPool, registrar } = await testSetup();
+      const {
+        feeManager,
+        newValue: newPool,
+        highLevelOperator,
+      } = await testSetup();
 
-      await expect(feeManager.connect(registrar).setPool(newPool.address))
+      await expect(
+        feeManager.connect(highLevelOperator).setPool(newPool.address)
+      )
         .to.emit(feeManager, POOL_CHANGED_EVENT)
-        .withArgs(registrar.address, newPool.address);
+        .withArgs(highLevelOperator.address, newPool.address);
     });
 
     it('Should emit RegistraChanged event', async () => {
-      const { feeManager, newValue: newRegistrar, renewer } = await testSetup();
+      const {
+        feeManager,
+        newValue: newRegistrar,
+        highLevelOperator,
+      } = await testSetup();
 
       await expect(
-        feeManager.connect(renewer).setRegistrar(newRegistrar.address)
+        feeManager.connect(highLevelOperator).setRegistrar(newRegistrar.address)
       )
         .to.emit(feeManager, REGISTRAR_CHANGED_EVENT)
-        .withArgs(renewer.address, newRegistrar.address);
+        .withArgs(highLevelOperator.address, newRegistrar.address);
     });
 
     it('Should emit RenewerChanged event', async () => {
-      const { feeManager, newValue: newRenewer, registrar } = await testSetup();
+      const {
+        feeManager,
+        newValue: newRenewer,
+        highLevelOperator,
+      } = await testSetup();
 
-      await expect(feeManager.connect(registrar).setRenewer(newRenewer.address))
+      await expect(
+        feeManager.connect(highLevelOperator).setRenewer(newRenewer.address)
+      )
         .to.emit(feeManager, RENEWER_CHANGED_EVENT)
-        .withArgs(registrar.address, newRenewer.address);
+        .withArgs(highLevelOperator.address, newRenewer.address);
     });
 
     it('Should emit PartnerManagerChanged event', async () => {
       const {
         feeManager,
         newValue: newPartnerManager,
-        registrar,
+        highLevelOperator,
       } = await testSetup();
 
       await expect(
         feeManager
-          .connect(registrar)
+          .connect(highLevelOperator)
           .setPartnerManager(newPartnerManager.address)
       )
         .to.emit(feeManager, PARTNER_MANAGER_CHANGED_EVENT)
-        .withArgs(registrar.address, newPartnerManager.address);
+        .withArgs(highLevelOperator.address, newPartnerManager.address);
     });
   });
 });
