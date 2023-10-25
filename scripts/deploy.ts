@@ -1,33 +1,39 @@
 import { ethers } from 'hardhat';
 import { Contract, BigNumber } from 'ethers';
 import {
-  PartnerRegistrar,
   FeeManager,
   PartnerConfiguration,
-  PartnerManager,
+  PartnerRegistrar,
   PartnerRenewer,
   RegistrarAccessControl,
 } from '../typechain-types';
 import fs from 'fs';
 import { namehash } from 'ethers/lib/utils';
+require('dotenv').config({ path: '.env.mainnet' });
 
-// TODO: define nodeOwner
+console.log('Running script on env.', process.env.NODE_ENV);
+
+// Addresses deployed on mainnet: https://dev.rootstock.io/rif/rns/mainnet/
 const RNS_NODE_OWNER =
-  process.env.RNS_NODE_OWNER || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+  process.env.RNS_NODE_OWNER || '0x45d3e4fb311982a06ba52359d44cb4f5980e0ef1';
 
-// TODO: define RIF address
 const RIF_ADDRESS =
-  process.env.RIF_ADDRESS || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+  process.env.RIF_ADDRESS || '0x2acc95758f8b5f583470ba265eb685a8f45fc9d5';
 
-// TODO: define POOL address
-const POOL = process.env.POOL || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+const POOL = process.env.POOL || '0x6cab832ec04855e67053a9509d2ad0dd25863ec7';
 
-// TODO: define RNS address
-const RNS = process.env.RNS || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+const RNS_ADDRESS =
+  process.env.RNS_ADDRESS || '0xcb868aeabd31e2b66f74e9a55cf064abb31a4ad5';
 
-// TODO: define the new owner of the RNS contracts
-const NEW_RNS_OWNER =
-  process.env.NEW_RNS_OWNER || '0xb938d659D5409E57EC1396F617565Aa96aF5B214';
+const RESOLVER_ADDRESS =
+  process.env.RESOLVER_ADDRESS || '0xD87f8121D44F3717d4bAdC50b24E50044f86D64B';
+
+const MULTICHAIN_RESOLVER_ADDRESS =
+  process.env.MULTICHAIN_RESOLVER_ADDRESS ||
+  '0x99a12be4C89CbF6CFD11d1F2c029904a7B644368';
+const PUBLIC_RESOLVER_ADDRESS =
+  process.env.PUBLIC_RESOLVER_ADDRESS ||
+  '0x4efd25e3d348f8f25a14fb7655fba6f72edfe93a';
 
 const tldNode = namehash('rsk');
 
@@ -46,7 +52,7 @@ async function deployContract<T extends Contract>(
 
 async function main() {
   try {
-    const [owner] = await ethers.getSigners();
+    const [owner, defaultPartner] = await ethers.getSigners();
 
     console.log('Deploying contracts with the account:', owner.address);
 
@@ -67,7 +73,7 @@ async function main() {
         nodeOwner: RNS_NODE_OWNER,
         rif: RIF_ADDRESS,
         partnerManager: partnerManager.address,
-        rns: RNS,
+        rns: RNS_ADDRESS,
         rootNode: tldNode,
       }
     );
@@ -93,6 +99,23 @@ async function main() {
     await (await partnerRegistrar.setFeeManager(feeManager.address)).wait();
     await (await partnerRenewer.setFeeManager(feeManager.address)).wait();
 
+    console.log('Adding new registrar and renewer to old nodeOwner');
+    const NodeOwnerContract = await ethers.getContractAt(
+      'NodeOwner',
+      RNS_NODE_OWNER,
+      owner
+    );
+
+    await (
+      await NodeOwnerContract.addRegistrar(partnerRegistrar.address)
+    ).wait();
+
+    console.log('new partner registrar added');
+
+    await (await NodeOwnerContract.addRenewer(partnerRenewer.address)).wait();
+
+    console.log('new partner renewer added');
+
     const defaultPartnerConfiguration =
       await deployContract<PartnerConfiguration>('PartnerConfiguration', {
         accessControl: accessControl.address,
@@ -104,11 +127,31 @@ async function main() {
         discount: BigNumber.from(0),
         minCommitmentAge: BigNumber.from(0),
       });
+    console.log(
+      'DefaultPartnerConfiguration:',
+      defaultPartnerConfiguration.address
+    );
 
-    await (await accessControl.transferOwnership(NEW_RNS_OWNER)).wait();
+    await (
+      await partnerManager.addPartner(
+        defaultPartner.address,
+        defaultPartnerConfiguration.address
+      )
+    ).wait();
+
+    console.log('default partner added');
 
     console.log('Writing contract addresses to file...');
     const content = {
+      owner: owner.address,
+      defaultPartner: defaultPartner.address,
+      rnsNodeOwnerAddress: RNS_NODE_OWNER,
+      rifToken: RIF_ADDRESS,
+      pool: POOL,
+      rns: RNS_ADDRESS,
+      resolverAddress: RESOLVER_ADDRESS,
+      multichainResolverAddress: MULTICHAIN_RESOLVER_ADDRESS,
+      publicResolverAddress: PUBLIC_RESOLVER_ADDRESS,
       partnerRegistrar: partnerRegistrar.address,
       partnerRenewer: partnerRenewer.address,
       partnerManager: partnerManager.address,
@@ -118,7 +161,7 @@ async function main() {
     };
 
     fs.writeFileSync(
-      './deployedAddresses.json',
+      './deployedMainnetAddresses.json',
       JSON.stringify(content, null, 2)
     );
     console.log('Done.');
