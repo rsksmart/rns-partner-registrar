@@ -6,6 +6,7 @@ coverage.json
 typechain-types
 contracts-exposed
 .vscode
+env.testnet
 
 #Hardhat files
 cache

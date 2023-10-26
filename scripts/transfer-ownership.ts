@@ -1,9 +1,6 @@
 import { ethers } from 'hardhat';
 
 async function main() {
-  //signer from private key
-  //const signer = new ethers.Wallet("87dc98231c077b40e80542ef8966c122a1e4a6ac4a6a2af2ff32f7908b38e973");
-
   const rnsAddress = '0xa9d6d2bbfc49a217c9ec97b095060f5059df9139'; // Replace with the actual RNS address
   const rskDomain = ethers.constants.HashZero; // root domain
   const newOwnerAddress =
