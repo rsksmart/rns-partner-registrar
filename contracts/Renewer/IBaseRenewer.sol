@@ -47,11 +47,34 @@ interface IBaseRenewer {
     event FeeManagerChanged(address hostContract, address feeManagerContract);
 
     /**
+     * @notice event emitted when a partner manager contract is set
+     * @param changedBy the address of user that changed the partner manager address
+     * @param partnerManager the address of the partner manager being set
+     */
+    event PartnerManagerChanged(address changedBy, address partnerManager);
+
+    /**
         @notice sets the fee manager to use. Mandatory for the renewer to work.
         @param feeManager the fee manager to use
         @custom:emits-event emits the FeeManagerSet event
     */
     function setFeeManager(IFeeManager feeManager) external;
+
+    /**
+     * @notice returns the partner manager that the registrar has been configured to use
+     */
+    function getPartnerManager() external view returns (address);
+
+    /**
+     * @notice sets the _partnerManager
+     * @param partnerManager address of the partner manager to be set
+     */
+    function setPartnerManager(address partnerManager) external;
+
+    /**
+        @notice returns the fee manager that the registrar has been configured to use
+    */
+    function getFeeManager() external view returns (address);
 
     /**
      * @notice error thrown when the partner is not whitelisted

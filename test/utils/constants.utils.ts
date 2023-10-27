@@ -34,8 +34,14 @@ export const FEE_MANAGER_CHANGED_EVENT = 'FeeManagerChanged';
 export const NAME_REGISTERED_EVENT = 'NameRegistered';
 export const PARTNER_CONFIGURATION_CHANGED_EVENT =
   'PartnerConfigurationChanged';
+
+export const PARTNER_MANAGER_CHANGED_EVENT = 'PartnerManagerChanged';
 export const PARTNER_ADDED_EVENT = 'PartnerAdded';
 export const PARTNER_REMOVED_EVENT = 'PartnerRemoved';
+
+export const POOL_CHANGED_EVENT = 'PoolChanged';
+export const REGISTRAR_CHANGED_EVENT = 'RegistrarChanged';
+export const RENEWER_CHANGED_EVENT = 'RenewerChanged';
 
 // CONSTANT VALUES
 export const DEFAULT_MIN_LENGTH = 3;

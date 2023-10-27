@@ -9,30 +9,36 @@ import {
 } from '../typechain-types';
 import fs from 'fs';
 import { namehash } from 'ethers/lib/utils';
-require('dotenv').config({ path: '.env.mainnet' });
+require('dotenv').config({ path: '.env.testnet' });
 
 console.log('Running script on env.', process.env.NODE_ENV);
 
 // Addresses deployed on mainnet: https://dev.rootstock.io/rif/rns/mainnet/
 const RNS_NODE_OWNER =
-  process.env.RNS_NODE_OWNER || '0x45d3e4fb311982a06ba52359d44cb4f5980e0ef1';
+  process.env.RNS_NODE_OWNER?.toLowerCase() ||
+  '0x45d3e4fb311982a06ba52359d44cb4f5980e0ef1';
 
 const RIF_ADDRESS =
-  process.env.RIF_ADDRESS || '0x2acc95758f8b5f583470ba265eb685a8f45fc9d5';
+  process.env.RIF_ADDRESS?.toLowerCase() ||
+  '0x2acc95758f8b5f583470ba265eb685a8f45fc9d5';
 
-const POOL = process.env.POOL || '0x6cab832ec04855e67053a9509d2ad0dd25863ec7';
+const POOL =
+  process.env.POOL?.toLowerCase() ||
+  '0x6cab832ec04855e67053a9509d2ad0dd25863ec7';
 
 const RNS_ADDRESS =
-  process.env.RNS_ADDRESS || '0xcb868aeabd31e2b66f74e9a55cf064abb31a4ad5';
+  process.env.RNS_ADDRESS?.toLowerCase() ||
+  '0xcb868aeabd31e2b66f74e9a55cf064abb31a4ad5';
 
 const RESOLVER_ADDRESS =
-  process.env.RESOLVER_ADDRESS || '0xD87f8121D44F3717d4bAdC50b24E50044f86D64B';
+  process.env.RESOLVER_ADDRESS?.toLowerCase() ||
+  '0xD87f8121D44F3717d4bAdC50b24E50044f86D64B';
 
 const MULTICHAIN_RESOLVER_ADDRESS =
-  process.env.MULTICHAIN_RESOLVER_ADDRESS ||
+  process.env.MULTICHAIN_RESOLVER_ADDRESS?.toLowerCase() ||
   '0x99a12be4C89CbF6CFD11d1F2c029904a7B644368';
 const PUBLIC_RESOLVER_ADDRESS =
-  process.env.PUBLIC_RESOLVER_ADDRESS ||
+  process.env.PUBLIC_RESOLVER_ADDRESS?.toLowerCase() ||
   '0x4efd25e3d348f8f25a14fb7655fba6f72edfe93a';
 
 const tldNode = namehash('rsk');
@@ -56,15 +62,17 @@ async function main() {
 
     console.log('Deploying contracts with the account:', owner.address);
 
-    console.log('Account balance:', (await owner.getBalance()).toString());
+    console.log('Account balance:', +(await owner.getBalance()) / 1e18, 'RBTC');
 
     const accessControl = await deployContract<RegistrarAccessControl>(
       'RegistrarAccessControl'
     );
+    console.log('accessControl deployed', accessControl.address);
 
     const partnerManager = await deployContract('PartnerManager', {
       accessControl: accessControl.address,
     });
+    console.log('partnerManager deployed', partnerManager.address);
 
     const partnerRegistrar = await deployContract<PartnerRegistrar>(
       'PartnerRegistrar',
@@ -77,6 +85,7 @@ async function main() {
         rootNode: tldNode,
       }
     );
+    console.log('partnerRegistrar deployed', partnerRegistrar.address);
 
     const partnerRenewer = await deployContract<PartnerRenewer>(
       'PartnerRenewer',
@@ -87,6 +96,7 @@ async function main() {
         partnerManager: partnerManager.address,
       }
     );
+    console.log('partnerRenewer deployed', partnerRenewer.address);
 
     const feeManager = await deployContract<FeeManager>('FeeManager', {
       rif: RIF_ADDRESS,
@@ -94,27 +104,31 @@ async function main() {
       partnerRenewer: partnerRenewer.address,
       partnerManager: partnerManager.address,
       pool: POOL,
+      accessControl: accessControl.address,
     });
+    console.log('Fee manager deployed', feeManager.address);
 
     await (await partnerRegistrar.setFeeManager(feeManager.address)).wait();
+    console.log('Set Fee manager on partner registrar');
     await (await partnerRenewer.setFeeManager(feeManager.address)).wait();
+    console.log('et Fee manager on partner renewer');
 
-    console.log('Adding new registrar and renewer to old nodeOwner');
-    const NodeOwnerContract = await ethers.getContractAt(
-      'NodeOwner',
-      RNS_NODE_OWNER,
-      owner
-    );
-
-    await (
-      await NodeOwnerContract.addRegistrar(partnerRegistrar.address)
-    ).wait();
-
-    console.log('new partner registrar added');
-
-    await (await NodeOwnerContract.addRenewer(partnerRenewer.address)).wait();
-
-    console.log('new partner renewer added');
+    // console.log('Adding new registrar and renewer to old nodeOwner');
+    // const NodeOwnerContract = await ethers.getContractAt(
+    //   'NodeOwner',
+    //   RNS_NODE_OWNER,
+    //   owner
+    // );
+    //
+    // await (
+    //   await NodeOwnerContract.addRegistrar(partnerRegistrar.address)
+    // ).wait();
+    //
+    // console.log('new partner registrar added');
+    //
+    // await (await NodeOwnerContract.addRenewer(partnerRenewer.address)).wait();
+    //
+    // console.log('new partner renewer added');
 
     const defaultPartnerConfiguration =
       await deployContract<PartnerConfiguration>('PartnerConfiguration', {

@@ -38,6 +38,7 @@ import {
   NOT_A_PARTNER_ERR,
   NO_COMMITMENT_FOUND_ERR,
   COMMITMENT_NOT_REQUIRED_ERR,
+  PARTNER_MANAGER_CHANGED_EVENT,
 } from './utils/constants.utils';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
@@ -58,6 +59,7 @@ const initialSetup = async () => {
   const alternateFeeManager = signers[5];
   const attacker = signers[5];
   const highLevelOperator = signers[6];
+  const newPartnerManager = signers[7];
 
   const Resolver = await deployMockContract<ResolverType>(ResolverJson.abi);
   Resolver.setAddr.returns();
@@ -127,6 +129,7 @@ const initialSetup = async () => {
     PartnerRenewer.address,
     PartnerManager.address,
     pool.address,
+    accessControl.address,
   ]);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
@@ -147,6 +150,7 @@ const initialSetup = async () => {
     attacker,
     highLevelOperator,
     accessControl,
+    newPartnerManager,
   };
 };
 
@@ -672,5 +676,53 @@ describe('Partner Manager', () => {
     expect(await PartnerRegistrar.getPartnerManager()).to.be.equal(
       PartnerManager.address
     );
+  });
+
+  it('Should successfully modify partner manager address', async () => {
+    const { PartnerRegistrar, newPartnerManager } = await loadFixture(
+      initialSetup
+    );
+
+    await (
+      await PartnerRegistrar.setPartnerManager(newPartnerManager.address)
+    ).wait();
+
+    expect(await PartnerRegistrar.getPartnerManager()).to.be.equal(
+      newPartnerManager.address
+    );
+  });
+
+  it('Should emit PartnerManagerChanged when successfully changing partner manager address', async () => {
+    const { PartnerRegistrar, newPartnerManager, owner } = await loadFixture(
+      initialSetup
+    );
+
+    await expect(PartnerRegistrar.setPartnerManager(newPartnerManager.address))
+      .to.emit(PartnerRegistrar, PARTNER_MANAGER_CHANGED_EVENT)
+      .withArgs(owner.address, newPartnerManager.address);
+  });
+
+  it('Should not allow non HighLevel Operator to modify partner manager address', async () => {
+    const { PartnerRegistrar, attacker, newPartnerManager, accessControl } =
+      await loadFixture(initialSetup);
+
+    expect(
+      PartnerRegistrar.connect(attacker).setPartnerManager(
+        newPartnerManager.address
+      )
+    ).to.be.revertedWithCustomError(
+      PartnerRegistrar,
+      ONLY_HIGH_LEVEL_OPERATOR_ERR
+    );
+  });
+
+  it('Should revert if new partner manager address is the same', async () => {
+    const { PartnerRegistrar } = await loadFixture(initialSetup);
+
+    const oldPartnerManager = await PartnerRegistrar.getPartnerManager();
+
+    expect(
+      PartnerRegistrar.setPartnerManager(oldPartnerManager)
+    ).to.be.revertedWith('old value is same as new value');
   });
 });

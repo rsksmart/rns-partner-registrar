@@ -128,6 +128,7 @@ export const initialSetup = async () => {
       renewer: PartnerRenewer.address,
       partnerManager: PartnerManager.address,
       pool: pool.address,
+      accessControl: accessControl.address,
     }
   );
 

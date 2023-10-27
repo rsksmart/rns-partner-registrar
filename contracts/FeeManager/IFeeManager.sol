@@ -37,6 +37,37 @@ interface IFeeManager {
     event DepositSuccessful(uint256 amount, address from);
 
     /**
+     * @notice event emitted when the pool address is changed
+     * @param changedBy address of the account that changed the pool address
+     * @param newPoolAddress address of the new pool
+     */
+    event PoolChanged(address changedBy, address newPoolAddress);
+
+    /**
+     * @notice event emitted when the registrar address is changed
+     * @param changedBy address of the account that changed the registrar address
+     * @param newRegistrarAddress address of the new registrar
+     */
+    event RegistrarChanged(address changedBy, address newRegistrarAddress);
+
+    /**
+     * @notice event emitted when the renewer address is changed
+     * @param changedBy address of the account that changed the renewer address
+     * @param newRenewerAddress address of the new renewer
+     */
+    event RenewerChanged(address changedBy, address newRenewerAddress);
+
+    /**
+     * @notice event emitted when the partner managaer address is changed
+     * @param changedBy address of the account that changed the partner manager address
+     * @param newPartnerManagerAddress address of the new partner manager
+     */
+    event PartnerManagerChanged(
+        address changedBy,
+        address newPartnerManagerAddress
+    );
+
+    /**
      * @notice allows the partner to withdraw the balance of their revenue
      * @custom:emits-event emits the WithdrawalSuccessful event
      */
@@ -55,4 +86,48 @@ interface IFeeManager {
      * @param partner address of the partner
      */
     function getBalance(address partner) external view returns (uint256);
+
+    /**
+     * @notice allows checking the address of the pool
+     */
+    function getPool() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the pool
+     * @param newPoolAddress address of the new pool
+     */
+    function setPool(address newPoolAddress) external;
+
+    /**
+     * @notice allows checking the address of the registrar
+     */
+    function getRegistrar() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the registrar
+     * @param newRegistrarAddress address of the new registrar
+     */
+    function setRegistrar(address newRegistrarAddress) external;
+
+    /**
+     * @notice allows checking the address of the renewer
+     */
+    function getRenewer() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the renewer
+     * @param newRenewerAddress address of the new renewer
+     */
+    function setRenewer(address newRenewerAddress) external;
+
+    /**
+     * @notice allows checking the address of the partner manager
+     */
+    function getPartnerManager() external view returns (address);
+
+    /**
+     * @notice allows modifying the address of the partner manager
+     * @param newPartnerManagerAddress address of the new partner manager
+     */
+    function setPartnerManager(address newPartnerManagerAddress) external;
 }
