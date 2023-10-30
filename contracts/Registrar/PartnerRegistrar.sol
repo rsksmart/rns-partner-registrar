@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.16;
 
-import "./IBaseRegistrar.sol";
+import "./IPartnerRegistrar.sol";
 import "../NodeOwner.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../StringUtils.sol";
@@ -19,7 +19,7 @@ import "../Access/HasAccessControl.sol";
     @title Implements the interface IBaseRegistrar to register names in RNS. Takes into account the partners for the revenue sharing.
 */
 contract PartnerRegistrar is
-    IBaseRegistrar,
+    IPartnerRegistrar,
     IERC677TransferReceiver,
     HasAccessControl
 {
@@ -62,10 +62,16 @@ contract PartnerRegistrar is
         _;
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function getPartnerManager() external view returns (IPartnerManager) {
         return _partnerManager;
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function setFeeManager(
         IFeeManager feeManager
     ) external onlyHighLevelOperator {
@@ -191,16 +197,9 @@ contract PartnerRegistrar is
         _feeManager.deposit(partner, amount);
     }
 
-    // - Via ERC-20
-    /// @notice Registers a .rsk name in RNS.
-    /// @dev This method must be called after commiting.
-    /// @param name The name to register.
-    /// @param nameOwner The owner of the name to regiter.
-    /// @param secret The secret used to make the commitment.
-    /// @param duration Time to register in years.
-    /// @param addr Address to set as addr resolution.
-    /// @param partner Partner address
-    /// @custom:emits-event emits the NameRegistered event
+    /**
+       @inheritdoc IPartnerRegistrar
+     */
     function register(
         string calldata name,
         address nameOwner,
@@ -249,7 +248,7 @@ contract PartnerRegistrar is
     }
 
     /**
-       @inheritdoc IBaseRegistrar
+       @inheritdoc IPartnerRegistrar
      */
     function makeCommitment(
         bytes32 label,

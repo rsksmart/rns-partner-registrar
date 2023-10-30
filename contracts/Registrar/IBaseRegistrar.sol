@@ -43,25 +43,6 @@ interface IBaseRegistrar {
     function setFeeManager(IFeeManager feeManager) external;
 
     /**
-        @notice registers a name
-        @param name the name to register
-        @param nameOwner the owner of the name
-        @param secret used in the commitment step if required
-        @param duration the duration of the registration in years
-        @param addr to be resolved to the name as default
-        @param partner Partner address
-        @custom:emits-event emits the NameRegistered event
-    */
-    function register(
-        string calldata name,
-        address nameOwner,
-        bytes32 secret,
-        uint256 duration,
-        address addr,
-        address partner
-    ) external;
-
-    /**
         @notice calculates the price of a name
         @param name the name to register
         @param expires the expiration date of the name
@@ -75,23 +56,6 @@ interface IBaseRegistrar {
         uint256 duration,
         address partner
     ) external view returns (uint256);
-
-    /**
-        @notice calculates the commitment of a name based on the provided parameters
-        @param label the label of the name
-        @param nameOwner the owner of the name
-        @param secret used in the commitment step if required
-        @param duration the duration of the registration in years
-        @param addr to be resolved to the name as default
-        @return the commitment of the name
-    */
-    function makeCommitment(
-        bytes32 label,
-        address nameOwner,
-        bytes32 secret,
-        uint256 duration,
-        address addr
-    ) external pure returns (bytes32);
 
     /**
         @notice commits a name if required. This is used to reserve a name

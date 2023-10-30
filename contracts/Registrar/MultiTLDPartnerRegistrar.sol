@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.16;
 
-import "./IBaseRegistrar.sol";
 import "../NodeOwner.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../StringUtils.sol";
@@ -13,6 +12,7 @@ import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
+import "./IMultiTLDBaseRegistrar.sol";
 
 /**
     @author Identity Team @IOVLabs
@@ -54,10 +54,16 @@ contract MultiTLDPartnerRegistrar is
         _;
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function getPartnerManager() external view returns (IPartnerManager) {
         return _partnerManager;
     }
 
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function setFeeManager(
         IFeeManager feeManager
     ) external onlyHighLevelOperator {
@@ -190,16 +196,9 @@ contract MultiTLDPartnerRegistrar is
         _feeManager.deposit(partner, amount);
     }
 
-    // - Via ERC-20
-    /// @notice Registers a .<tld> name in RNS.
-    /// @dev This method must be called after commiting.
-    /// @param name The name to register.
-    /// @param nameOwner The owner of the name to regiter.
-    /// @param secret The secret used to make the commitment.
-    /// @param duration Time to register in years.
-    /// @param addr Address to set as addr resolution.
-    /// @param partner Partner address
-    /// @custom:emits-event emits the NameRegistered event
+    /**
+       @inheritdoc IMultiTLDBaseRegistrar
+     */
     function register(
         string calldata name,
         address nameOwner,
@@ -252,7 +251,7 @@ contract MultiTLDPartnerRegistrar is
     }
 
     /**
-       @inheritdoc IBaseRegistrar
+       @inheritdoc IMultiTLDBaseRegistrar
      */
     function makeCommitment(
         bytes32 label,
@@ -261,7 +260,7 @@ contract MultiTLDPartnerRegistrar is
         uint256 duration,
         address addr,
         bytes32 tld
-    ) public view override returns (bytes32) {
+    ) public pure override returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(label, nameOwner, secret, duration, addr, tld)
