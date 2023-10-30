@@ -29,7 +29,7 @@ abstract contract IMultiTLDBaseRegistrar is IBaseRegistrar {
         address addr,
         address partner,
         bytes32 tld
-    ) virtual external;
+    ) external virtual;
 
     /**
         @notice calculates the commitment of a name based on the provided parameters
@@ -48,5 +48,5 @@ abstract contract IMultiTLDBaseRegistrar is IBaseRegistrar {
         uint256 duration,
         address addr,
         bytes32 tld
-    ) virtual external pure returns (bytes32);
+    ) external pure virtual returns (bytes32);
 }

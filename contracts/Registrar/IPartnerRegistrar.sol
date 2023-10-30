@@ -27,7 +27,7 @@ abstract contract IPartnerRegistrar is IBaseRegistrar {
         uint256 duration,
         address addr,
         address partner
-    ) virtual external;
+    ) external virtual;
 
     /**
         @notice calculates the commitment of a name based on the provided parameters
@@ -44,5 +44,5 @@ abstract contract IPartnerRegistrar is IBaseRegistrar {
         bytes32 secret,
         uint256 duration,
         address addr
-    ) virtual external pure returns (bytes32);
+    ) external pure virtual returns (bytes32);
 }
