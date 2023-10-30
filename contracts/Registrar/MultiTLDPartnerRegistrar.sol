@@ -54,7 +54,6 @@ contract MultiTLDPartnerRegistrar is
         _;
     }
 
-
     function getPartnerManager() external view returns (IPartnerManager) {
         return _partnerManager;
     }
@@ -112,7 +111,7 @@ contract MultiTLDPartnerRegistrar is
         uint256 duration = data.toUint(56);
         address addr = data.toAddress(88);
         address partner = data.toAddress(108);
-        bytes32 tld =  data.toBytes32(128);
+        bytes32 tld = data.toBytes32(128);
 
         string memory name = data.toString(160, data.length - 160);
 
@@ -142,7 +141,6 @@ contract MultiTLDPartnerRegistrar is
         address partner,
         bytes32 tld
     ) private {
-
         emit NameRegistered(from, duration);
 
         uint256 cost = _executeRegistration(
@@ -211,8 +209,6 @@ contract MultiTLDPartnerRegistrar is
         address partner,
         bytes32 tld
     ) public override onlyPartner(partner) {
-
-
         emit NameRegistered(msg.sender, duration);
 
         uint256 cost = _executeRegistration(
@@ -266,7 +262,6 @@ contract MultiTLDPartnerRegistrar is
         address addr,
         bytes32 tld
     ) public view override returns (bytes32) {
-
         return
             keccak256(
                 abi.encodePacked(label, nameOwner, secret, duration, addr, tld)
