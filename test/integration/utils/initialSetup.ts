@@ -15,7 +15,14 @@ import { PartnerConfiguration } from 'typechain-types';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
-import { FEE_PERCENTAGE, rootNodeId, tldAsSha3, tldNode } from './constants';
+import { MultiTLDPartnerRegistrar } from 'typechain-types';
+import {
+  FEE_PERCENTAGE,
+  rootNodeId,
+  sovrynTldNode,
+  tldAsSha3,
+  tldNode,
+} from './constants';
 import { BigNumber } from 'ethers';
 
 export const initialSetup = async () => {
@@ -43,6 +50,18 @@ export const initialSetup = async () => {
     {
       _rns: RNS.address,
       _rootNode: tldNode,
+    },
+    (await ethers.getContractFactory(
+      NodeOwnerAbi.abi,
+      NodeOwnerAbi.bytecode
+    )) as Factory<NodeOwner>
+  );
+
+  const { contract: SovrynNodeOwner } = await deployContract<NodeOwner>(
+    'NodeOwner',
+    {
+      _rns: RNS.address,
+      _rootNode: sovrynTldNode,
     },
     (await ethers.getContractFactory(
       NodeOwnerAbi.abi,
@@ -110,6 +129,14 @@ export const initialSetup = async () => {
     }
   );
 
+  const { contract: MultiTLDPartnerRegistrar } =
+    await deployContract<MultiTLDPartnerRegistrar>('MultiTLDPartnerRegistrar', {
+      accessControl: accessControl.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+      rns: RNS.address,
+    });
+
   const { contract: PartnerRenewer } = await deployContract<PartnerRenewer>(
     'PartnerRenewer',
     {
@@ -119,6 +146,12 @@ export const initialSetup = async () => {
       partnerManager: PartnerManager.address,
     }
   );
+  const { contract: MultiTldPartnerRenewer } =
+    await deployContract<PartnerRenewer>('MultiTldPartnerRenewer', {
+      accessControl: accessControl.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+    });
 
   const { contract: FeeManager } = await deployContract<IFeeManager>(
     'FeeManager',
@@ -130,11 +163,28 @@ export const initialSetup = async () => {
     }
   );
 
+  const { contract: MultiTldFeeManager } = await deployContract<IFeeManager>(
+    'FeeManager',
+    {
+      rif: RIF.address,
+      registrar: MultiTLDPartnerRegistrar.address, // TODO: allow multiple registrars? multiTld?
+      renewer: PartnerRenewer.address,
+      partnerManager: PartnerManager.address,
+      pool: pool.address,
+    }
+  );
+
   await (
     await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
   ).wait();
 
   await (await NodeOwner.addRegistrar(PartnerRegistrar.address)).wait();
+
+  await (await NodeOwner.addRegistrar(MultiTLDPartnerRegistrar.address)).wait();
+
+  await (
+    await SovrynNodeOwner.addRegistrar(MultiTLDPartnerRegistrar.address)
+  ).wait();
 
   await (await NodeOwner.addRenewer(PartnerRenewer.address)).wait();
 
@@ -161,6 +211,10 @@ export const initialSetup = async () => {
 
   await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
   await (await FakeRIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+
+  await (
+    await MultiTLDPartnerRegistrar.setFeeManager(FeeManager.address)
+  ).wait();
 
   const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
@@ -209,5 +263,8 @@ export const initialSetup = async () => {
     accessControl,
     highLevelOperator,
     highLevelOperatorToAddOrRemove,
+    SovrynNodeOwner,
+    MultiTLDPartnerRegistrar,
+    MultiTldFeeManager,
   };
 };

@@ -12,6 +12,7 @@ export const OneYearDuration = ethers.BigNumber.from('1');
 export const FEE_PERCENTAGE = oneRBTC.mul(25); //5%
 export const rootNodeId = ethers.constants.HashZero;
 export const tldNode = namehash('rsk');
+export const sovrynTldNode = namehash('sovryn');
 export const tldAsSha3 = ethers.utils.id('rsk');
 export const namePriceForOneYear = oneRBTC.mul(2);
 

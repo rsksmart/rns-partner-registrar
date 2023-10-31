@@ -333,15 +333,22 @@ contract MultiTLDPartnerRegistrar is
             _commitmentRevealTime[commitment] = 0;
         }
 
+        console.log("tld");
+        console.logBytes32(tld);
+        console.log("_rns.owner(tld) =");
+        console.logAddress(_rns.owner(tld));
         NodeOwner _nodeOwner = NodeOwner(_rns.owner(tld));
+        console.log("node owner created");
         require(address(_nodeOwner) != address(0), "Invalid tld");
 
         _nodeOwner.register(label, address(this), duration * 365 days);
 
+        console.log("after register");
         Resolver(_rns.resolver(tld)).setAddr(
             keccak256(abi.encodePacked(tld, label)),
             addr
         );
+        console.log("after resolversetAddr");
 
         uint256 tokenId = uint256(label);
         _nodeOwner.reclaim(tokenId, nameOwner);
