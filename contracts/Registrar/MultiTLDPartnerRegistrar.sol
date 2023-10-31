@@ -13,6 +13,7 @@ import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
 import "./IMultiTLDBaseRegistrar.sol";
+import "hardhat/console.sol";
 
 /**
     @author Identity Team @IOVLabs
@@ -314,6 +315,8 @@ contract MultiTLDPartnerRegistrar is
         bytes32 label = keccak256(abi.encodePacked(name));
 
         if (partnerConfiguration.getMinCommitmentAge() != 0) {
+            console.log("label");
+            console.logBytes32(label);
             bytes32 commitment = makeCommitment(
                 label,
                 nameOwner,
@@ -322,6 +325,8 @@ contract MultiTLDPartnerRegistrar is
                 addr,
                 tld
             );
+            console.log("commitment");
+            console.logBytes32(commitment);
             if (!canReveal(commitment)) {
                 revert CustomError("No commitment found");
             }
