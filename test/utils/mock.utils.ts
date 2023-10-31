@@ -165,6 +165,88 @@ export const getAddrRegisterData = (
   return result;
 };
 
+export const getMultiRegisterData = (
+  name: string,
+  owner: string,
+  secret: string,
+  duration: BigNumber,
+  addr: string,
+  partner: string,
+  tld: string
+) => {
+  // 0x + 8 bytes
+  const _signature = arrayify('0x646c3681');
+
+  // 20 bytes
+  const _owner = arrayify(owner.toLowerCase());
+
+  // 32 bytes
+  const _secret = arrayify(secret);
+
+  // 32 bytes
+  const _duration = arrayify(hexZeroPad(duration.toHexString(), 32));
+
+  // 20 bytes
+  const _addr = arrayify(addr.toLowerCase());
+
+  // 20 bytes
+  const _partner = arrayify(partner.toLowerCase());
+
+  //  32 bytes
+  const _tld = arrayify(tld);
+
+  // variable length
+  const _name = Buffer.from(name);
+
+  // // 20 bytes
+  const result = new Uint8Array(
+    _signature.length +
+      _owner.length +
+      _secret.length +
+      _duration.length +
+      _addr.length +
+      _partner.length +
+      _tld.length +
+      _name.length
+  );
+  result.set(_signature, 0);
+  result.set(_owner, _signature.length);
+  result.set(_secret, _owner.length + _signature.length);
+  result.set(_duration, _secret.length + _owner.length + _signature.length);
+  result.set(
+    _addr,
+    _duration.length + _secret.length + _owner.length + _signature.length
+  );
+  result.set(
+    _partner,
+    _addr.length +
+      _duration.length +
+      _secret.length +
+      _owner.length +
+      _signature.length
+  );
+  result.set(
+    _tld,
+    _partner.length +
+      _addr.length +
+      _duration.length +
+      _secret.length +
+      _owner.length +
+      _signature.length
+  );
+  result.set(
+    _name,
+    _tld.length +
+      _partner.length +
+      _addr.length +
+      _duration.length +
+      _secret.length +
+      _owner.length +
+      _signature.length
+  );
+  return result;
+};
+
 export const getRenewData = (
   name: string,
   duration: BigNumber,

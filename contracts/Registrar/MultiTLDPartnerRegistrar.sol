@@ -12,7 +12,7 @@ import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
-import "./IMultiTLDBaseRegistrar.sol";
+import "./IMultiTLDPartnerRegistrar.sol";
 import "hardhat/console.sol";
 
 /**
@@ -20,7 +20,7 @@ import "hardhat/console.sol";
     @title Implements the interface IBaseRegistrar to register names in RNS. Takes into account the partners for the revenue sharing.
 */
 contract MultiTLDPartnerRegistrar is
-    IMultiTLDBaseRegistrar,
+    IMultiTLDPartnerRegistrar,
     IERC677TransferReceiver,
     HasAccessControl
 {
@@ -198,7 +198,7 @@ contract MultiTLDPartnerRegistrar is
     }
 
     /**
-       @inheritdoc IMultiTLDBaseRegistrar
+       @inheritdoc IMultiTLDPartnerRegistrar
      */
     function register(
         string calldata name,
@@ -252,7 +252,7 @@ contract MultiTLDPartnerRegistrar is
     }
 
     /**
-       @inheritdoc IMultiTLDBaseRegistrar
+       @inheritdoc IMultiTLDPartnerRegistrar
      */
     function makeCommitment(
         bytes32 label,

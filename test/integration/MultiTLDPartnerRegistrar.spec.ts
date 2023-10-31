@@ -5,15 +5,16 @@ import {
   FEE_PERCENTAGE,
   NAME,
   SECRET,
+  tldNode,
 } from './utils/constants';
 import {
   calculatePercentageWPrecision,
-  getAddrRegisterData,
+  getMultiRegisterData,
 } from 'test/utils/mock.utils';
 import { expect } from 'chai';
 import { namehash } from 'ethers/lib/utils';
 
-describe.only('MultiTLD New Domain Registration (Integration)', () => {
+describe('MultiTLD New Domain Registration (Integration)', () => {
   it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
     const {
       RIF,
@@ -24,6 +25,13 @@ describe.only('MultiTLD New Domain Registration (Integration)', () => {
       pool,
       partner,
     } = await loadFixture(initialSetup);
+    console.log('RIF', RIF.address);
+    console.log('Resolver', Resolver.address);
+    console.log('nameOwner', nameOwner.address);
+    console.log('FeeManager', FeeManager.address);
+    console.log('MultiTLDPartnerRegistrar', MultiTLDPartnerRegistrar.address);
+    console.log('pool', pool.address);
+    console.log('partner', partner.address);
     const namePrice = await MultiTLDPartnerRegistrar.price(
       NAME,
       0,
@@ -32,13 +40,14 @@ describe.only('MultiTLD New Domain Registration (Integration)', () => {
     );
 
     console.log('namePrice', +namePrice / 1e18);
-    const data = getAddrRegisterData(
+    const data = getMultiRegisterData(
       NAME,
       nameOwner.address,
       SECRET(),
       OneYearDuration,
       nameOwner.address,
-      partner.address
+      partner.address,
+      tldNode
     );
     console.log('data', data);
 

@@ -9,7 +9,7 @@ import "./IBaseRegistrar.sol";
     @author Identity Team @IOVLabs
     @title Defines the interface for a compatible Registrar
 */
-abstract contract IMultiTLDBaseRegistrar is IBaseRegistrar {
+abstract contract IMultiTLDPartnerRegistrar is IBaseRegistrar {
     /**
         @notice registers a name
         @param name the name to register
