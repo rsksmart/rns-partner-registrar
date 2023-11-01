@@ -13,7 +13,6 @@ import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
 import "./IMultiTLDPartnerRegistrar.sol";
-import "hardhat/console.sol";
 
 /**
     @author Identity Team @IOVLabs
@@ -315,8 +314,6 @@ contract MultiTLDPartnerRegistrar is
         bytes32 label = keccak256(abi.encodePacked(name));
 
         if (partnerConfiguration.getMinCommitmentAge() != 0) {
-            console.log("label");
-            console.logBytes32(label);
             bytes32 commitment = makeCommitment(
                 label,
                 nameOwner,
@@ -325,30 +322,21 @@ contract MultiTLDPartnerRegistrar is
                 addr,
                 tld
             );
-            console.log("commitment");
-            console.logBytes32(commitment);
             if (!canReveal(commitment)) {
                 revert CustomError("No commitment found");
             }
             _commitmentRevealTime[commitment] = 0;
         }
 
-        console.log("tld");
-        console.logBytes32(tld);
-        console.log("_rns.owner(tld) =");
-        console.logAddress(_rns.owner(tld));
         NodeOwner _nodeOwner = NodeOwner(_rns.owner(tld));
-        console.log("node owner created");
         require(address(_nodeOwner) != address(0), "Invalid tld");
 
         _nodeOwner.register(label, address(this), duration * 365 days);
 
-        console.log("after register");
         Resolver(_rns.resolver(tld)).setAddr(
             keccak256(abi.encodePacked(tld, label)),
             addr
         );
-        console.log("after resolversetAddr");
 
         uint256 tokenId = uint256(label);
         _nodeOwner.reclaim(tokenId, nameOwner);

@@ -14,6 +14,7 @@ export const rootNodeId = ethers.constants.HashZero;
 export const tldNode = namehash('rsk');
 export const sovrynTldNode = namehash('sovryn');
 export const tldAsSha3 = ethers.utils.id('rsk');
+export const sovrynTldAsSha3 = ethers.utils.id('sovryn');
 export const namePriceForOneYear = oneRBTC.mul(2);
 
 export const MINIMUM_DOMAIN_NAME_LENGTH = 3;
