@@ -16,7 +16,7 @@ import {
 } from '../utils/mock.utils';
 import { namehash } from 'ethers/lib/utils';
 
-describe.only('Multi TLD Partner Renewer (Integration)', () => {
+describe('Multi TLD Partner Renewer (Integration)', () => {
   it('should return the price', async () => {
     const { MultiTLDPartnerRenewer, partner } = await loadFixture(initialSetup);
 
