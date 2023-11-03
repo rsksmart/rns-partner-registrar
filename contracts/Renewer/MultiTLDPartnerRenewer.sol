@@ -167,7 +167,7 @@ contract MultiTLDPartnerRenewer is
         bytes32 tld
     ) external view override returns (uint256) {
         bytes32 label = keccak256(abi.encodePacked(name));
-        console.log('node owner address');
+        console.log("node owner address");
         console.logAddress(_rns.owner(tld));
         NodeOwner _nodeOwner = NodeOwner(_rns.owner(tld));
 
