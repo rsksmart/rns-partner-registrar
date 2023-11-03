@@ -75,11 +75,11 @@ contract MultiTLDPartnerRenewer is
     */
 
     /// @notice ERC-677 token fallback function.
-    /// @dev Follow 'Register encoding' to execute a one-transaction regitration.
+    /// @dev Follow 'Register encoding' to execute a one-transaction registration.
     /// @param from token sender.
     /// @param value amount of tokens sent.
     /// @param data data associated with transaction.
-    /// @return true if successfull.
+    /// @return true if successful.
     function tokenFallback(
         address from,
         uint256 value,

@@ -11,11 +11,12 @@ import { expect } from 'chai';
 import {
   getMultiRegisterData,
   getMultiRenewData,
+  getRenewData,
   oneRBTC,
 } from '../utils/mock.utils';
 import { namehash } from 'ethers/lib/utils';
 
-describe('Multi TLD Partner Renewer (Integration)', () => {
+describe.only('Multi TLD Partner Renewer (Integration)', () => {
   it('should return the price', async () => {
     const { MultiTLDPartnerRenewer, partner } = await loadFixture(initialSetup);
 
@@ -105,5 +106,52 @@ describe('Multi TLD Partner Renewer (Integration)', () => {
     expect(currentDate.toLocaleDateString('en-US')).to.equal(
       expirationDateAfter.toLocaleDateString('en-US')
     );
+  });
+
+  it('should revert if data is too short', async () => {
+    const {
+      RIF,
+      nameOwner,
+      MultiTLDPartnerRegistrar,
+      partner,
+      MultiTLDPartnerRenewer,
+    } = await loadFixture(initialSetup);
+
+    const namePrice = await MultiTLDPartnerRegistrar.price(
+      NAME,
+      0,
+      OneYearDuration,
+      partner.address
+    );
+
+    const data = getMultiRegisterData(
+      NAME,
+      nameOwner.address,
+      SECRET(),
+      OneYearDuration,
+      nameOwner.address,
+      partner.address,
+      tldNode
+    );
+
+    await (
+      await RIF.connect(nameOwner).transferAndCall(
+        MultiTLDPartnerRegistrar.address,
+        namePrice,
+        data
+      )
+    ).wait();
+
+    const renewData = getRenewData(NAME, OneYearDuration, partner.address);
+
+    await expect(
+      RIF.connect(nameOwner).transferAndCall(
+        MultiTLDPartnerRenewer.address,
+        oneRBTC.mul(2),
+        renewData
+      )
+    )
+      .to.be.revertedWithCustomError(MultiTLDPartnerRenewer, 'CustomError')
+      .withArgs('Invalid data');
   });
 });
