@@ -17,7 +17,7 @@ import { expect } from 'chai';
 import { namehash } from 'ethers/lib/utils';
 import { ONLY_RIF_TOKEN_ERR } from '../utils/constants.utils';
 
-describe.only('MultiTLD New Domain Registration (Integration)', () => {
+describe('MultiTLD New Domain Registration (Integration)', () => {
   it('Should register a new domain for a partnerOwnerAccount with 0 minCommitmentAge', async () => {
     const {
       RIF,

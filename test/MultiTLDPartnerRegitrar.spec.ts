@@ -109,10 +109,9 @@ const initialSetup = async () => {
 
   const FeeManager = await deployContract<FeeManager__factory>('FeeManager', [
     RIF.address,
-    MultiTLDPartnerRegistrar.address,
-    PartnerRenewer.address,
     PartnerManager.address,
-    pool.address,
+    RNS.address,
+    accessControl.address,
   ]);
 
   await MultiTLDPartnerRegistrar.setFeeManager(FeeManager.address);

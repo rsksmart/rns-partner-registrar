@@ -12,6 +12,7 @@ import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
 import "./IMultiTLDPartnerRenewer.sol";
 import "../RNS.sol";
+import "hardhat/console.sol";
 
 /**
     @author Identity Team @IOVLabs
@@ -87,7 +88,7 @@ contract MultiTLDPartnerRenewer is
         if (msg.sender != address(_rif)) {
             revert CustomError("Only RIF token");
         }
-        if (data.length <= 56) {
+        if (data.length <= 88) {
             revert CustomError("Invalid data");
         }
 
@@ -166,6 +167,8 @@ contract MultiTLDPartnerRenewer is
         bytes32 tld
     ) external view override returns (uint256) {
         bytes32 label = keccak256(abi.encodePacked(name));
+        console.log('node owner address');
+        console.logAddress(_rns.owner(tld));
         NodeOwner _nodeOwner = NodeOwner(_rns.owner(tld));
 
         return
