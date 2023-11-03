@@ -139,9 +139,27 @@ contract FeeManager is IFeeManager, HasAccessControl {
     /**
        @inheritdoc IFeeManager
      */
+    function blackListRegistrarOrRenewer(
+        address entity
+    ) external override onlyHighLevelOperator {
+        delete _whitelistedRegistrarsAndRenewers[entity];
+    }
+
+    /**
+       @inheritdoc IFeeManager
+     */
     function whiteListPartnerManager(
         address partnerManager
     ) external override onlyHighLevelOperator {
         _whitelistedPartnerManagers[partnerManager] = true;
+    }
+
+    /**
+       @inheritdoc IFeeManager
+     */
+    function blackListPartnerManager(
+        address partnerManager
+    ) external override onlyHighLevelOperator {
+        delete _whitelistedPartnerManagers[partnerManager];
     }
 }

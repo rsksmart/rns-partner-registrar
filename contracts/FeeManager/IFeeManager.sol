@@ -87,5 +87,21 @@ interface IFeeManager {
      */
     function whiteListRegistrarOrRenewer(address entity) external;
 
-    function whiteListPartnerManager(address entity) external;
+    /**
+     * @notice blacklists a registrar or renewer
+     * @param entity address of the registrar or renewer
+     */
+    function blackListRegistrarOrRenewer(address entity) external;
+
+    /**
+     * @notice whitelists a partner manager
+     * @param partnerManager address of the partner manager
+     */
+    function whiteListPartnerManager(address partnerManager) external;
+
+    /**
+     * @notice blacklists a partner manager
+     * @param partnerManager address of the partner manager
+     */
+    function blackListPartnerManager(address partnerManager) external;
 }

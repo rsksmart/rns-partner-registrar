@@ -134,6 +134,52 @@ describe('Fee Manager', () => {
       }
     });
 
+    it('should deposit successfully when called by a second whitelisted account', async () => {
+      try {
+        const {
+          feeManager,
+          renewer,
+          account3: partner,
+          PartnerManager,
+          PartnerConfiguration,
+          RIF,
+          pool,
+          oneRBTC,
+          partnerOwnerAccount,
+        } = await loadFixture(testSetup);
+
+        const depositAmount = ethers.BigNumber.from(10);
+        const feePercentage = ethers.BigNumber.from(10);
+
+        RIF.transferFrom.returns(true);
+        RIF.transfer.returns(true);
+        PartnerConfiguration.getFeePercentage.returns(feePercentage);
+        PartnerManager.getPartnerConfiguration.returns(
+          PartnerConfiguration.address
+        );
+
+        await expect(
+          feeManager
+            .connect(renewer)
+            .deposit(partner.address, depositAmount, PartnerManager.address)
+        ).to.not.be.reverted;
+
+        const partnerFee = depositAmount
+          .mul(feePercentage)
+          .div(oneRBTC.mul(100));
+        expect(
+          +(await feeManager.getBalance(partnerOwnerAccount.address))
+        ).to.be.equal(+partnerFee);
+
+        expect(RIF.transfer).to.have.been.calledWith(
+          pool.address,
+          depositAmount.sub(partnerFee).toString()
+        );
+      } catch (error) {
+        throw error;
+      }
+    });
+
     it('should revert if not called by registrar', async () => {
       try {
         const {
@@ -157,6 +203,101 @@ describe('Fee Manager', () => {
         )
           .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
           .withArgs(owner.address);
+      } catch (error) {
+        throw error;
+      }
+    });
+
+    it('should revert if called by a blacklisted registrar', async () => {
+      try {
+        const {
+          feeManager,
+          account3: partner,
+          RIF,
+          PartnerManager,
+          registrar,
+        } = await loadFixture(testSetup);
+
+        const depositAmount = ethers.BigNumber.from(10);
+
+        RIF.transferFrom.returns(true);
+
+        feeManager.blackListRegistrarOrRenewer(registrar.address);
+
+        await expect(
+          feeManager
+            .connect(registrar)
+            .deposit(partner.address, depositAmount, PartnerManager.address)
+        )
+          .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
+          .withArgs(registrar.address);
+      } catch (error) {
+        throw error;
+      }
+    });
+
+    it('should revert if the partnerManager has not been withlisted', async () => {
+      try {
+        const {
+          feeManager,
+          account3: partner,
+          RIF,
+          registrar,
+        } = await loadFixture(testSetup);
+
+        const notWhiteListedPartnerManager =
+          await deployMockContract<PartnerManager>(PartnerManagerJson.abi);
+
+        const depositAmount = ethers.BigNumber.from(10);
+
+        RIF.transferFrom.returns(true);
+
+        await expect(
+          feeManager
+            .connect(registrar)
+            .deposit(
+              partner.address,
+              depositAmount,
+              notWhiteListedPartnerManager.address
+            )
+        )
+          .to.be.revertedWithCustomError(feeManager, 'InvalidEntity')
+          .withArgs(notWhiteListedPartnerManager.address, 'Partner Manager');
+      } catch (error) {
+        throw error;
+      }
+    });
+
+    it('should revert if the partnerManager has been blacklisted', async () => {
+      try {
+        const {
+          feeManager,
+          account3: partner,
+          RIF,
+          registrar,
+        } = await loadFixture(testSetup);
+
+        const blackListedPartnerManager =
+          await deployMockContract<PartnerManager>(PartnerManagerJson.abi);
+
+        feeManager.whiteListPartnerManager(blackListedPartnerManager.address);
+        feeManager.blackListPartnerManager(blackListedPartnerManager.address);
+
+        const depositAmount = ethers.BigNumber.from(10);
+
+        RIF.transferFrom.returns(true);
+
+        await expect(
+          feeManager
+            .connect(registrar)
+            .deposit(
+              partner.address,
+              depositAmount,
+              blackListedPartnerManager.address
+            )
+        )
+          .to.be.revertedWithCustomError(feeManager, 'InvalidEntity')
+          .withArgs(blackListedPartnerManager.address, 'Partner Manager');
       } catch (error) {
         throw error;
       }
@@ -194,6 +335,7 @@ describe('Fee Manager', () => {
         throw error;
       }
     });
+
     it('should revert if transfer fails (2)', async () => {
       try {
         const {
