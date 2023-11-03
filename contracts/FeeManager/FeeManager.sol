@@ -126,7 +126,7 @@ contract FeeManager is IFeeManager, HasAccessControl {
 
         _pool = newPoolAddress;
     }
-    
+
     /**
        @inheritdoc IFeeManager
      */

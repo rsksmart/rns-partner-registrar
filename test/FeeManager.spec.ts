@@ -460,7 +460,7 @@ describe('Fee Manager', () => {
         highLevelOperator,
       } = await testSetup();
 
-      feeManager.connect(highLevelOperator).setPool(newPool.address);
+      await feeManager.connect(highLevelOperator).setPool(newPool.address);
 
       const alreadyChangedPool = await feeManager.getPool();
 
