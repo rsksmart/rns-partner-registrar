@@ -22,6 +22,8 @@ interface IFeeManager {
      */
     error TransferFailed(address from, address to, uint256 amount);
 
+    error InvalidEntity(address entity, string entityType);
+
     /**
      * @notice event emitted on successful withdrawal
      * @param amount amount of tokens withdrawn
@@ -44,30 +46,6 @@ interface IFeeManager {
     event PoolChanged(address changedBy, address newPoolAddress);
 
     /**
-     * @notice event emitted when the registrar address is changed
-     * @param changedBy address of the account that changed the registrar address
-     * @param newRegistrarAddress address of the new registrar
-     */
-    event RegistrarChanged(address changedBy, address newRegistrarAddress);
-
-    /**
-     * @notice event emitted when the renewer address is changed
-     * @param changedBy address of the account that changed the renewer address
-     * @param newRenewerAddress address of the new renewer
-     */
-    event RenewerChanged(address changedBy, address newRenewerAddress);
-
-    /**
-     * @notice event emitted when the partner managaer address is changed
-     * @param changedBy address of the account that changed the partner manager address
-     * @param newPartnerManagerAddress address of the new partner manager
-     */
-    event PartnerManagerChanged(
-        address changedBy,
-        address newPartnerManagerAddress
-    );
-
-    /**
      * @notice allows the partner to withdraw the balance of their revenue
      * @custom:emits-event emits the WithdrawalSuccessful event
      */
@@ -77,9 +55,14 @@ interface IFeeManager {
      * @notice allows the registrar and renewer to deposit the partners revenue share
      * @param partner address of the partners that triggered the deposit
      * @param amount amount of tokens from the sale
+     * @param partnerManger address of the partner manager
      * @custom:emits-event emits the DepositSuccessful event
      */
-    function deposit(address partner, uint256 amount) external;
+    function deposit(
+        address partner,
+        uint256 amount,
+        address partnerManger
+    ) external;
 
     /**
      * @notice allows checking the revenue balance of any partner
@@ -99,35 +82,26 @@ interface IFeeManager {
     function setPool(address newPoolAddress) external;
 
     /**
-     * @notice allows checking the address of the registrar
+     * @notice whitelists a registrar or renewer
+     * @param entity address of the registrar or renewer
      */
-    function getRegistrar() external view returns (address);
+    function whiteListRegistrarOrRenewer(address entity) external;
 
     /**
-     * @notice allows modifying the address of the registrar
-     * @param newRegistrarAddress address of the new registrar
+     * @notice blacklists a registrar or renewer
+     * @param entity address of the registrar or renewer
      */
-    function setRegistrar(address newRegistrarAddress) external;
+    function blackListRegistrarOrRenewer(address entity) external;
 
     /**
-     * @notice allows checking the address of the renewer
+     * @notice whitelists a partner manager
+     * @param partnerManager address of the partner manager
      */
-    function getRenewer() external view returns (address);
+    function whiteListPartnerManager(address partnerManager) external;
 
     /**
-     * @notice allows modifying the address of the renewer
-     * @param newRenewerAddress address of the new renewer
+     * @notice blacklists a partner manager
+     * @param partnerManager address of the partner manager
      */
-    function setRenewer(address newRenewerAddress) external;
-
-    /**
-     * @notice allows checking the address of the partner manager
-     */
-    function getPartnerManager() external view returns (address);
-
-    /**
-     * @notice allows modifying the address of the partner manager
-     * @param newPartnerManagerAddress address of the new partner manager
-     */
-    function setPartnerManager(address newPartnerManagerAddress) external;
+    function blackListPartnerManager(address partnerManager) external;
 }

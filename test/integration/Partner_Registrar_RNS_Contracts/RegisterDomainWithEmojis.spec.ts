@@ -287,7 +287,7 @@ describe('Registration With Emojis & Transfer Validation', () => {
     const domainName =
       generateRandomStringWithLettersAndNumbers(5, true, false) +
       '🧐' +
-      generateRandomStringWithLettersAndNumbers(5, false, true);
+      generateRandomStringWithLettersAndNumbers(5, true, false);
 
     const commitAge = BigNumber.from('10');
 

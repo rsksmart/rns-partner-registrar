@@ -4,8 +4,7 @@ pragma solidity ^0.8.16;
 import "../RIF.sol";
 import "./IFeeManager.sol";
 import "../PartnerManager/IPartnerManager.sol";
-import "../Registrar/IBaseRegistrar.sol";
-import "../Renewer/IBaseRenewer.sol";
+import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
 
 /**
@@ -15,36 +14,33 @@ import "../Access/HasAccessControl.sol";
 contract FeeManager is IFeeManager, HasAccessControl {
     RIF private _rif;
 
+    mapping(address => bool) private _whitelistedRegistrarsAndRenewers;
+    mapping(address => bool) private _whitelistedPartnerManagers;
     mapping(address => uint256) private _balances;
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
 
-    IBaseRegistrar private _registrar;
-    IBaseRenewer private _renewer;
-    IPartnerManager private _partnerManager;
     address private _pool;
 
-    modifier onlyDepositor() {
-        if (
-            !(msg.sender == address(_registrar) ||
-                msg.sender == address(_renewer))
-        ) {
+    modifier onlyAuthorised() {
+        if (!(_whitelistedRegistrarsAndRenewers[msg.sender])) {
             revert NotAuthorized(msg.sender);
+        }
+        _;
+    }
+
+    modifier onlyWhiteListedPartnerManager(address partnerManager) {
+        if (!(_whitelistedPartnerManagers[partnerManager])) {
+            revert InvalidEntity(partnerManager, "Partner Manager");
         }
         _;
     }
 
     constructor(
         RIF rif,
-        IBaseRegistrar registrar,
-        IBaseRenewer renewer,
-        IPartnerManager partnerManager,
         address pool,
         IAccessControl accessControl
     ) HasAccessControl(accessControl) {
         _rif = rif;
-        _registrar = registrar;
-        _renewer = renewer;
-        _partnerManager = partnerManager;
         _pool = pool;
     }
 
@@ -70,8 +66,14 @@ contract FeeManager is IFeeManager, HasAccessControl {
      */
     function deposit(
         address partner,
-        uint256 amount
-    ) external override onlyDepositor {
+        uint256 amount,
+        address partnerManager
+    )
+        external
+        override
+        onlyAuthorised
+        onlyWhiteListedPartnerManager(partnerManager)
+    {
         emit DepositSuccessful(amount, partner);
 
         if (!_rif.transferFrom(msg.sender, address(this), amount)) {
@@ -79,8 +81,8 @@ contract FeeManager is IFeeManager, HasAccessControl {
         }
 
         uint256 partnerFee = (amount *
-            _getPartnerConfiguration(partner).getFeePercentage()) /
-            _PERCENT100_WITH_PRECISION18;
+            _getPartnerConfiguration(partner, partnerManager)
+                .getFeePercentage()) / _PERCENT100_WITH_PRECISION18;
         _balances[partner] += partnerFee;
 
         uint256 balance = amount - partnerFee;
@@ -91,9 +93,15 @@ contract FeeManager is IFeeManager, HasAccessControl {
     }
 
     function _getPartnerConfiguration(
-        address partner
-    ) private view returns (IPartnerConfiguration) {
-        return _partnerManager.getPartnerConfiguration(partner);
+        address partner,
+        address partnerManager
+    )
+        private
+        view
+        onlyWhiteListedPartnerManager(partnerManager)
+        returns (IPartnerConfiguration)
+    {
+        return IPartnerManager(partnerManager).getPartnerConfiguration(partner);
     }
 
     /**
@@ -119,51 +127,39 @@ contract FeeManager is IFeeManager, HasAccessControl {
         _pool = newPoolAddress;
     }
 
-    function getRegistrar() public view returns (address) {
-        return address(_registrar);
+    /**
+       @inheritdoc IFeeManager
+     */
+    function whiteListRegistrarOrRenewer(
+        address entity
+    ) external override onlyHighLevelOperator {
+        _whitelistedRegistrarsAndRenewers[entity] = true;
     }
 
-    function setRegistrar(
-        address newRegistrarAddress
-    ) public onlyHighLevelOperator {
-        if (newRegistrarAddress == address(_registrar)) {
-            revert("old value is same as new value");
-        }
-
-        emit RegistrarChanged(msg.sender, newRegistrarAddress);
-
-        _registrar = IBaseRegistrar(newRegistrarAddress);
+    /**
+       @inheritdoc IFeeManager
+     */
+    function blackListRegistrarOrRenewer(
+        address entity
+    ) external override onlyHighLevelOperator {
+        delete _whitelistedRegistrarsAndRenewers[entity];
     }
 
-    function getRenewer() public view returns (address) {
-        return address(_renewer);
+    /**
+       @inheritdoc IFeeManager
+     */
+    function whiteListPartnerManager(
+        address partnerManager
+    ) external override onlyHighLevelOperator {
+        _whitelistedPartnerManagers[partnerManager] = true;
     }
 
-    function setRenewer(
-        address newRenewerAddress
-    ) public onlyHighLevelOperator {
-        if (newRenewerAddress == address(_renewer)) {
-            revert("old value is same as new value");
-        }
-
-        emit RenewerChanged(msg.sender, newRenewerAddress);
-
-        _renewer = IBaseRenewer(newRenewerAddress);
-    }
-
-    function getPartnerManager() public view returns (address) {
-        return address(_partnerManager);
-    }
-
-    function setPartnerManager(
-        address newPartnerManager
-    ) public onlyHighLevelOperator {
-        if (newPartnerManager == address(_partnerManager)) {
-            revert("old value is same as new value");
-        }
-
-        emit PartnerManagerChanged(msg.sender, newPartnerManager);
-
-        _partnerManager = IPartnerManager(newPartnerManager);
+    /**
+       @inheritdoc IFeeManager
+     */
+    function blackListPartnerManager(
+        address partnerManager
+    ) external override onlyHighLevelOperator {
+        delete _whitelistedPartnerManagers[partnerManager];
     }
 }

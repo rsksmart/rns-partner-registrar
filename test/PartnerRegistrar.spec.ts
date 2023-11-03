@@ -40,6 +40,7 @@ import {
   COMMITMENT_NOT_REQUIRED_ERR,
   PARTNER_MANAGER_CHANGED_EVENT,
 } from './utils/constants.utils';
+import { BigNumber } from 'ethers';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 
@@ -125,12 +126,14 @@ const initialSetup = async () => {
 
   const FeeManager = await deployContract<FeeManager__factory>('FeeManager', [
     RIF.address,
-    PartnerRegistrar.address,
-    PartnerRenewer.address,
-    PartnerManager.address,
     pool.address,
     accessControl.address,
   ]);
+
+  // whiteList contracts on feeManager
+  await FeeManager.whiteListRegistrarOrRenewer(PartnerRegistrar.address);
+  await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address);
+  await FeeManager.whiteListPartnerManager(PartnerManager.address);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
 
@@ -237,6 +240,54 @@ describe('New Domain Registration', () => {
         partner.address
       )
     ).to.be.fulfilled;
+  });
+
+  it('Should collect fees and pass the PartnerManager to the FeeManager', async () => {
+    const {
+      NodeOwner,
+      PartnerManager,
+      PartnerRegistrar,
+      PartnerConfiguration,
+      nameOwner,
+      partner,
+      partnerOwner,
+      FeeManager,
+    } = await loadFixture(initialSetup);
+
+    await (
+      await PartnerManager.addPartner(partner.address, partnerOwner.address)
+    ).wait();
+
+    await (
+      await PartnerManager.setPartnerConfiguration(
+        partner.address,
+        PartnerConfiguration.address
+      )
+    ).wait();
+
+    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
+
+    const duration = 2;
+
+    await expect(
+      PartnerRegistrar.register(
+        'cheta',
+        nameOwner.address,
+        SECRET,
+        duration,
+        NodeOwner.address,
+        partner.address
+      )
+    ).to.be.fulfilled;
+
+    const PRECISION18 = BigNumber.from('1' + '0'.repeat(18));
+    const expectedPrice = BigNumber.from(2 * duration).mul(PRECISION18);
+
+    expect(FeeManager.deposit).to.have.been.calledWith(
+      partner.address,
+      expectedPrice,
+      PartnerManager.address
+    );
   });
 
   it('Should successfully register a new domain without token transfer transactions when discount is 100%', async () => {
@@ -392,7 +443,7 @@ describe('New Domain Registration', () => {
       .withArgs(NO_COMMITMENT_FOUND_ERR);
   });
 
-  it('Should fail there is a mismatch in the name used to make a commitment and the name being registered', async () => {
+  it('Should fail if there is a mismatch in the name used to make a commitment and the name being registered', async () => {
     const {
       PartnerManager,
       PartnerRegistrar,
@@ -572,7 +623,7 @@ describe('Registrar Checks', () => {
     }
   });
 
-  it('Should revert is the fee manager to be set is same as existing', async () => {
+  it('Should revert if the fee manager to be set is same as existing', async () => {
     const { FeeManager, PartnerRegistrar } = await loadFixture(initialSetup);
 
     await expect(
@@ -580,6 +631,7 @@ describe('Registrar Checks', () => {
     ).to.be.revertedWith(UN_NECESSARY_MODIFICATION_ERROR_MSG);
   });
 });
+
 describe('Registrar events', () => {
   it('Should emit the NameRegistered event on successful domain registration', async () => {
     const {
@@ -625,8 +677,9 @@ describe('Registrar events', () => {
   });
 
   it('Should emit the FeeManagerSet event on successful setting of the fee manager contract', async () => {
-    const { FeeManager, PartnerRegistrar, alternateFeeManager } =
-      await loadFixture(initialSetup);
+    const { PartnerRegistrar, alternateFeeManager } = await loadFixture(
+      initialSetup
+    );
 
     await expect(PartnerRegistrar.setFeeManager(alternateFeeManager.address))
       .to.emit(PartnerRegistrar, FEE_MANAGER_CHANGED_EVENT)

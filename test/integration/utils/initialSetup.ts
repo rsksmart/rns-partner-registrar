@@ -124,9 +124,6 @@ export const initialSetup = async () => {
     'FeeManager',
     {
       rif: RIF.address,
-      registrar: PartnerRegistrar.address,
-      renewer: PartnerRenewer.address,
-      partnerManager: PartnerManager.address,
       pool: pool.address,
       accessControl: accessControl.address,
     }
@@ -178,6 +175,19 @@ export const initialSetup = async () => {
 
   await (
     await accessControl.addHighLevelOperator(highLevelOperator.address)
+  ).wait();
+
+  // whiteList contracts on feeManager
+  await (
+    await FeeManager.whiteListRegistrarOrRenewer(PartnerRegistrar.address)
+  ).wait();
+
+  await (
+    await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address)
+  ).wait();
+
+  await (
+    await FeeManager.whiteListPartnerManager(PartnerManager.address)
   ).wait();
 
   return {
