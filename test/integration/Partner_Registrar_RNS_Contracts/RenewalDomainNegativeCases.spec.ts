@@ -1056,7 +1056,7 @@ export const validatePurchaseExpectedResults = async (
   buyerUser: SignerWithAddress,
   moneyBeforePurchase: BigNumber,
   duration: BigNumber,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   PartnerConfiguration: PartnerConfiguration
 ) => {
   //Validate Domain Name ISN'T Available anymore

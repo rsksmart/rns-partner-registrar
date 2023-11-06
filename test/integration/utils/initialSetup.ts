@@ -37,6 +37,7 @@ export const initialSetup = async () => {
   const notWhitelistedPartner = signers[6];
   const highLevelOperator = signers[7];
   const highLevelOperatorToAddOrRemove = signers[8];
+  const noFundsSigner = signers[9];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -82,14 +83,14 @@ export const initialSetup = async () => {
 
   await (await Resolver.initialize(RNS.address)).wait();
 
-  const RIF = await deployContractAsMock<ERC677Token__factory>('ERC677Token', [
+const FakeRIF = await deployContractAsMock<ERC677Token__factory>('ERC677Token', [
     owner.address,
     oneRBTC.mul(100000000000000),
     'ERC677',
     'MOCKCOIN',
   ]);
 
-  const { contract: FakeRIF } = await deployContract<ERC677Token>(
+  const { contract: RIF } = await deployContract<ERC677Token>(
     'ERC677Token',
     {
       beneficiary: owner.address,
@@ -205,13 +206,13 @@ export const initialSetup = async () => {
   ).wait();
 
   await (await RIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
-  await (await FakeRIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
+  // await (await FakeRIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
 
   await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
-  await (await FakeRIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
+  // await (await FakeRIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
 
   await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
-  await (await FakeRIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+  // await (await FakeRIF.transfer(partner.address, oneRBTC.mul(10))).wait();
 
   const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
@@ -251,7 +252,6 @@ export const initialSetup = async () => {
   return {
     NodeOwner,
     RIF,
-    FakeRIF,
     PartnerManager,
     PartnerRegistrar,
     PartnerConfiguration,
@@ -273,5 +273,7 @@ export const initialSetup = async () => {
     SovrynNodeOwner,
     MultiTLDPartnerRegistrar,
     MultiTLDPartnerRenewer,
+    noFundsSigner,
+    FakeRIF
   };
 };

@@ -11,7 +11,6 @@ import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
 import "./IPartnerRenewer.sol";
-
 /**
     @author Identity Team @IOVLabs
     @title Implements the interface IBaseRenewer to renew names in RNS.

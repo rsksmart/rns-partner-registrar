@@ -25,7 +25,7 @@ export const purchaseDomainUsingTransferAndCallWithoutCommit = async (
   secret: string,
   nameOwner: SignerWithAddress,
   registrar: PartnerRegistrar,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
   includeExtraMoney = false
@@ -77,7 +77,7 @@ export const purchaseDomainUsingTransferAndCallWithCommit = async (
   secret: string,
   nameOwner: SignerWithAddress,
   registrar: PartnerRegistrar,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
   expectedCommitmentAge: BigNumber // in seconds,
@@ -154,7 +154,7 @@ export const purchaseDomainWithoutCommit = async (
   secret: string,
   nameOwner: SignerWithAddress,
   registrar: PartnerRegistrar,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
   sendExtraMoney = false
@@ -206,7 +206,7 @@ export const purchaseDomainWithCommit = async (
   secret: string,
   nameOwner: SignerWithAddress,
   registrar: PartnerRegistrar,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   partnerAddress: string,
   partnerConfiguration: PartnerConfiguration,
   expectedCommitmentAge: BigNumber, // in seconds
@@ -490,7 +490,7 @@ export const oneStepDomainOwnershipRenewal = async (
   partnerAddress: string,
   nameOwner: SignerWithAddress,
   PartnerRenewer: PartnerRenewer,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   numberOfMonths: BigNumber,
   makeTimePass = true
 ) => {
@@ -518,7 +518,7 @@ export const TwoStepsDomainOwnershipRenewal = async (
   partnerAddress: string,
   nameOwner: SignerWithAddress,
   PartnerRenewer: PartnerRenewer,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   numberOfMonths: BigNumber,
   makeTimePass = true
 ) => {
@@ -550,7 +550,7 @@ export const simulateMonthsTime = async (numberOfMonths: BigNumber) => {
 export const runWithdrawTestProcess = async (
   partner: SignerWithAddress,
   FeeManager: FeeManager,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   isFeeBalanceEmpty: boolean
 ) => {
   const partnerAddress = partner.address;

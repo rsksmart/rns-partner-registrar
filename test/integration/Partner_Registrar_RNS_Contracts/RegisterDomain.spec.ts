@@ -2445,7 +2445,7 @@ export const runRenewalTestFlow = async (
   partnerAddress: string,
   buyerUser: SignerWithAddress,
   partnerRenewer: PartnerRenewer,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   NodeOwner: NodeOwner,
   moneyAfterPurchase: BigNumber,
   isOneStep: boolean,
