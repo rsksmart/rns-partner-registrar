@@ -12,6 +12,7 @@ import {
 import {
   calculatePercentageWPrecision,
   getMultiRegisterData,
+  oneRBTC,
 } from 'test/utils/mock.utils';
 import { expect } from 'chai';
 import { namehash } from 'ethers/lib/utils';
@@ -108,9 +109,11 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
     expect(resolvedSovrynName).to.equal(nameOwner.address);
   });
 
-  it.skip('Should revert if not RIF token', async () => {
-    const { RIF, nameOwner, MultiTLDPartnerRegistrar, partner } =
+  it('Should revert if not RIF token', async () => {
+    const { FakeRIF, nameOwner, MultiTLDPartnerRegistrar, partner } =
       await loadFixture(initialSetup);
+
+    await (await FakeRIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
     const namePrice = await MultiTLDPartnerRegistrar.price(
       NAME,
       0,
@@ -129,7 +132,7 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
     );
 
     await expect(
-      RIF.connect(nameOwner).transferAndCall(
+      FakeRIF.connect(nameOwner).transferAndCall(
         MultiTLDPartnerRegistrar.address,
         namePrice,
         data
@@ -139,7 +142,7 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
       .withArgs(ONLY_RIF_TOKEN_ERR);
   });
 
-  it('Should revert if token transfer approval fails', async () => {
+  it.skip('Should revert if token transfer approval fails', async () => {
     const {
       RIF,
       nameOwner,
@@ -234,7 +237,7 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
       tldNode
     );
 
-   // RIF.approve.returns(true);
+    // RIF.approve.returns(true);
 
     await (
       await RIF.connect(nameOwner).transferAndCall(

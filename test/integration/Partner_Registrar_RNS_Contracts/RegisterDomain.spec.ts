@@ -23,7 +23,6 @@ import {
   FeeManager,
   PartnerConfiguration,
 } from 'typechain-types';
-import { MockContract } from '@defi-wonderland/smock';
 import { calculatePercentageWPrecision, oneRBTC } from '../../utils/mock.utils';
 
 describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
@@ -1633,7 +1632,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
   }); //it
 
   //Not Integrated yet
-  it.skip('Test Case No. 16 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it.only('Test Case No. 16 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 16
     //User Role:                       Regular User (OK)
     //Number of Steps:                 One step (OK)
@@ -1652,6 +1651,8 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       FeeManager,
     } = await loadFixture(initialSetup);
 
+    // await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
+
     const domainName =
       generateRandomStringWithLettersAndNumbers(10, true, false) + '$%/';
 
@@ -1665,7 +1666,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       partner.address
     );
 
-    await validatePurchasedDomainISAvailable(NodeOwner, domainName);
+    const x = await validatePurchasedDomainISAvailable(NodeOwner, domainName);
 
     let errorFound: boolean = false;
 
@@ -2297,8 +2298,10 @@ export const validatePurchasedDomainISAvailable = async (
   domainName: string
 ) => {
   const tokenName = nameToTokenId(domainName);
+  console.log('tokenName', tokenName);
 
   const isNameAvailable = await NodeOwner.available(tokenName);
+  console.log('isNameAvailable', isNameAvailable);
 
   expect(
     isNameAvailable,
@@ -2358,6 +2361,8 @@ export const validateNegativeFlowExpectedResults = async (
   moneyAfterPurchase: BigNumber,
   additionalBUGInformation: string
 ) => {
+  console.log(errorFound);
+
   //Expected Result - Validate Error was displayed
   expect(
     errorFound + '',

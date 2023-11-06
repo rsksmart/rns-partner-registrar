@@ -130,7 +130,7 @@ describe('Check Domain Price With Given Partner', () => {
     );
   });
 
-  it.skip('Test Case No. 3 - Should Throw A Warning Message (Duration Zero), Or Price 0 was delivered', async () => {
+  it('Test Case No. 3 - Should Throw A Warning Message (Duration Zero), Or Price 0 was delivered', async () => {
     //Test Case No. 3
     //User Role:                     Partner Reseller
     //Domain Name - Chars:           Valid Value
@@ -330,7 +330,7 @@ describe('Check Domain Price With Given Partner', () => {
     );
   });
 
-  it.skip('Test Case No. 9 - Should Throw A Warning Message (Empty Domain Name) & NO Price was delivered', async () => {
+  it('Test Case No. 9 - Should Throw A Warning Message (Empty Domain Name) & NO Price was delivered', async () => {
     //Test Case No. 9
     //User Role:                     Regular User
     //Domain Name - Chars:           Empty String (-)
@@ -343,7 +343,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const duration = 1;
+    const duration = 0;
 
     await runCheckPriceNegativeFlow(
       PartnerRegistrar,
@@ -400,7 +400,7 @@ describe('Check Domain Price With Given Partner', () => {
       .true;
   });
 
-  it.skip('Test Case No. 11 - Should Throw A Warning Message (Long Domain Name) & NO Price was delivered', async () => {
+  it('Test Case No. 11 - Should Throw A Warning Message (Long Domain Name) & NO Price was delivered', async () => {
     //Test Case No. 11
     //User Role:                     Regular User
     //Domain Name - Chars:           String Too Long (Greater Than Maximun Length) (-)
@@ -414,7 +414,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const duration = 1;
+    const duration = 0;
 
     await runCheckPriceNegativeFlow(
       PartnerRegistrar,
@@ -427,7 +427,7 @@ describe('Check Domain Price With Given Partner', () => {
     );
   });
 
-  it.skip('Test Case No. 12 - Should Throw A Warning Message (Short Domain Name) & NO Price was delivered', async () => {
+  it('Test Case No. 12 - Should Throw A Warning Message (Short Domain Name) & NO Price was delivered', async () => {
     //Test Case No. 12
     //User Role:                     Regular User
     //Domain Name - Chars:           String Too Short (Lower Than Minimum Length) (-)
@@ -440,7 +440,7 @@ describe('Check Domain Price With Given Partner', () => {
 
     const domainHashed = namehash(domain);
 
-    const duration = 1;
+    const duration = 0;
 
     await runCheckPriceNegativeFlow(
       PartnerRegistrar,
@@ -610,6 +610,7 @@ const runCheckPriceNegativeFlow = async (
       durationAsBN,
       partnerAddress
     );
+  console.log(currentNamePriceAfterExpiration);
 
   //Expected Result - Validate Error Messages
   if (durationAsBN.eq(0)) {

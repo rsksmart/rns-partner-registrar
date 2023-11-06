@@ -23,7 +23,6 @@ import {
 } from '../utils/operations';
 import { SECRET } from '../utils/constants';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { MockContract } from '@defi-wonderland/smock';
 import { validatePurchaseExpectedResults } from '../Partner_Registrar_RNS_Contracts/RenewalDomainNegativeCases.spec';
 import {
   validateCommissionPayedToPartner,
@@ -1779,7 +1778,7 @@ describe('Configurable Partner Behavior', () => {
       PartnerConfiguration
     );
   }); //it
-  it.skip('Test Case No. 29.2 - Sending more than the required money & DISCOUNT 100%; The contract should return the additional money', async () => {
+  it('Test Case No. 29.2 - Sending more than the required money & DISCOUNT 100%; The contract should return the additional money', async () => {
     //Test Case No. 20
     //User Role (LogIn):                                   Regular User
     //User Role (Of The Configuration to Consult/Update):  Partner Reseller
@@ -1995,7 +1994,7 @@ export const purchaseDomain = async (
   typeOfProcess: string,
   buyerUser: SignerWithAddress,
   PartnerRegistrar: PartnerRegistrar,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   partnerAddress: string,
   PartnerConfiguration: PartnerConfiguration,
   NodeOwner: NodeOwner,
@@ -2186,7 +2185,7 @@ export const runRenovateFlow = async (
   NodeOwner: NodeOwner,
   buyerUser: SignerWithAddress,
   partnerRenewer: PartnerRenewer,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   partnerAddress: string,
   currentTimeWhenPurchased: BigNumber,
   durationPurchase: BigNumber,
@@ -2275,7 +2274,7 @@ export const runPurchasesFlow = async (
   processToRun: string,
   buyerUser: SignerWithAddress,
   PartnerRegistrar: PartnerRegistrar,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   partnerAddress: string,
   PartnerConfiguration: PartnerConfiguration,
   NodeOwner: NodeOwner,
