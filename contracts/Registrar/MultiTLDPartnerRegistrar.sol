@@ -200,7 +200,7 @@ contract MultiTLDPartnerRegistrar is
             );
         }
 
-        _feeManager.deposit(partner, amount, address(_partnerManager));
+        _feeManager.deposit(partner, amount);
     }
 
     /**

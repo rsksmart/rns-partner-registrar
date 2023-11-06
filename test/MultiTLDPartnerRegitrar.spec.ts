@@ -111,6 +111,7 @@ const initialSetup = async () => {
     RIF.address,
     PartnerManager.address,
     accessControl.address,
+    PartnerManager.address,
   ]);
 
   await MultiTLDPartnerRegistrar.setFeeManager(FeeManager.address);
@@ -119,10 +120,6 @@ const initialSetup = async () => {
     await FeeManager.whiteListRegistrarOrRenewer(
       MultiTLDPartnerRegistrar.address
     )
-  ).wait();
-
-  await (
-    await FeeManager.whiteListPartnerManager(PartnerManager.address)
   ).wait();
 
   await (

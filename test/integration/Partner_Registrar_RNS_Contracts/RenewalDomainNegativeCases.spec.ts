@@ -859,7 +859,7 @@ describe('Renewal Name - Negative Test Cases', () => {
       const currentError = error + '';
 
       const bugDescription =
-        'BUG: The Insuficient Tokens Error message was NOT displayed correctly';
+        'BUG: The Insufficient Tokens Error message was NOT displayed correctly';
 
       expect(currentError, bugDescription).to.contains(
         'InsufficientTokensTransfered'
@@ -1004,12 +1004,14 @@ describe('Renewal Name - Negative Test Cases', () => {
         numberOfMonthsToSimulate
       );
     } catch (error) {
+      console.log(error);
+
       errorFound = true;
 
       const currentError = error + '';
 
       const bugDescription =
-        'BUG: The Insuficient Tokens Error message was NOT displayed correctly';
+        'BUG: The Insufficient Tokens Error message was NOT displayed correctly';
 
       expect(currentError, bugDescription).to.contains(
         'insufficient allowance'
