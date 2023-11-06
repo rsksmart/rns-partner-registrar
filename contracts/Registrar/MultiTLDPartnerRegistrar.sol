@@ -57,6 +57,13 @@ contract MultiTLDPartnerRegistrar is
     /**
        @inheritdoc IBaseRegistrar
      */
+    function setPartnerManager(address newPartnerManager) external {
+        _partnerManager = IPartnerManager(newPartnerManager);
+    }
+
+    /**
+       @inheritdoc IBaseRegistrar
+     */
     function getPartnerManager() external view returns (IPartnerManager) {
         return _partnerManager;
     }
@@ -103,7 +110,7 @@ contract MultiTLDPartnerRegistrar is
             revert CustomError("Only RIF token");
         }
 
-        if (data.length <= 128) {
+        if (data.length <= 160) {
             revert CustomError("Invalid data");
         }
 
@@ -193,7 +200,7 @@ contract MultiTLDPartnerRegistrar is
             );
         }
 
-        _feeManager.deposit(partner, amount);
+        _feeManager.deposit(partner, amount, address(_partnerManager));
     }
 
     /**

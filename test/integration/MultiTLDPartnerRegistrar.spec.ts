@@ -28,12 +28,15 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
       pool,
       partner,
     } = await loadFixture(initialSetup);
+
+    console.log('a');
     const namePrice = await MultiTLDPartnerRegistrar.price(
       NAME,
       0,
       OneYearDuration,
       partner.address
     );
+    console.log('b');
 
     const data = getMultiRegisterData(
       NAME,
@@ -44,6 +47,7 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
       partner.address,
       tldNode
     );
+    console.log('c');
 
     await (
       await RIF.connect(nameOwner).transferAndCall(
@@ -52,7 +56,7 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
         data
       )
     ).wait();
-
+    console.log('d');
     const resolvedName = await Resolver['addr(bytes32)'](
       namehash(NAME + '.rsk')
     );
@@ -63,6 +67,7 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
       namePrice,
       FEE_PERCENTAGE
     );
+    console.log('f');
 
     expect(+expectedManagerBalance).to.equal(+feeManagerBalance);
 
@@ -75,7 +80,7 @@ describe('MultiTLD New Domain Registration (Integration)', () => {
     const partnerBalanceInFeeManager = await FeeManager.getBalance(
       partner.address
     );
-    const expectedPartnerAccountBalance = expectedManagerBalance; //since it is the only operation...
+    const expectedPartnerAccountBalance = expectedManagerBalance;
     expect(+partnerBalanceInFeeManager).to.equal(
       +expectedPartnerAccountBalance
     );

@@ -238,6 +238,16 @@ export const initialSetup = async () => {
     await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address)
   ).wait();
 
+  await (
+    await FeeManager.whiteListRegistrarOrRenewer(
+      MultiTLDPartnerRegistrar.address
+    )
+  ).wait();
+
+  await (
+    await FeeManager.whiteListRegistrarOrRenewer(MultiTLDPartnerRenewer.address)
+  ).wait();
+
   return {
     NodeOwner,
     RIF,

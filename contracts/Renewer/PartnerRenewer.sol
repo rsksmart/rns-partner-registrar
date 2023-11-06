@@ -233,6 +233,9 @@ contract PartnerRenewer is
         _partnerManager = IPartnerManager(partnerManager);
     }
 
+    /**
+     * @inheritdoc IBaseRenewer
+     */
     function getFeeManager() external view returns (address) {
         return address(_feeManager);
     }
