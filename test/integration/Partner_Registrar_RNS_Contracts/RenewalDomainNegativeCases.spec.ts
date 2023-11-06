@@ -25,7 +25,6 @@ import {
   validatePurchasedDomainIsNotAvailable,
   validateRenewalExpectedResults,
 } from './RegisterDomain.spec';
-import { MockContract } from '@defi-wonderland/smock';
 import { oneRBTC } from 'test/utils/mock.utils';
 
 describe('Renewal Name - Negative Test Cases', () => {

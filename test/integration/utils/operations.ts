@@ -14,7 +14,6 @@ import {
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import { MockContract } from '@defi-wonderland/smock';
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 import { expect } from 'chai';
 

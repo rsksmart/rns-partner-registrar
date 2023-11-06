@@ -83,22 +83,17 @@ export const initialSetup = async () => {
 
   await (await Resolver.initialize(RNS.address)).wait();
 
-const FakeRIF = await deployContractAsMock<ERC677Token__factory>('ERC677Token', [
-    owner.address,
-    oneRBTC.mul(100000000000000),
-    'ERC677',
-    'MOCKCOIN',
-  ]);
-
-  const { contract: RIF } = await deployContract<ERC677Token>(
+  const FakeRIF = await deployContractAsMock<ERC677Token__factory>(
     'ERC677Token',
-    {
-      beneficiary: owner.address,
-      initialAmount: oneRBTC.mul(100000000000000),
-      tokenName: 'ERC677',
-      tokenSymbol: 'MOCKCOIN',
-    }
+    [owner.address, oneRBTC.mul(100000000000000), 'ERC677', 'MOCKCOIN']
   );
+
+  const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
+    beneficiary: owner.address,
+    initialAmount: oneRBTC.mul(100000000000000),
+    tokenName: 'ERC677',
+    tokenSymbol: 'MOCKCOIN',
+  });
 
   const { contract: accessControl } =
     await deployContract<RegistrarAccessControl>('RegistrarAccessControl', {});
@@ -274,6 +269,6 @@ const FakeRIF = await deployContractAsMock<ERC677Token__factory>('ERC677Token', 
     MultiTLDPartnerRegistrar,
     MultiTLDPartnerRenewer,
     noFundsSigner,
-    FakeRIF
+    FakeRIF,
   };
 };

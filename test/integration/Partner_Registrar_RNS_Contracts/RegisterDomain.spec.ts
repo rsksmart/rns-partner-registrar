@@ -1632,7 +1632,7 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
   }); //it
 
   //Not Integrated yet
-  it.only('Test Case No. 16 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
+  it.skip('Test Case No. 16 - Should throw an error message; The domain was not registered; NO deducted money from balance', async () => {
     //Test Case No. 16
     //User Role:                       Regular User (OK)
     //Number of Steps:                 One step (OK)
