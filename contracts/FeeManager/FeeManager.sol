@@ -76,7 +76,6 @@ contract FeeManager is IFeeManager, HasAccessControl {
 
         uint256 balance = amount - partnerFee;
         if (!_rif.transfer(_pool, balance)) {
-           
             revert TransferFailed(address(this), _pool, balance);
         }
     }
