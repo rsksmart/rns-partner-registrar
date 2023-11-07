@@ -162,7 +162,7 @@ contract PartnerRegistrar is
                 revert InsufficientTokensTransfered(cost, amount);
             }
 
-            _collectFees(partner, cost, address(_partnerManager));
+            _collectFees(partner, cost);
         }
 
         uint256 difference = amount - cost;
@@ -174,11 +174,7 @@ contract PartnerRegistrar is
         }
     }
 
-    function _collectFees(
-        address partner,
-        uint256 amount,
-        address partnerManager
-    ) private {
+    function _collectFees(address partner, uint256 amount) private {
         if (_feeManager == IFeeManager(address(0))) {
             revert CustomError("Fee manager not set");
         }
@@ -192,7 +188,7 @@ contract PartnerRegistrar is
             );
         }
 
-        _feeManager.deposit(partner, amount, partnerManager);
+        _feeManager.deposit(partner, amount);
     }
 
     // - Via ERC-20
@@ -233,7 +229,7 @@ contract PartnerRegistrar is
                 revert TokenTransferFailed(msg.sender, address(this), cost);
             }
 
-            _collectFees(partner, cost, address(_partnerManager));
+            _collectFees(partner, cost);
         }
     }
 

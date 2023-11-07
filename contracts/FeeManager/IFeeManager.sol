@@ -55,14 +55,9 @@ interface IFeeManager {
      * @notice allows the registrar and renewer to deposit the partners revenue share
      * @param partner address of the partners that triggered the deposit
      * @param amount amount of tokens from the sale
-     * @param partnerManger address of the partner manager
      * @custom:emits-event emits the DepositSuccessful event
      */
-    function deposit(
-        address partner,
-        uint256 amount,
-        address partnerManger
-    ) external;
+    function deposit(address partner, uint256 amount) external;
 
     /**
      * @notice allows checking the revenue balance of any partner
@@ -92,16 +87,4 @@ interface IFeeManager {
      * @param entity address of the registrar or renewer
      */
     function blackListRegistrarOrRenewer(address entity) external;
-
-    /**
-     * @notice whitelists a partner manager
-     * @param partnerManager address of the partner manager
-     */
-    function whiteListPartnerManager(address partnerManager) external;
-
-    /**
-     * @notice blacklists a partner manager
-     * @param partnerManager address of the partner manager
-     */
-    function blackListPartnerManager(address partnerManager) external;
 }

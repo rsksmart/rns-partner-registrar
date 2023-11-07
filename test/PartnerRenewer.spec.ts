@@ -40,6 +40,7 @@ const LABEL = keccak256(toUtf8Bytes('cheta'));
 const ROOT_NODE = namehash('rsk');
 const MIN_COMMITMENT_AGE = 1;
 keccak256(toUtf8Bytes('this is a dummy'));
+
 const initialSetup = async () => {
   const signers = await ethers.getSigners();
   const owner = signers[0];
@@ -118,12 +119,12 @@ const initialSetup = async () => {
     RIF.address,
     pool.address,
     accessControl.address,
+    PartnerManager.address,
   ]);
 
   // whiteList contracts on feeManager
   await FeeManager.whiteListRegistrarOrRenewer(PartnerRegistrar.address);
   await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address);
-  await FeeManager.whiteListPartnerManager(PartnerManager.address);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
 
@@ -150,7 +151,7 @@ const initialSetup = async () => {
   };
 };
 
-describe('Partner Renewer,', () => {
+describe('Partner Renewer', () => {
   describe('Price', () => {
     it('should return the price', async () => {
       const {

@@ -126,6 +126,7 @@ export const initialSetup = async () => {
       rif: RIF.address,
       pool: pool.address,
       accessControl: accessControl.address,
+      partnerManager: PartnerManager.address,
     }
   );
 
@@ -184,10 +185,6 @@ export const initialSetup = async () => {
 
   await (
     await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address)
-  ).wait();
-
-  await (
-    await FeeManager.whiteListPartnerManager(PartnerManager.address)
   ).wait();
 
   return {
