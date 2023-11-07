@@ -71,7 +71,7 @@ contract FeeManager is IFeeManager, HasAccessControl {
 
         uint256 partnerFee = (amount *
             _getPartnerConfiguration(partner).getFeePercentage()) /
-                    _PERCENT100_WITH_PRECISION18;
+            _PERCENT100_WITH_PRECISION18;
         _balances[partner] += partnerFee;
 
         uint256 balance = amount - partnerFee;

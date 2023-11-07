@@ -125,10 +125,7 @@ contract PartnerRenewer is
         }
     }
 
-    function _collectFees(
-        address partner,
-        uint256 amount
-    ) private {
+    function _collectFees(address partner, uint256 amount) private {
         if (_feeManager == IFeeManager(address(0))) {
             revert CustomError("Fee Manager not set");
         }
