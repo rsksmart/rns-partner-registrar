@@ -13,9 +13,9 @@ import "../Access/HasAccessControl.sol";
 */
 contract FeeManager is IFeeManager, HasAccessControl {
     RIF private _rif;
+    IPartnerManager private _partnerManager;
 
     mapping(address => bool) private _whitelistedRegistrarsAndRenewers;
-    mapping(address => bool) private _whitelistedPartnerManagers;
     mapping(address => uint256) private _balances;
     uint256 internal constant _PERCENT100_WITH_PRECISION18 = 100 * (10 ** 18);
 
@@ -28,20 +28,15 @@ contract FeeManager is IFeeManager, HasAccessControl {
         _;
     }
 
-    modifier onlyWhiteListedPartnerManager(address partnerManager) {
-        if (!(_whitelistedPartnerManagers[partnerManager])) {
-            revert InvalidEntity(partnerManager, "Partner Manager");
-        }
-        _;
-    }
-
     constructor(
         RIF rif,
         address pool,
-        IAccessControl accessControl
+        IAccessControl accessControl,
+        IPartnerManager partnerManager
     ) HasAccessControl(accessControl) {
         _rif = rif;
         _pool = pool;
+        _partnerManager = partnerManager;
     }
 
     /**
@@ -66,14 +61,8 @@ contract FeeManager is IFeeManager, HasAccessControl {
      */
     function deposit(
         address partner,
-        uint256 amount,
-        address partnerManager
-    )
-        external
-        override
-        onlyAuthorised
-        onlyWhiteListedPartnerManager(partnerManager)
-    {
+        uint256 amount
+    ) external override onlyAuthorised {
         emit DepositSuccessful(amount, partner);
 
         if (!_rif.transferFrom(msg.sender, address(this), amount)) {
@@ -81,27 +70,21 @@ contract FeeManager is IFeeManager, HasAccessControl {
         }
 
         uint256 partnerFee = (amount *
-            _getPartnerConfiguration(partner, partnerManager)
-                .getFeePercentage()) / _PERCENT100_WITH_PRECISION18;
+            _getPartnerConfiguration(partner).getFeePercentage()) /
+                    _PERCENT100_WITH_PRECISION18;
         _balances[partner] += partnerFee;
 
         uint256 balance = amount - partnerFee;
-
         if (!_rif.transfer(_pool, balance)) {
             revert TransferFailed(address(this), _pool, balance);
         }
     }
 
     function _getPartnerConfiguration(
-        address partner,
-        address partnerManager
-    )
-        private
-        view
-        onlyWhiteListedPartnerManager(partnerManager)
-        returns (IPartnerConfiguration)
-    {
-        return IPartnerManager(partnerManager).getPartnerConfiguration(partner);
+        address partner
+    ) private view returns (IPartnerConfiguration) {
+        return
+            IPartnerManager(_partnerManager).getPartnerConfiguration(partner);
     }
 
     /**
@@ -113,10 +96,16 @@ contract FeeManager is IFeeManager, HasAccessControl {
         return _balances[partner];
     }
 
+    /**
+       @inheritdoc IFeeManager
+     */
     function getPool() public view returns (address) {
         return _pool;
     }
 
+    /**
+        @inheritdoc IFeeManager
+     */
     function setPool(address newPoolAddress) public onlyHighLevelOperator {
         if (newPoolAddress == _pool) {
             revert("old value is same as new value");
@@ -143,23 +132,5 @@ contract FeeManager is IFeeManager, HasAccessControl {
         address entity
     ) external override onlyHighLevelOperator {
         delete _whitelistedRegistrarsAndRenewers[entity];
-    }
-
-    /**
-       @inheritdoc IFeeManager
-     */
-    function whiteListPartnerManager(
-        address partnerManager
-    ) external override onlyHighLevelOperator {
-        _whitelistedPartnerManagers[partnerManager] = true;
-    }
-
-    /**
-       @inheritdoc IFeeManager
-     */
-    function blackListPartnerManager(
-        address partnerManager
-    ) external override onlyHighLevelOperator {
-        delete _whitelistedPartnerManagers[partnerManager];
     }
 }
