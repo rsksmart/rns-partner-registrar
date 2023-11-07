@@ -44,7 +44,6 @@ describe('Pucharse Name By 1st Time (Domain Registration) & Renovation', () => {
       PartnerConfiguration,
       regularUser,
       FeeManager,
-      owner,
     } = await loadFixture(initialSetup);
 
     const domainName = generateRandomStringWithLettersAndNumbers(

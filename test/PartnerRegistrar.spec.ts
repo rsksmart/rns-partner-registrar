@@ -40,7 +40,6 @@ import {
   COMMITMENT_NOT_REQUIRED_ERR,
   PARTNER_MANAGER_CHANGED_EVENT,
 } from './utils/constants.utils';
-import { BigNumber } from 'ethers';
 
 const SECRET = keccak256(toUtf8Bytes('test'));
 
@@ -128,12 +127,12 @@ const initialSetup = async () => {
     RIF.address,
     pool.address,
     accessControl.address,
+    PartnerManager.address,
   ]);
 
   // whiteList contracts on feeManager
   await FeeManager.whiteListRegistrarOrRenewer(PartnerRegistrar.address);
   await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address);
-  await FeeManager.whiteListPartnerManager(PartnerManager.address);
 
   await PartnerRegistrar.setFeeManager(FeeManager.address);
 
@@ -240,54 +239,6 @@ describe('New Domain Registration', () => {
         partner.address
       )
     ).to.be.fulfilled;
-  });
-
-  it('Should collect fees and pass the PartnerManager to the FeeManager', async () => {
-    const {
-      NodeOwner,
-      PartnerManager,
-      PartnerRegistrar,
-      PartnerConfiguration,
-      nameOwner,
-      partner,
-      partnerOwner,
-      FeeManager,
-    } = await loadFixture(initialSetup);
-
-    await (
-      await PartnerManager.addPartner(partner.address, partnerOwner.address)
-    ).wait();
-
-    await (
-      await PartnerManager.setPartnerConfiguration(
-        partner.address,
-        PartnerConfiguration.address
-      )
-    ).wait();
-
-    (await PartnerConfiguration.setMinCommitmentAge(0)).wait();
-
-    const duration = 2;
-
-    await expect(
-      PartnerRegistrar.register(
-        'cheta',
-        nameOwner.address,
-        SECRET,
-        duration,
-        NodeOwner.address,
-        partner.address
-      )
-    ).to.be.fulfilled;
-
-    const PRECISION18 = BigNumber.from('1' + '0'.repeat(18));
-    const expectedPrice = BigNumber.from(2 * duration).mul(PRECISION18);
-
-    expect(FeeManager.deposit).to.have.been.calledWith(
-      partner.address,
-      expectedPrice,
-      PartnerManager.address
-    );
   });
 
   it('Should successfully register a new domain without token transfer transactions when discount is 100%', async () => {

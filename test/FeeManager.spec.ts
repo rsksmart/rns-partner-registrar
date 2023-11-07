@@ -59,12 +59,12 @@ async function testSetup() {
     RIF.address,
     pool.address,
     accessControl.address,
+    PartnerManager.address,
   ]);
 
   // whiteList contracts on feeManager
   await feeManager.whiteListRegistrarOrRenewer(registrar.address);
   await feeManager.whiteListRegistrarOrRenewer(renewer.address);
-  await feeManager.whiteListPartnerManager(PartnerManager.address);
 
   return {
     RIF,
@@ -113,9 +113,7 @@ describe('Fee Manager', () => {
         );
 
         await expect(
-          feeManager
-            .connect(registrar)
-            .deposit(partner.address, depositAmount, PartnerManager.address)
+          feeManager.connect(registrar).deposit(partner.address, depositAmount)
         ).to.not.be.reverted;
 
         const partnerFee = depositAmount
@@ -159,9 +157,7 @@ describe('Fee Manager', () => {
         );
 
         await expect(
-          feeManager
-            .connect(renewer)
-            .deposit(partner.address, depositAmount, PartnerManager.address)
+          feeManager.connect(renewer).deposit(partner.address, depositAmount)
         ).to.not.be.reverted;
 
         const partnerFee = depositAmount
@@ -187,20 +183,13 @@ describe('Fee Manager', () => {
           account3: partner,
           RIF,
           owner,
-          PartnerManager,
         } = await loadFixture(testSetup);
 
         const depositAmount = ethers.BigNumber.from(10);
 
         RIF.transferFrom.returns(true);
 
-        await expect(
-          feeManager.deposit(
-            partner.address,
-            depositAmount,
-            PartnerManager.address
-          )
-        )
+        await expect(feeManager.deposit(partner.address, depositAmount))
           .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
           .withArgs(owner.address);
       } catch (error) {
@@ -214,7 +203,6 @@ describe('Fee Manager', () => {
           feeManager,
           account3: partner,
           RIF,
-          PartnerManager,
           registrar,
         } = await loadFixture(testSetup);
 
@@ -225,79 +213,10 @@ describe('Fee Manager', () => {
         feeManager.blackListRegistrarOrRenewer(registrar.address);
 
         await expect(
-          feeManager
-            .connect(registrar)
-            .deposit(partner.address, depositAmount, PartnerManager.address)
+          feeManager.connect(registrar).deposit(partner.address, depositAmount)
         )
           .to.be.revertedWithCustomError(feeManager, 'NotAuthorized')
           .withArgs(registrar.address);
-      } catch (error) {
-        throw error;
-      }
-    });
-
-    it('should revert if the partnerManager has not been withlisted', async () => {
-      try {
-        const {
-          feeManager,
-          account3: partner,
-          RIF,
-          registrar,
-        } = await loadFixture(testSetup);
-
-        const notWhiteListedPartnerManager =
-          await deployMockContract<PartnerManager>(PartnerManagerJson.abi);
-
-        const depositAmount = ethers.BigNumber.from(10);
-
-        RIF.transferFrom.returns(true);
-
-        await expect(
-          feeManager
-            .connect(registrar)
-            .deposit(
-              partner.address,
-              depositAmount,
-              notWhiteListedPartnerManager.address
-            )
-        )
-          .to.be.revertedWithCustomError(feeManager, 'InvalidEntity')
-          .withArgs(notWhiteListedPartnerManager.address, 'Partner Manager');
-      } catch (error) {
-        throw error;
-      }
-    });
-
-    it('should revert if the partnerManager has been blacklisted', async () => {
-      try {
-        const {
-          feeManager,
-          account3: partner,
-          RIF,
-          registrar,
-        } = await loadFixture(testSetup);
-
-        const blackListedPartnerManager =
-          await deployMockContract<PartnerManager>(PartnerManagerJson.abi);
-
-        feeManager.whiteListPartnerManager(blackListedPartnerManager.address);
-        feeManager.blackListPartnerManager(blackListedPartnerManager.address);
-
-        const depositAmount = ethers.BigNumber.from(10);
-
-        RIF.transferFrom.returns(true);
-
-        await expect(
-          feeManager
-            .connect(registrar)
-            .deposit(
-              partner.address,
-              depositAmount,
-              blackListedPartnerManager.address
-            )
-        )
-          .to.be.revertedWithCustomError(feeManager, 'InvalidEntity')
-          .withArgs(blackListedPartnerManager.address, 'Partner Manager');
       } catch (error) {
         throw error;
       }
@@ -325,9 +244,7 @@ describe('Fee Manager', () => {
         );
 
         await expect(
-          feeManager
-            .connect(registrar)
-            .deposit(partner.address, depositAmount, PartnerManager.address)
+          feeManager.connect(registrar).deposit(partner.address, depositAmount)
         )
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(registrar.address, feeManager.address, depositAmount);
@@ -363,9 +280,7 @@ describe('Fee Manager', () => {
         );
 
         await expect(
-          feeManager
-            .connect(registrar)
-            .deposit(partner.address, depositAmount, PartnerManager.address)
+          feeManager.connect(registrar).deposit(partner.address, depositAmount)
         )
           .to.be.revertedWithCustomError(feeManager, 'TransferFailed')
           .withArgs(
@@ -406,9 +321,7 @@ describe('Fee Manager', () => {
       );
 
       await expect(
-        feeManager
-          .connect(registrar)
-          .deposit(partner.address, depositAmount, PartnerManager.address)
+        feeManager.connect(registrar).deposit(partner.address, depositAmount)
       ).eventually.fulfilled;
     });
 
@@ -509,9 +422,7 @@ describe('Fee Manager', () => {
         );
 
         await expect(
-          feeManager
-            .connect(registrar)
-            .deposit(partner.address, depositAmount, PartnerManager.address)
+          feeManager.connect(registrar).deposit(partner.address, depositAmount)
         )
           .to.emit(feeManager, DEPOSIT_SUCCESSFUL_EVENT)
           .withArgs(depositAmount, partner.address);
@@ -542,7 +453,7 @@ describe('Fee Manager', () => {
 
       await feeManager
         .connect(registrar)
-        .deposit(account3.address, depositAmount, PartnerManager.address);
+        .deposit(account3.address, depositAmount);
 
       const partnerBalance = await feeManager.getBalance(account3.address);
 
