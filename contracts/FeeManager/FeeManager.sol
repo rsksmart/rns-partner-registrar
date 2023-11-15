@@ -150,7 +150,7 @@ contract FeeManager is IFeeManager, HasAccessControl {
         if (newPartnerManager == address(_partnerManager)) {
             revert("old value is same as new value");
         }
-        _partnerManager = IPartnerManager(newPartnerManager);
         emit PartnerManagerChanged(msg.sender, newPartnerManager);
+        _partnerManager = IPartnerManager(newPartnerManager);
     }
 }
