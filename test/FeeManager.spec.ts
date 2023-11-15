@@ -20,6 +20,7 @@ import {
   DEPOSIT_SUCCESSFUL_EVENT,
   WITHDRAWAL_SUCCESSFUL_EVENT,
   POOL_CHANGED_EVENT,
+  PARTNER_MANAGER_CHANGED_EVENT,
 } from './utils/constants.utils';
 
 async function testSetup() {
@@ -474,6 +475,70 @@ describe('Fee Manager', () => {
       )
         .to.emit(feeManager, POOL_CHANGED_EVENT)
         .withArgs(highLevelOperator.address, newPool.address);
+    });
+
+    it('Should emit PartnerManagerChanged event', async () => {
+      const {
+        feeManager,
+        newValue: newPartnerManager,
+        highLevelOperator,
+      } = await testSetup();
+
+      await expect(
+        feeManager
+          .connect(highLevelOperator)
+          .setPartnerManager(newPartnerManager.address)
+      )
+        .to.emit(feeManager, PARTNER_MANAGER_CHANGED_EVENT)
+        .withArgs(highLevelOperator.address, newPartnerManager.address);
+    });
+  });
+
+  describe('Partner manager ', () => {
+    it('Should change the partner manager address', async () => {
+      const {
+        feeManager,
+        newValue: newPartnerManager,
+        highLevelOperator,
+      } = await testSetup();
+
+      await feeManager
+        .connect(highLevelOperator)
+        .setPartnerManager(newPartnerManager.address);
+
+      const alreadyChangedPartnerManager = await feeManager.getPartnerManager();
+
+      expect(alreadyChangedPartnerManager).to.be.equal(
+        newPartnerManager.address
+      );
+    });
+
+    it('Should revert if not called by an authorized entity', async () => {
+      const {
+        feeManager,
+        newValue: newPartnerManager,
+        attacker,
+      } = await testSetup();
+
+      await expect(
+        feeManager
+          .connect(attacker)
+          .setPartnerManager(newPartnerManager.address)
+      )
+        .to.be.revertedWithCustomError(feeManager, 'OnlyHighLevelOperator')
+        .withArgs(attacker.address);
+    });
+
+    it('Should revert if the new partner manager address is the same as the old one', async () => {
+      const { feeManager, highLevelOperator } = await testSetup();
+
+      const actualPartnerManagerAddress = feeManager.getPartnerManager();
+
+      await expect(
+        feeManager
+          .connect(highLevelOperator)
+          .setPartnerManager(actualPartnerManagerAddress)
+      ).to.be.revertedWith('old value is same as new value');
     });
   });
 });

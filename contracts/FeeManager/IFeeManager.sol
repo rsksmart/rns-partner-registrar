@@ -46,6 +46,13 @@ interface IFeeManager {
     event PoolChanged(address changedBy, address newPoolAddress);
 
     /**
+     * @notice event emitted when the partner manager address is changed
+     * @param changedBy address of the account that changed the partner manager address
+     * @param newPartnerManagerAddress address of the new partner Manager
+     */
+    event PartnerManagerChanged(address changedBy, address newPartnerManagerAddress);
+
+    /**
      * @notice allows the partner to withdraw the balance of their revenue
      * @custom:emits-event emits the WithdrawalSuccessful event
      */
@@ -87,4 +94,15 @@ interface IFeeManager {
      * @param entity address of the registrar or renewer
      */
     function blackListRegistrarOrRenewer(address entity) external;
+
+    /**
+     * @notice allows checking the address of the partner manager
+     */
+    function getPartnerManager() external view returns(address);
+
+    /**
+     * @notice allows modifying the address of the partner manager
+     * @param newPartnerManager address of the new partner manager
+     */
+    function setPartnerManager(address newPartnerManager) external;
 }
