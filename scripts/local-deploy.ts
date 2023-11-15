@@ -32,6 +32,8 @@ const reverseTldAsSha3 = utils.id('reverse');
 const ZERO_FEE_PERCENTAGE = oneRBTC.mul(0); //0%
 const HALF_FEE_PERCENTAGE = oneRBTC.mul(50); //50%
 const HALF_DISCOUNT_PERCENTAGE = oneRBTC.mul(50); //50%
+const FIVE_PERCENTAGE = ethers.utils.parseEther('0.05'); //5%
+const TEN_PERCENTAGE = ethers.utils.parseEther('0.1'); //10%
 
 async function main() {
   try {
@@ -150,6 +152,41 @@ async function main() {
 
     console.log('ReverseSetup:', ReverseSetup.address);
 
+    await (
+      await RNSContract.setSubnodeOwner(
+        rootNodeId,
+        tldAsSha3,
+        NodeOwnerContract.address
+      )
+    ).wait();
+
+    console.log('partner added ', partner.address);
+
+    await (
+      await RNSContract.setSubnodeOwner(
+        rootNodeId,
+        reverseTldAsSha3,
+        ReverseSetup.address
+      )
+    ).wait();
+
+    console.log('reverse tld set');
+
+    await (await ReverseSetup.run()).wait();
+
+    console.log('reverse run');
+
+    await (
+      await RNSContract.setDefaultResolver(PublicResolverContract.address)
+    ).wait();
+
+    console.log('default resolver set');
+
+    await (
+      await NodeOwnerContract.setRootResolver(PublicResolverContract.address)
+    ).wait();
+    console.log('node root resolver set');
+
     const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
       beneficiary: owner.address,
       initialAmount: oneRBTC.mul(100000000000000),
@@ -199,10 +236,9 @@ async function main() {
       'FeeManager',
       {
         rif: RIF.address,
-        partnerRegistrar: PartnerRegistrarContract.address,
-        partnerRenewer: PartnerRenewerContract.address,
-        partnerManager: PartnerManagerContract.address,
         pool: pool.address,
+        accessControl: RegistrarAccessControlContract.address,
+        partnerManager: PartnerManagerContract.address,
       }
     );
 
@@ -253,8 +289,8 @@ async function main() {
         maxLength: BigNumber.from(10),
         minDuration: BigNumber.from(2),
         maxDuration: BigNumber.from(7),
-        feePercentage: HALF_FEE_PERCENTAGE,
-        discount: HALF_DISCOUNT_PERCENTAGE,
+        feePercentage: FIVE_PERCENTAGE,
+        discount: TEN_PERCENTAGE,
         minCommitmentAge: 1,
       });
 
@@ -284,30 +320,6 @@ async function main() {
     ).wait();
 
     await (
-      await RNSContract.setSubnodeOwner(
-        rootNodeId,
-        tldAsSha3,
-        NodeOwnerContract.address
-      )
-    ).wait();
-
-    console.log('partner added ', partner.address);
-
-    await (
-      await RNSContract.setSubnodeOwner(
-        rootNodeId,
-        reverseTldAsSha3,
-        ReverseSetup.address
-      )
-    ).wait();
-
-    console.log('reverse tld set');
-
-    await (await ReverseSetup.run()).wait();
-
-    console.log('reverse run');
-
-    await (
       await NodeOwnerContract.addRegistrar(PartnerRegistrarContract.address)
     ).wait();
     console.log('rootNodeId set');
@@ -318,13 +330,16 @@ async function main() {
     console.log('PartnerRegistrar added to nodeowner');
 
     await (
-      await RNSContract.setDefaultResolver(PublicResolverContract.address)
+      await FeeManager.whiteListRegistrarOrRenewer(
+        PartnerRegistrarContract.address
+      )
     ).wait();
-    console.log('default resolver set');
+
     await (
-      await NodeOwnerContract.setRootResolver(PublicResolverContract.address)
+      await FeeManager.whiteListRegistrarOrRenewer(
+        PartnerRenewerContract.address
+      )
     ).wait();
-    console.log('node root resolver set');
 
     await (await RIF.transfer(userAccount.address, oneRBTC.mul(100))).wait();
 
@@ -372,7 +387,8 @@ async function main() {
       'owner balance ',
       owner.address,
       ' ',
-      (await RIF.balanceOf(owner.address)).toString()
+      (await RIF.balanceOf(owner.address)).toString(),
+      ' RIF'
     );
     console.log('Done.');
   } catch (err) {
