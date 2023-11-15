@@ -50,7 +50,10 @@ interface IFeeManager {
      * @param changedBy address of the account that changed the partner manager address
      * @param newPartnerManagerAddress address of the new partner Manager
      */
-    event PartnerManagerChanged(address changedBy, address newPartnerManagerAddress);
+    event PartnerManagerChanged(
+        address changedBy,
+        address newPartnerManagerAddress
+    );
 
     /**
      * @notice allows the partner to withdraw the balance of their revenue
@@ -98,7 +101,7 @@ interface IFeeManager {
     /**
      * @notice allows checking the address of the partner manager
      */
-    function getPartnerManager() external view returns(address);
+    function getPartnerManager() external view returns (address);
 
     /**
      * @notice allows modifying the address of the partner manager
