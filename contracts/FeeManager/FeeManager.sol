@@ -133,4 +133,24 @@ contract FeeManager is IFeeManager, HasAccessControl {
     ) external override onlyHighLevelOperator {
         delete _whitelistedRegistrarsAndRenewers[entity];
     }
+
+    /**
+       @inheritdoc IFeeManager
+     */
+    function getPartnerManager() external view returns (address) {
+        return address(_partnerManager);
+    }
+
+    /**
+       @inheritdoc IFeeManager
+     */
+    function setPartnerManager(
+        address newPartnerManager
+    ) external onlyHighLevelOperator {
+        if (newPartnerManager == address(_partnerManager)) {
+            revert("old value is same as new value");
+        }
+        emit PartnerManagerChanged(msg.sender, newPartnerManager);
+        _partnerManager = IPartnerManager(newPartnerManager);
+    }
 }
