@@ -30,6 +30,10 @@ const RNS_ADDRESS =
   process.env.RNS_ADDRESS?.toLowerCase() ||
   '0xcb868aeabd31e2b66f74e9a55cf064abb31a4ad5';
 
+const NAME_RESOLVER_ADDRESS =
+  process.env.NAME_RESOLVER_ADDRESS?.toLowerCase() ||
+  '0x4b1a11bf6723e60b9d2e02aa3ece34e24bde77d9';
+
 const RESOLVER_ADDRESS =
   process.env.RESOLVER_ADDRESS?.toLowerCase() ||
   '0xD87f8121D44F3717d4bAdC50b24E50044f86D64B';
@@ -41,6 +45,10 @@ const MULTICHAIN_RESOLVER_ADDRESS =
 const PUBLIC_RESOLVER_ADDRESS =
   process.env.PUBLIC_RESOLVER_ADDRESS?.toLowerCase() ||
   '0x4efd25e3d348f8f25a14fb7655fba6f72edfe93a';
+
+const REVERSE_REGISTRAR_ADDRESS =
+  process.env.REVERSE_REGISTRAR_ADDRESS?.toLowerCase() ||
+  '0xd25c3f94a743b93ecffecbe691beea51c3c2d9d1';
 
 const tldNode = namehash('rsk');
 
@@ -59,11 +67,26 @@ async function deployContract<T extends Contract>(
 
 async function main() {
   try {
-    const [owner, defaultPartner] = await ethers.getSigners();
+    const [owner, defaultPartner, highLevelOperator] =
+      await ethers.getSigners();
 
     console.log('Deploying contracts with the account:', owner.address);
 
     console.log('Account balance:', +(await owner.getBalance()) / 1e18, 'RBTC');
+
+    const RNSContract = await ethers.getContractAt('RNS', RNS_ADDRESS, owner);
+
+    const NodeOwnerContract = await ethers.getContractAt(
+      'NodeOwner',
+      RNS_NODE_OWNER,
+      owner
+    );
+
+    console.log('Definitive Resolver:', RESOLVER_ADDRESS);
+
+    console.log('NameResolver:', NAME_RESOLVER_ADDRESS);
+
+    console.log('ReverseRegistrar:', REVERSE_REGISTRAR_ADDRESS);
 
     const accessControl = await deployContract<RegistrarAccessControl>(
       'RegistrarAccessControl'
@@ -101,11 +124,9 @@ async function main() {
 
     const feeManager = await deployContract<FeeManager>('FeeManager', {
       rif: RIF_ADDRESS,
-      partnerRegistrar: partnerRegistrar.address,
-      partnerRenewer: partnerRenewer.address,
-      partnerManager: partnerManager.address,
       pool: POOL,
       accessControl: accessControl.address,
+      partnerManager: partnerManager.address,
     });
     console.log('Fee manager deployed', feeManager.address);
 
@@ -113,41 +134,6 @@ async function main() {
     console.log('Set Fee manager on partner registrar');
     await (await partnerRenewer.setFeeManager(feeManager.address)).wait();
     console.log('et Fee manager on partner renewer');
-
-    // Needs to be executed by the Multisign
-    // console.log('Adding new registrar and renewer to old nodeOwner');
-    // const NodeOwnerContract = await ethers.getContractAt(
-    //   'NodeOwner',
-    //   RNS_NODE_OWNER,
-    //   owner
-    // );
-    //
-    // await (
-    //   await NodeOwnerContract.addRegistrar(partnerRegistrar.address)
-    // ).wait();
-    //
-    // console.log('new partner registrar added');
-    //
-    // await (await NodeOwnerContract.addRenewer(partnerRenewer.address)).wait();
-    //
-    // console.log('new partner renewer added');
-
-    console.log('Adding new registrar and renewer to old nodeOwner');
-    const NodeOwnerContract = await ethers.getContractAt(
-      'NodeOwner',
-      RNS_NODE_OWNER,
-      owner
-    );
-
-    await (
-      await NodeOwnerContract.addRegistrar(partnerRegistrar.address)
-    ).wait();
-
-    console.log('new partner registrar added');
-
-    await (await NodeOwnerContract.addRenewer(partnerRenewer.address)).wait();
-
-    console.log('new partner renewer added');
 
     const defaultPartnerConfiguration =
       await deployContract<PartnerConfiguration>('PartnerConfiguration', {
@@ -174,23 +160,79 @@ async function main() {
 
     console.log('default partner added');
 
+    await (
+      await feeManager.whiteListRegistrarOrRenewer(partnerRegistrar.address)
+    ).wait();
+
+    console.log('Whitelisted Partner Registrar', partnerRegistrar.address);
+
+    await (
+      await feeManager.whiteListRegistrarOrRenewer(partnerRenewer.address)
+    ).wait();
+
+    console.log('Whitelisted Partner Renewer', partnerRenewer.address);
+
+    if (process.env.OLD_PRIVATE_KEY) {
+      const provider = new ethers.providers.JsonRpcProvider(
+        'https://public-node.rsk.co'
+      );
+      const old_owner = new ethers.Wallet(
+        process.env.OLD_PRIVATE_KEY,
+        provider
+      );
+
+      const OldNodeOwner = await ethers.getContractAt(
+        'NodeOwner',
+        RNS_NODE_OWNER,
+        old_owner
+      );
+
+      await (
+        await OldNodeOwner.connect(old_owner).addRegistrar(
+          partnerRegistrar.address
+        )
+      ).wait();
+
+      console.log(
+        'new partner registrar added to old node owner',
+        partnerRegistrar.address
+      );
+
+      await (
+        await OldNodeOwner.connect(old_owner).addRenewer(partnerRenewer.address)
+      ).wait();
+
+      console.log(
+        'new partner renewer added to old node owner',
+        partnerRenewer.address
+      );
+    }
+
     console.log('Writing contract addresses to file...');
+
     const content = {
-      owner: owner.address,
-      defaultPartner: defaultPartner.address,
-      rnsNodeOwnerAddress: RNS_NODE_OWNER,
-      rifToken: RIF_ADDRESS,
-      pool: POOL,
       rns: RNS_ADDRESS,
-      resolverAddress: RESOLVER_ADDRESS,
-      multichainResolverAddress: MULTICHAIN_RESOLVER_ADDRESS,
-      publicResolverAddress: PUBLIC_RESOLVER_ADDRESS,
-      partnerRegistrar: partnerRegistrar.address,
-      partnerRenewer: partnerRenewer.address,
-      partnerManager: partnerManager.address,
-      feeManager: feeManager.address,
-      defaultPartnerConfiguration: defaultPartnerConfiguration.address,
-      accessControl: accessControl.address,
+      registrar: partnerRegistrar.address.toLowerCase(),
+      reverseRegistrar: REVERSE_REGISTRAR_ADDRESS,
+      publicResolver: PUBLIC_RESOLVER_ADDRESS,
+      nameResolver: NAME_RESOLVER_ADDRESS,
+      multiChainResolver: MULTICHAIN_RESOLVER_ADDRESS,
+      definitiveResolver: RESOLVER_ADDRESS,
+      stringResolver: '0x0000000000000000000000000000000000000000',
+      rif: RIF_ADDRESS,
+      fifsRegistrar: partnerRegistrar.address.toLowerCase(),
+      fifsAddrRegistrar: partnerRegistrar.address.toLowerCase(),
+      rskOwner: RNS_NODE_OWNER,
+      renewer: partnerRenewer.address.toLowerCase(),
+      partnerManager: partnerManager.address.toLowerCase(),
+      feeManager: feeManager.address.toLowerCase(),
+      registrarAccessControl: accessControl.address.toLowerCase(),
+      partners: {
+        default: {
+          account: defaultPartner.address.toLowerCase(),
+          config: defaultPartnerConfiguration.address.toLowerCase(),
+        },
+      },
     };
 
     fs.writeFileSync(

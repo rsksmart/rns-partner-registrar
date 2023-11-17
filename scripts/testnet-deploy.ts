@@ -42,7 +42,7 @@ const RNS_ADDRESS =
 
 const NAME_RESOLVER_ADDRESS =
   process.env.NAME_RESOLVER_ADDRESS?.toLowerCase() ||
-  '0x8587385ad60038bB181aFfDF687c4D1B80C4787e';
+  '0x8587385ad60038bb181affdf687c4d1b80c4787e';
 
 const RESOLVER_ADDRESS =
   process.env.RESOLVER_ADDRESS?.toLowerCase() ||
