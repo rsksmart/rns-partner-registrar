@@ -6,6 +6,7 @@ import 'hardhat-watcher';
 import 'tsconfig-paths/register';
 import '@nomiclabs/hardhat-ethers';
 import '@nomicfoundation/hardhat-chai-matchers';
+// REPLACE path for the desired .env file to be used
 require('dotenv').config({ path: '.env.testnet' });
 
 import { HardhatUserConfig } from 'hardhat/config';
