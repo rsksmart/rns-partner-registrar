@@ -10,21 +10,23 @@ import "./IBaseRenewer.sol";
 import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
-import "./IPartnerRenewer.sol";
+import "./IMultiTLDPartnerRenewer.sol";
+import "../RNS.sol";
+import "hardhat/console.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title Implements the interface IBaseRenewer to renew names in RNS.
 */
-contract PartnerRenewer is
-    IPartnerRenewer,
+contract MultiTLDPartnerRenewer is
+    IMultiTLDPartnerRenewer,
     IERC677TransferReceiver,
     HasAccessControl
 {
-    NodeOwner private _nodeOwner;
     IERC677 private _rif;
     IPartnerManager private _partnerManager;
     IFeeManager private _feeManager;
+    RNS private _rns;
 
     // sha3('renew(string,uint,address)')
     bytes4 private constant _RENEW_SIGNATURE = 0x8d7016ca;
@@ -33,13 +35,13 @@ contract PartnerRenewer is
 
     constructor(
         IAccessControl accessControl,
-        NodeOwner nodeOwner,
         IERC677 rif,
-        IPartnerManager partnerManager
+        IPartnerManager partnerManager,
+        RNS rns
     ) HasAccessControl(accessControl) {
-        _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
+        _rns = rns;
     }
 
     modifier onlyPartner(address partner) {
@@ -63,12 +65,21 @@ contract PartnerRenewer is
         _feeManager = feeManager;
     }
 
+    // - Via ERC-677
+    /* Encoding:
+        | signature  |  4 bytes      - offset   0
+        | duration   | 32 bytes      - offset   4
+        | partner    | 20 bytes      - offset  36
+        | tld        | 32 bytes      - offset  56
+        | name       | variable size - offset  88
+    */
+
     /// @notice ERC-677 token fallback function.
-    /// @dev Follow 'Register encoding' to execute a one-transaction regitration.
+    /// @dev Follow 'Register encoding' to execute a one-transaction registration.
     /// @param from token sender.
     /// @param value amount of tokens sent.
     /// @param data data associated with transaction.
-    /// @return true if successfull.
+    /// @return true if successful.
     function tokenFallback(
         address from,
         uint256 value,
@@ -77,7 +88,7 @@ contract PartnerRenewer is
         if (msg.sender != address(_rif)) {
             revert CustomError("Only RIF token");
         }
-        if (data.length <= 56) {
+        if (data.length <= 88) {
             revert CustomError("Invalid data");
         }
 
@@ -88,9 +99,11 @@ contract PartnerRenewer is
 
         uint256 duration = data.toUint(4);
         address partner = data.toAddress(36);
-        string memory name = data.toString(56, data.length - 56);
+        bytes32 tld = data.toBytes32(56);
 
-        _renewWithToken(name, duration, from, value, partner);
+        string memory name = data.toString(88, data.length - 88);
+
+        _renewWithToken(name, duration, from, value, partner, tld);
 
         return true;
     }
@@ -100,11 +113,12 @@ contract PartnerRenewer is
         uint256 duration,
         address from,
         uint256 amount,
-        address partner
+        address partner,
+        bytes32 tld
     ) private {
         emit NameRenewed(from, duration);
 
-        uint256 cost = _executeRenovation(name, duration, partner);
+        uint256 cost = _executeRenovation(name, duration, partner, tld);
 
         // This aims to skip token transfer transactions if the cost is zero as it doesn't make
         // any sense to have transactions involving zero tokens. Hence calculations are
@@ -144,14 +158,18 @@ contract PartnerRenewer is
     }
 
     /**
-       @inheritdoc IPartnerRenewer
+       @inheritdoc IMultiTLDPartnerRenewer
      */
     function price(
         string calldata name,
         uint256 duration,
-        address partner
+        address partner,
+        bytes32 tld
     ) external view override returns (uint256) {
         bytes32 label = keccak256(abi.encodePacked(name));
+        console.log("node owner address");
+        console.logAddress(_rns.owner(tld));
+        NodeOwner _nodeOwner = NodeOwner(_rns.owner(tld));
 
         return
             _getPartnerConfiguration(partner).getPrice(
@@ -162,16 +180,17 @@ contract PartnerRenewer is
     }
 
     /**
-       @inheritdoc IPartnerRenewer
+       @inheritdoc IMultiTLDPartnerRenewer
      */
     function renew(
         string calldata name,
         uint256 duration,
-        address partner
+        address partner,
+        bytes32 tld
     ) public override onlyPartner(partner) {
         emit NameRenewed(msg.sender, duration);
 
-        uint256 cost = _executeRenovation(name, duration, partner);
+        uint256 cost = _executeRenovation(name, duration, partner, tld);
 
         // This aims to skip token transfer transactions if the cost is zero as it doesn't make
         // any sense to have transactions involving zero tokens. Hence calculations are
@@ -193,9 +212,11 @@ contract PartnerRenewer is
     function _executeRenovation(
         string memory name,
         uint256 duration,
-        address partner
+        address partner,
+        bytes32 tld
     ) private returns (uint256) {
         bytes32 label = keccak256(abi.encodePacked(name));
+        NodeOwner _nodeOwner = NodeOwner(_rns.owner(tld));
 
         _nodeOwner.renew(label, duration * 365 days);
 

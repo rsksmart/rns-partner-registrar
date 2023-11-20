@@ -15,7 +15,16 @@ import { PartnerConfiguration } from 'typechain-types';
 import { Resolver } from 'typechain-types';
 import { RNS } from 'typechain-types';
 import { PartnerRenewer } from 'typechain-types';
-import { FEE_PERCENTAGE, rootNodeId, tldAsSha3, tldNode } from './constants';
+import { MultiTLDPartnerRegistrar } from 'typechain-types';
+import { MultiTLDPartnerRenewer } from 'typechain-types';
+import {
+  FEE_PERCENTAGE,
+  rootNodeId,
+  sovrynTldAsSha3,
+  sovrynTldNode,
+  tldAsSha3,
+  tldNode,
+} from './constants';
 import { BigNumber } from 'ethers';
 
 export const initialSetup = async () => {
@@ -28,6 +37,7 @@ export const initialSetup = async () => {
   const notWhitelistedPartner = signers[6];
   const highLevelOperator = signers[7];
   const highLevelOperatorToAddOrRemove = signers[8];
+  const noFundsSigner = signers[9];
 
   const { contract: RNS } = await deployContract<RNS>(
     'RNS',
@@ -50,6 +60,18 @@ export const initialSetup = async () => {
     )) as Factory<NodeOwner>
   );
 
+  const { contract: SovrynNodeOwner } = await deployContract<NodeOwner>(
+    'NodeOwner',
+    {
+      _rns: RNS.address,
+      _rootNode: sovrynTldNode,
+    },
+    (await ethers.getContractFactory(
+      NodeOwnerAbi.abi,
+      NodeOwnerAbi.bytecode
+    )) as Factory<NodeOwner>
+  );
+
   const { contract: Resolver } = await deployContract<Resolver>(
     'ResolverV1',
     {},
@@ -61,22 +83,17 @@ export const initialSetup = async () => {
 
   await (await Resolver.initialize(RNS.address)).wait();
 
-  const RIF = await deployContractAsMock<ERC677Token__factory>('ERC677Token', [
-    owner.address,
-    oneRBTC.mul(100000000000000),
-    'ERC677',
-    'MOCKCOIN',
-  ]);
-
-  const { contract: FakeRIF } = await deployContract<ERC677Token>(
+  const FakeRIF = await deployContractAsMock<ERC677Token__factory>(
     'ERC677Token',
-    {
-      beneficiary: owner.address,
-      initialAmount: oneRBTC.mul(100000000000000),
-      tokenName: 'ERC677',
-      tokenSymbol: 'MOCKCOIN',
-    }
+    [owner.address, oneRBTC.mul(100000000000000), 'ERC677', 'MOCKCOIN']
   );
+
+  const { contract: RIF } = await deployContract<ERC677Token>('ERC677Token', {
+    beneficiary: owner.address,
+    initialAmount: oneRBTC.mul(100000000000000),
+    tokenName: 'ERC677',
+    tokenSymbol: 'MOCKCOIN',
+  });
 
   const { contract: accessControl } =
     await deployContract<RegistrarAccessControl>('RegistrarAccessControl', {});
@@ -110,6 +127,14 @@ export const initialSetup = async () => {
     }
   );
 
+  const { contract: MultiTLDPartnerRegistrar } =
+    await deployContract<MultiTLDPartnerRegistrar>('MultiTLDPartnerRegistrar', {
+      accessControl: accessControl.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+      rns: RNS.address,
+    });
+
   const { contract: PartnerRenewer } = await deployContract<PartnerRenewer>(
     'PartnerRenewer',
     {
@@ -119,6 +144,13 @@ export const initialSetup = async () => {
       partnerManager: PartnerManager.address,
     }
   );
+  const { contract: MultiTLDPartnerRenewer } =
+    await deployContract<MultiTLDPartnerRenewer>('MultiTLDPartnerRenewer', {
+      accessControl: accessControl.address,
+      rif: RIF.address,
+      partnerManager: PartnerManager.address,
+      rns: RNS.address,
+    });
 
   const { contract: FeeManager } = await deployContract<IFeeManager>(
     'FeeManager',
@@ -134,18 +166,33 @@ export const initialSetup = async () => {
     await RNS.setSubnodeOwner(rootNodeId, tldAsSha3, NodeOwner.address)
   ).wait();
 
+  await (
+    await RNS.setSubnodeOwner(
+      rootNodeId,
+      sovrynTldAsSha3,
+      SovrynNodeOwner.address
+    )
+  ).wait();
+
   await (await NodeOwner.addRegistrar(PartnerRegistrar.address)).wait();
-
+  await (await NodeOwner.addRegistrar(MultiTLDPartnerRegistrar.address)).wait();
+  await (
+    await SovrynNodeOwner.addRegistrar(MultiTLDPartnerRegistrar.address)
+  ).wait();
   await (await NodeOwner.addRenewer(PartnerRenewer.address)).wait();
-
+  await (await NodeOwner.addRenewer(MultiTLDPartnerRenewer.address)).wait();
+  await (
+    await SovrynNodeOwner.addRenewer(MultiTLDPartnerRenewer.address)
+  ).wait();
   await (await PartnerRenewer.setFeeManager(FeeManager.address)).wait();
-
+  await (await MultiTLDPartnerRenewer.setFeeManager(FeeManager.address)).wait();
   await (await RNS.setDefaultResolver(Resolver.address)).wait();
-
   await (await NodeOwner.setRootResolver(Resolver.address)).wait();
-
+  await (await SovrynNodeOwner.setRootResolver(Resolver.address)).wait();
   await (await PartnerRegistrar.setFeeManager(FeeManager.address)).wait();
-
+  await (
+    await MultiTLDPartnerRegistrar.setFeeManager(FeeManager.address)
+  ).wait();
   await (
     await PartnerManager.addPartner(
       partner.address,
@@ -154,13 +201,13 @@ export const initialSetup = async () => {
   ).wait();
 
   await (await RIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
-  await (await FakeRIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
+  // await (await FakeRIF.transfer(nameOwner.address, oneRBTC.mul(10))).wait();
 
   await (await RIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
-  await (await FakeRIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
+  // await (await FakeRIF.transfer(regularUser.address, oneRBTC.mul(10))).wait();
 
   await (await RIF.transfer(partner.address, oneRBTC.mul(10))).wait();
-  await (await FakeRIF.transfer(partner.address, oneRBTC.mul(10))).wait();
+  // await (await FakeRIF.transfer(partner.address, oneRBTC.mul(10))).wait();
 
   const { contract: alternatePartnerConfiguration } =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
@@ -187,10 +234,19 @@ export const initialSetup = async () => {
     await FeeManager.whiteListRegistrarOrRenewer(PartnerRenewer.address)
   ).wait();
 
+  await (
+    await FeeManager.whiteListRegistrarOrRenewer(
+      MultiTLDPartnerRegistrar.address
+    )
+  ).wait();
+
+  await (
+    await FeeManager.whiteListRegistrarOrRenewer(MultiTLDPartnerRenewer.address)
+  ).wait();
+
   return {
     NodeOwner,
     RIF,
-    FakeRIF,
     PartnerManager,
     PartnerRegistrar,
     PartnerConfiguration,
@@ -209,5 +265,10 @@ export const initialSetup = async () => {
     accessControl,
     highLevelOperator,
     highLevelOperatorToAddOrRemove,
+    SovrynNodeOwner,
+    MultiTLDPartnerRegistrar,
+    MultiTLDPartnerRenewer,
+    noFundsSigner,
+    FakeRIF,
   };
 };

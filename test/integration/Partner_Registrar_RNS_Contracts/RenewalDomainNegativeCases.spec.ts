@@ -25,7 +25,6 @@ import {
   validatePurchasedDomainIsNotAvailable,
   validateRenewalExpectedResults,
 } from './RegisterDomain.spec';
-import { MockContract } from '@defi-wonderland/smock';
 import { oneRBTC } from 'test/utils/mock.utils';
 
 describe('Renewal Name - Negative Test Cases', () => {
@@ -859,7 +858,7 @@ describe('Renewal Name - Negative Test Cases', () => {
       const currentError = error + '';
 
       const bugDescription =
-        'BUG: The Insuficient Tokens Error message was NOT displayed correctly';
+        'BUG: The Insufficient Tokens Error message was NOT displayed correctly';
 
       expect(currentError, bugDescription).to.contains(
         'InsufficientTokensTransfered'
@@ -1004,12 +1003,14 @@ describe('Renewal Name - Negative Test Cases', () => {
         numberOfMonthsToSimulate
       );
     } catch (error) {
+      console.log(error);
+
       errorFound = true;
 
       const currentError = error + '';
 
       const bugDescription =
-        'BUG: The Insuficient Tokens Error message was NOT displayed correctly';
+        'BUG: The Insufficient Tokens Error message was NOT displayed correctly';
 
       expect(currentError, bugDescription).to.contains(
         'insufficient allowance'
@@ -1054,7 +1055,7 @@ export const validatePurchaseExpectedResults = async (
   buyerUser: SignerWithAddress,
   moneyBeforePurchase: BigNumber,
   duration: BigNumber,
-  RIF: MockContract<ERC677Token>,
+  RIF: ERC677Token,
   PartnerConfiguration: PartnerConfiguration
 ) => {
   //Validate Domain Name ISN'T Available anymore

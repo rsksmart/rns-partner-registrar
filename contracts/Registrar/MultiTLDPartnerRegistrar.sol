@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.16;
 
-import "./IPartnerRegistrar.sol";
 import "../NodeOwner.sol";
 import "../PartnerManager/IPartnerManager.sol";
 import "../StringUtils.sol";
@@ -13,24 +12,23 @@ import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "../BytesUtils.sol";
 import "../Access/IAccessControl.sol";
 import "../Access/HasAccessControl.sol";
+import "./IMultiTLDPartnerRegistrar.sol";
 
 /**
     @author Identity Team @IOVLabs
     @title Implements the interface IBaseRegistrar to register names in RNS. Takes into account the partners for the revenue sharing.
 */
-contract PartnerRegistrar is
-    IPartnerRegistrar,
+contract MultiTLDPartnerRegistrar is
+    IMultiTLDPartnerRegistrar,
     IERC677TransferReceiver,
     HasAccessControl
 {
     mapping(bytes32 => uint256) private _commitmentRevealTime;
 
-    NodeOwner private _nodeOwner;
     IERC677 private _rif;
     IPartnerManager private _partnerManager;
     IFeeManager private _feeManager;
     RNS private _rns;
-    bytes32 private _rootNode;
 
     // sha3("register(string,address,bytes32,uint,address,address)")
     bytes4 private constant _REGISTER_SIGNATURE = 0x646c3681;
@@ -40,19 +38,13 @@ contract PartnerRegistrar is
 
     constructor(
         IAccessControl accessControl,
-        NodeOwner nodeOwner,
         IERC677 rif,
         IPartnerManager partnerManager,
-        RNS rns,
-        bytes32 rootNode
+        RNS rns
     ) HasAccessControl(accessControl) {
-        _nodeOwner = nodeOwner;
         _rif = rif;
         _partnerManager = partnerManager;
         _rns = rns;
-        _rootNode = rootNode;
-
-        emit PartnerManagerChanged(msg.sender, address(partnerManager));
     }
 
     modifier onlyPartner(address partner) {
@@ -60,6 +52,13 @@ contract PartnerRegistrar is
             revert("Not a partner");
         }
         _;
+    }
+
+    /**
+       @inheritdoc IBaseRegistrar
+     */
+    function setPartnerManager(address newPartnerManager) external {
+        _partnerManager = IPartnerManager(newPartnerManager);
     }
 
     /**
@@ -90,8 +89,10 @@ contract PartnerRegistrar is
         | owner      | 20 bytes      - offset  4
         | secret     | 32 bytes      - offest 24
         | duration   | 32 bytes      - offset 56
-        | partner   | 32 bytes      - offset 88
-        | name       | variable size - offset 108
+        | addr       | 20 bytes      - offset 88
+        | partner   | 20 bytes      - offset 108
+        | tld       | 32 bytes      - offset 128
+        | name       | variable size - offset 160
     */
 
     /// @notice ERC-677 token fallback function.
@@ -109,7 +110,7 @@ contract PartnerRegistrar is
             revert CustomError("Only RIF token");
         }
 
-        if (data.length <= 128) {
+        if (data.length <= 160) {
             revert CustomError("Invalid data");
         }
 
@@ -123,7 +124,9 @@ contract PartnerRegistrar is
         uint256 duration = data.toUint(56);
         address addr = data.toAddress(88);
         address partner = data.toAddress(108);
-        string memory name = data.toString(128, data.length - 128);
+        bytes32 tld = data.toBytes32(128);
+
+        string memory name = data.toString(160, data.length - 160);
 
         _registerWithToken(
             from,
@@ -133,7 +136,8 @@ contract PartnerRegistrar is
             duration,
             nameOwner,
             addr,
-            partner
+            partner,
+            tld
         );
 
         return true;
@@ -147,7 +151,8 @@ contract PartnerRegistrar is
         uint256 duration,
         address nameOwner,
         address addr,
-        address partner
+        address partner,
+        bytes32 tld
     ) private {
         emit NameRegistered(from, duration);
 
@@ -157,7 +162,8 @@ contract PartnerRegistrar is
             secret,
             duration,
             addr,
-            partner
+            partner,
+            tld
         );
 
         // This aims to skip token transfer transactions if the cost is zero as it doesn't make
@@ -198,7 +204,7 @@ contract PartnerRegistrar is
     }
 
     /**
-       @inheritdoc IPartnerRegistrar
+       @inheritdoc IMultiTLDPartnerRegistrar
      */
     function register(
         string calldata name,
@@ -206,7 +212,8 @@ contract PartnerRegistrar is
         bytes32 secret,
         uint256 duration,
         address addr,
-        address partner
+        address partner,
+        bytes32 tld
     ) public override onlyPartner(partner) {
         emit NameRegistered(msg.sender, duration);
 
@@ -216,7 +223,8 @@ contract PartnerRegistrar is
             secret,
             duration,
             addr,
-            partner
+            partner,
+            tld
         );
 
         // This aims to skip token transfer transactions if the cost is zero as it doesn't make
@@ -244,22 +252,25 @@ contract PartnerRegistrar is
         IPartnerConfiguration partnerConfiguration = _getPartnerConfiguration(
             partner
         );
+
+        //TODO Do we need to have prices per tld? if that's the case we need to pass tld as parameter
         return partnerConfiguration.getPrice(name, expires, duration);
     }
 
     /**
-       @inheritdoc IPartnerRegistrar
+       @inheritdoc IMultiTLDPartnerRegistrar
      */
     function makeCommitment(
         bytes32 label,
         address nameOwner,
         bytes32 secret,
         uint256 duration,
-        address addr
+        address addr,
+        bytes32 tld
     ) public pure override returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(label, nameOwner, secret, duration, addr)
+                abi.encodePacked(label, nameOwner, secret, duration, addr, tld)
             );
     }
 
@@ -298,7 +309,8 @@ contract PartnerRegistrar is
         bytes32 secret,
         uint256 duration,
         address addr,
-        address partner
+        address partner,
+        bytes32 tld
     ) private returns (uint256) {
         IPartnerConfiguration partnerConfiguration = _getPartnerConfiguration(
             partner
@@ -314,7 +326,8 @@ contract PartnerRegistrar is
                 nameOwner,
                 secret,
                 duration,
-                addr
+                addr,
+                tld
             );
             if (!canReveal(commitment)) {
                 revert CustomError("No commitment found");
@@ -322,10 +335,13 @@ contract PartnerRegistrar is
             _commitmentRevealTime[commitment] = 0;
         }
 
+        NodeOwner _nodeOwner = NodeOwner(_rns.owner(tld));
+        require(address(_nodeOwner) != address(0), "Invalid tld");
+
         _nodeOwner.register(label, address(this), duration * 365 days);
 
-        Resolver(_rns.resolver(_rootNode)).setAddr(
-            keccak256(abi.encodePacked(_rootNode, label)),
+        Resolver(_rns.resolver(tld)).setAddr(
+            keccak256(abi.encodePacked(tld, label)),
             addr
         );
 
@@ -349,15 +365,5 @@ contract PartnerRegistrar is
         }
 
         return _partnerManager.getPartnerConfiguration(partner);
-    }
-
-    function setPartnerManager(
-        address partnerManager
-    ) external onlyHighLevelOperator {
-        if (address(_partnerManager) == partnerManager) {
-            revert("old value is same as new value");
-        }
-        emit PartnerManagerChanged(msg.sender, address(partnerManager));
-        _partnerManager = IPartnerManager(partnerManager);
     }
 }
