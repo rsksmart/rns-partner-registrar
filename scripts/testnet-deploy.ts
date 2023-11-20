@@ -21,8 +21,8 @@ const tldNode = namehash('rsk');
 const tldAsSha3 = utils.id('rsk');
 const reverseTldAsSha3 = utils.id('reverse');
 const ZERO_PERCENTAGE = oneRBTC.mul(0); // 0%
-const FIVE_PERCENTAGE = ethers.utils.parseEther('0.05'); // 5%
-const TEN_PERCENTAGE = ethers.utils.parseEther('0.1'); // 10%
+const FIVE_PERCENTAGE = ethers.utils.parseEther('5'); //5%
+const TEN_PERCENTAGE = ethers.utils.parseEther('10'); //10%
 const POOL_ADDRESS = '0xcd32d5b7c2e1790029d3106d9f8347f42a3dfd60'; // multisig testnet address
 
 // Addresses deployed on testnet: https://dev.rootstock.io/rif/rns/testnet/
