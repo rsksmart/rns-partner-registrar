@@ -16,12 +16,16 @@ console.log('Running script on env.', process.env.NODE_ENV);
 
 const tldNode = namehash('rsk');
 const ZERO_PERCENTAGE = oneRBTC.mul(0); // 0%
-const FIVE_PERCENTAGE = ethers.utils.parseEther('5'); //5%
-const TEN_PERCENTAGE = ethers.utils.parseEther('10'); //10%
 
-const POOL = process.env.NEW_MULTISIG_ADDRESS; // multisig mainnet address
-const NEW_MULITSIG_WALLET_ADDRESS = process.env.NEW_MULTISIG_ADDRESS;
-const DEFAULT_PARTNER_ADDRESS = ''; // address of default partner, pool?
+const POOL =
+  process.env.NEW_MULTISIG_ADDRESS ||
+  '0x6cab832ec04855e67053a9509d2ad0dd25863ec7'; // multisig mainnet address
+const NEW_MULITSIG_WALLET_ADDRESS =
+  process.env.NEW_MULTISIG_ADDRESS ||
+  '0x6cab832ec04855e67053a9509d2ad0dd25863ec7';
+const DEFAULT_PARTNER_ADDRESS =
+  process.env.NEW_MULTISIG_ADDRESS ||
+  '0x6cab832ec04855e67053a9509d2ad0dd25863ec7'; // address of default partner, pool?
 
 // Addresses deployed on mainnet: https://dev.rootstock.io/rif/rns/mainnet/
 const RIF_ADDRESS =
@@ -104,10 +108,10 @@ async function main() {
   const defaultPartnerConfiguration =
     await deployContract<PartnerConfiguration>('PartnerConfiguration', {
       accessControl: accessControl.address,
-      minLength: BigNumber.from(3),
-      maxLength: BigNumber.from(7),
+      minLength: BigNumber.from(5),
+      maxLength: BigNumber.from(100),
       minDuration: BigNumber.from(1),
-      maxDuration: BigNumber.from(5),
+      maxDuration: BigNumber.from(100),
       feePercentage: ZERO_PERCENTAGE,
       discount: ZERO_PERCENTAGE,
       minCommitmentAge: BigNumber.from(1),
@@ -149,7 +153,6 @@ async function main() {
   const content = {
     rns: RNS_ADDRESS,
     registrar: partnerRegistrar.address.toLowerCase(),
-    stringResolver: '0x0000000000000000000000000000000000000000',
     rif: RIF_ADDRESS,
     fifsRegistrar: partnerRegistrar.address.toLowerCase(),
     fifsAddrRegistrar: partnerRegistrar.address.toLowerCase(),
